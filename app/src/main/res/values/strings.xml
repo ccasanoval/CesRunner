@@ -1,10 +1,17 @@
 <resources>
     <string name="app_name" translatable="false">CesRunner</string>
 
+    <string name="back">Atrás</string>
+
     <!-- MAIN MENU -->
     <string name="settings">Opciones</string>
     <string name="start">Empezar!</string>
     <string name="maps">Mapa</string>
     <string name="tracks">Rutas</string>
     <string name="gnss" translatable="false">GNSS</string>
+
+    <!-- SETTINGS -->
+    <string name="period">Período (min.)</string>
+
+
 </resources>

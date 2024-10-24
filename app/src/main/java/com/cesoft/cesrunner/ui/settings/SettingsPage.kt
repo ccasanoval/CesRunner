@@ -117,17 +117,6 @@ private fun Settings() {
             .fillMaxSize()
             .padding(vertical = SepMin, horizontal = SepMax)
     ) {
-        item {
-            NumberPicker(
-                modifier = Modifier.fillMaxWidth(),
-                min = 1,
-                max = 30,
-                value = period,
-                onSelect = {
-                    period = it
-                    android.util.Log.e("AAA", "InfiniteNumberPicker------ $it")// it.toInt()
-                })
-        }
         item { Spacer(Modifier.size(SepMed)) }
         item {
             NumberPicker(
@@ -139,7 +128,6 @@ private fun Settings() {
                 value = period,
                 onSelect = {
                     period = it
-                    android.util.Log.e("AAA", "InfiniteNumberPicker------ $it")// it.toInt()
                 }
             )
         }

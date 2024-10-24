@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -47,12 +49,12 @@ fun NumberPicker(
     onSelect: (Int) -> Unit
 ) {
     Row(modifier = modifier) {
-        val mod2 = Modifier.weight(0.5f)
-        if(title.isNotBlank()) Text(text = title, fontSize = 22.sp, modifier = mod2)
-        else Spacer(mod2)
-        HorizontalNumberPicker(Modifier.weight(.2f), min, max, value, onSelect)
-        if(subtitle.isNotBlank()) Text(subtitle, fontSize = 22.sp, textAlign = TextAlign.Right, modifier = mod2)
-        else Spacer(mod2)
+        val mod2 = Modifier.padding(horizontal = SepMin)
+        if(title.isNotBlank())
+            Text(text = title, fontSize = 22.sp, modifier = mod2)
+        HorizontalNumberPicker(mod2, min, max, value, onSelect)
+        if(subtitle.isNotBlank())
+            Text(subtitle, fontSize = 20.sp, textAlign = TextAlign.Right, modifier = mod2)
     }
 }
 
@@ -64,7 +66,7 @@ fun HorizontalNumberPicker(
     value: Int,
     onSelect: (Int) -> Unit
 ) {
-    val length = max - min //+ 20
+    val length = max - min + 3
     val listState = rememberLazyListState(value - min)
     val listStateFirst = remember { derivedStateOf { listState.firstVisibleItemIndex } }
     val coroutineScope = rememberCoroutineScope()
@@ -77,13 +79,15 @@ fun HorizontalNumberPicker(
             if(currentValue > max) currentValue = max
             onSelect(currentValue)
             oldValue = currentValue
-android.util.Log.e("AAA", "--launch effect : ${listState.firstVisibleItemIndex}")
-            //listState
             //listState.animateScrollToItem(index = listState.firstVisibleItemIndex)
         }
     }
 
-    Box(modifier = modifier) {
+    //TODO: Calc width needed to show 3 items...
+    val w = if(max >= 999) 150.dp
+            else if(max >= 99) 110.dp
+            else 75.dp
+    Box(modifier = modifier.width(w)) {
         LazyRow(
             verticalAlignment = Alignment.CenterVertically,
             state = listState
@@ -186,9 +190,11 @@ private fun NumberPicker_Preview() {
     val modifier = Modifier.border(1.dp, Color.Red)
     Surface {
         Column {
-            NumberPicker("AAA", "bb", modifier, 0, 10, 5) { }
-            Text("AAAA", modifier = Modifier.size(SepMed))
-            HorizontalNumberPicker(modifier, 30, 300, 150) { }
+            NumberPicker("AAA", "bb", modifier, 0, 9, 5) { }
+            Text("+++++AAAA++++", modifier = Modifier.size(SepMed))
+            NumberPicker("CCCC", "", modifier, 0, 99, 80) { }
+            Text("+++++AAAA++++", modifier = Modifier.size(SepMed))
+            NumberPicker("ZZZ", "VVV", modifier, 0, 999, 950) { }
         }
     }
 }

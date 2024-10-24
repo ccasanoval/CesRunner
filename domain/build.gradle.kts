@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    //
+    //alias(libs.plugins.ksp)
 }
 
 android {
@@ -33,11 +35,18 @@ android {
 }
 
 dependencies {
-
+    // Init
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+//    // DI - Koin
+//    implementation(libs.koinCore)
+//    implementation(libs.koinAndroid)
+//    implementation(libs.koinAnnotations)
+//    implementation(libs.koinCompose)
+//    ksp(libs.koinKspCompiler)
 }

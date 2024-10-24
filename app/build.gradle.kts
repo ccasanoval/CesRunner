@@ -41,6 +41,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":data"))
+    implementation(project(":domain"))
 
     // Init
     implementation(libs.androidx.core.ktx)
@@ -51,6 +53,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

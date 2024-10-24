@@ -2,16 +2,14 @@ package com.cesoft.cesrunner.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,17 +23,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
+import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.ui.common.NumberPicker
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsIntent
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsState
@@ -43,6 +41,7 @@ import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import org.koin.androidx.compose.koinViewModel
+
 
 @Composable
 fun SettingsPage(
@@ -60,8 +59,8 @@ fun SettingsPage(
         onBackPressed = {
             viewModel.execute(SettingsIntent.Close)
         },
-    ) { view ->
-        Content(state = view, reduce = viewModel::execute)
+    ) { state ->
+        Content(state = state, reduce = viewModel::execute)
     }
 }
 
@@ -71,6 +70,7 @@ private fun Content(
     state: SettingsState,
     reduce: (intent: SettingsIntent) -> Unit,
 ) {
+    var onClose by remember { mutableStateOf({ reduce(SettingsIntent.Close) }) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -82,7 +82,7 @@ private fun Content(
                     Text(stringResource(R.string.settings))
                 },
                 navigationIcon = {
-                    IconButton(onClick = { reduce(SettingsIntent.Close) }) {
+                    IconButton(onClick = onClose) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -102,16 +102,44 @@ private fun Content(
         },
     ) { innerPadding ->
         Surface(modifier = Modifier.padding(innerPadding)) {
-            Settings()
+            when(state) {
+                is SettingsState.Loading -> {
+                    reduce(SettingsIntent.Load)
+                    Loading()
+                }
+                is SettingsState.Init -> {
+                    var settings by remember { mutableStateOf(state.settings) }
+                    onClose = {
+                        reduce(SettingsIntent.Save(settings))
+                        //reduce(SettingsIntent.Close)
+                    }
+                    Settings(state.settings) { settings = it }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun Settings() {
-    var period by remember { mutableIntStateOf(5) }
-    LazyColumn(
+private fun Loading() {
+    Column(
         verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun Settings(
+    settings: SettingsDto,
+    onChange: (SettingsDto) -> Unit
+) {
+    android.util.Log.e("aaaa", "Settings---------- 00000")
+    var period by remember { mutableIntStateOf(settings.period) }
+    LazyColumn(
+        //verticalArrangement = Arrangement.Center,
         //horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
@@ -128,15 +156,11 @@ private fun Settings() {
                 value = period,
                 onSelect = {
                     period = it
+                    onChange(settings.copy(period = it))
                 }
             )
         }
     }
-}
-
-@Composable
-private fun SettingsNumberPicker() {
-
 }
 
 @Composable
@@ -157,7 +181,13 @@ private fun ItemInt(
 //--------------------------------------------------------------------------------------------------
 @Preview
 @Composable
-private fun SettingsPage_Preview() {
-    val navController = rememberNavController()
-    Surface { SettingsPage(navController, SettingsViewModel()) }
+private fun Content_Preview() {
+    Content(SettingsState.Init(SettingsDto(5))) {}
 }
+//
+//@Preview
+//@Composable
+//private fun SettingsPage_Preview() {
+//    val navController = rememberNavController()
+//    Surface { SettingsPage(navController, SettingsViewModel()) }
+//}

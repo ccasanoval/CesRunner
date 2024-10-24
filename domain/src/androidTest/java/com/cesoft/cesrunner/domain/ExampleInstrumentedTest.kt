@@ -1,4 +1,4 @@
-package com.cesoft.cesrunner.model
+package com.cesoft.cesrunner.domain
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

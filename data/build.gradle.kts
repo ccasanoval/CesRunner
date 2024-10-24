@@ -34,10 +34,13 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain"))
+
     // Init
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(project(":domain"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -47,6 +50,10 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+
+    // Preferences
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.security.crypto)
 
     // DI - Hilt
 //    ksp(libs.hilt.android.ksp)

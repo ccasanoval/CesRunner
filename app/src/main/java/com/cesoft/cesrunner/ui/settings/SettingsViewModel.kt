@@ -1,15 +1,14 @@
 package com.cesoft.cesrunner.ui.settings
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.Page
-import com.cesoft.cesrunner.ui.home.mvi.HomeSideEffect
+import com.cesoft.cesrunner.domain.entity.SettingsDto
+import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
+import com.cesoft.cesrunner.domain.usecase.SaveSettingsUC
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsIntent
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsSideEffect
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsState
@@ -19,29 +18,51 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 
 class SettingsViewModel(
+    val readSettings: ReadSettingsUC,
+    val saveSettings: SaveSettingsUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<SettingsIntent, State<SettingsState, SettingsSideEffect>> {
 
     private val reducer =
-        Reducer<SettingsIntent, SettingsState, SettingsSideEffect>(
+        Reducer(
             coroutineScope = viewModelScope,
             defaultDispatcher = coroutineDispatcher,
-            initialInnerState = SettingsState.Init,
+            initialInnerState = SettingsState.Loading,
             logger = null,
             intentExecutor = this::executeIntent,
         )
 
     override val state = reducer.state
-    override fun execute(intent: SettingsIntent) {//TODO: Remove executeIntent and use this?
-        reducer.executeIntent(intent)
-    }
+    override fun execute(intent: SettingsIntent) { reducer.executeIntent(intent) }
+
+//    private fun loading() = flow {
+//        emit(SettingsTransform.SetIsLoggingIn(isLoggingIn = true))
+//        delay(300)
+//        emit(LoginTransform.SetIsLoggingIn(isLoggingIn = false))
+//    }
 
     private fun executeIntent(intent: SettingsIntent) =
-        when (intent) {
-            SettingsIntent.Close -> executeClose()
+        when(intent) {
+            SettingsIntent.Load -> exeLoad()
+            SettingsIntent.Close -> exeClose()
+            is SettingsIntent.Save -> exeSave(intent.settings)
         }
 
-    private fun executeClose() = flow {
+    private fun exeClose() = flow {
+        emit(SettingsTransform.AddSideEffect(SettingsSideEffect.Close))
+    }
+    private fun exeLoad() = flow {
+        val ret = readSettings()
+        val settings = ret.getOrNull()
+        settings?.let {
+            emit(SettingsTransform.Load(SettingsState.Init(it)))//TODO: refactor this shit
+        } ?: run {
+            //TODO: show failure...
+        }
+    }
+    private fun exeSave(settings: SettingsDto) = flow {
+        android.util.Log.e("AAA", "SAVE----------------------- ${settings}")
+        saveSettings(settings)
         emit(SettingsTransform.AddSideEffect(SettingsSideEffect.Close))
     }
 

@@ -77,8 +77,10 @@ fun HorizontalNumberPicker(
     LaunchedEffect(!listState.isScrollInProgress && oldValue != currentValue) {
         coroutineScope.launch {
             if(currentValue > max) currentValue = max
-            onSelect(currentValue)
-            oldValue = currentValue
+            if(oldValue != currentValue) {
+                onSelect(currentValue)
+                oldValue = currentValue
+            }
             //listState.animateScrollToItem(index = listState.firstVisibleItemIndex)
         }
     }

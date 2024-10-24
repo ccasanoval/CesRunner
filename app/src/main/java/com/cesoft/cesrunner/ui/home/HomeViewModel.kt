@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.adidas.mvi.LoggableState
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
@@ -24,7 +23,7 @@ class HomeViewModel(
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
     private val reducer =
-        Reducer<HomeIntent, HomeState, HomeSideEffect>(
+        Reducer(
             coroutineScope = viewModelScope,
             defaultDispatcher = coroutineDispatcher,
             initialInnerState = HomeState.Init,

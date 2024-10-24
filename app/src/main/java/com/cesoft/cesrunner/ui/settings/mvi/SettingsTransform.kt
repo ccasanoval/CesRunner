@@ -13,4 +13,11 @@ internal object SettingsTransform {
             return sideEffects.add(sideEffect)
         }
     }
+
+    data class Load(val state: SettingsState.Init): ViewTransform<SettingsState, SettingsSideEffect>() {
+        override fun mutate(currentState: SettingsState): SettingsState {
+            return state
+        }
+    }
+
 }

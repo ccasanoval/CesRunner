@@ -22,4 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "CesRunner"
 include(":app")
 include(":data")
-include(":model")
+include(":domain")

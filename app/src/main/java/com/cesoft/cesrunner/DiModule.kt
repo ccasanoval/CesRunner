@@ -1,23 +1,21 @@
 package com.cesoft.cesrunner
 
+import com.cesoft.cesrunner.data.Repository
+import com.cesoft.cesrunner.domain.repository.RepositoryContract
+import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
+import com.cesoft.cesrunner.domain.usecase.SaveSettingsUC
 import com.cesoft.cesrunner.ui.home.HomeViewModel
 import com.cesoft.cesrunner.ui.settings.SettingsViewModel
-import com.cesoft.cesrunner.ui.tracks.TracksViewModel
-import org.koin.android.annotation.KoinViewModel
-import org.koin.core.annotation.Module
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.dsl.module
 
-@Module
-class DiModule {
-    @KoinViewModel
-    internal fun provideHomeViewModel(): HomeViewModel {
-        return HomeViewModel()
-    }
-    @KoinViewModel
-    internal fun provideSettingsViewModel(): SettingsViewModel {
-        return SettingsViewModel()
-    }
-    @KoinViewModel
-    internal fun provideTracksViewModel(): TracksViewModel {
-        return TracksViewModel()
-    }
+val appModule = module {
+    single<CoroutineDispatcher> { Dispatchers.Default }
+    single<RepositoryContract> { Repository(get()) }
+    single<ReadSettingsUC> { ReadSettingsUC(get()) }
+    single<SaveSettingsUC> { SaveSettingsUC(get()) }
+    viewModel { HomeViewModel(get()) }
+    viewModel { SettingsViewModel(get(), get(), get()) }
 }

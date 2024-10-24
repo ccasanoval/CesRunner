@@ -5,7 +5,6 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
-import org.koin.ksp.generated.module
 
 class App: Application() {
     override fun onCreate() {
@@ -17,9 +16,7 @@ class App: Application() {
         startKoin {
             androidLogger(Level.ERROR)
             androidContext(this@App)
-            modules(
-                DiModule().module,
-            )
+            modules(appModule)
         }
     }
 }

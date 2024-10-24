@@ -1,4 +1,4 @@
-package com.cesoft.cesrunner.model
+package com.cesoft.cesrunner.domain
 
 import org.junit.Test
 

@@ -11,7 +11,8 @@
     <string name="gnss" translatable="false">GNSS</string>
 
     <!-- SETTINGS -->
-    <string name="period">Período (min.)</string>
+    <string name="period">Período</string>
+    <string name="minutes">(min.)</string>
 
 
 </resources>

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,13 +21,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.adidas.mvi.compose.MviScreen
@@ -35,7 +35,6 @@ import com.cesoft.cesrunner.ui.common.NumberPicker
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsIntent
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsState
 import com.cesoft.cesrunner.ui.theme.SepMax
-import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import org.koin.androidx.compose.koinViewModel
 
@@ -112,13 +111,16 @@ private fun Settings() {
             .fillMaxSize()
             .padding(vertical = SepMin, horizontal = SepMax)
     ) {
-        //item { ItemInt(stringResource(R.string.tracks)) }
         item {
-            Text(stringResource(R.string.period))
-            NumberPicker(period, 1, 60) {
-                android.util.Log.e("AAA", "-------------------- SETTINGS PAGE $period")
-                period = it
-            }
+            NumberPicker(
+                modifier = Modifier.width(60.dp),
+                min = 1,
+                max = 30,
+                value = period,
+                onSelect = {
+                    period = it
+                    android.util.Log.e("AAA", "InfiniteNumberPicker------ $it")// it.toInt()
+                })
         }
     }
 }

@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.cesoft.cesrunner"
-    compileSdk = 34
+    compileSdk = rootProject.extra.get("compileSdkVer") as Int
 
     defaultConfig {
         applicationId = "com.cesoft.cesrunner"
-        minSdk = 31
-        targetSdk = 34
+        minSdk = rootProject.extra.get("minSdkVer") as Int
+        targetSdk = rootProject.extra.get("compileSdkVer") as Int
         versionCode = 1
         versionName = "0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -1,3 +1,7 @@
+
+ext["compileSdkVer"] = 34
+ext["minSdkVer"] = 31
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     // Init

@@ -2,8 +2,10 @@ package com.cesoft.cesrunner.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -22,22 +24,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import com.cesoft.cesrunner.PageNavigation
+import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.ui.theme.CesRunnerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val hasGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        val hasNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        android.util.Log.e("MainAct", "-------- gps = $hasGps net = $hasNetwork")
+
         enableEdgeToEdge()
         setContent {
             CesRunnerTheme {
                 Scaffold { padding ->
                     Surface(modifier = Modifier.padding(padding)) {
-                        android.util.Log.e("AAA", "MainActivity--------")
                         PageNavigation()
                     }
                 }
             }
         }
+    }
+
+    private var locationDS: LocationDataSource? = null
+    override fun onStart() {
+        super.onStart()
+        askPermissions()
+        if(locationDS == null) locationDS = LocationDataSource(this)
+        locationDS?.requestLocationUpdates()
+
     }
 
     /// PERMISSIONS ------------------------------------------------------------------------------------

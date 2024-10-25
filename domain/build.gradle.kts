@@ -7,11 +7,10 @@ plugins {
 
 android {
     namespace = "com.cesoft.cesrunner.model"
-    compileSdk = 34
+    compileSdk = rootProject.extra.get("compileSdkVer") as Int
 
     defaultConfig {
-        minSdk = 30
-
+        minSdk = rootProject.extra.get("minSdkVer") as Int
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }

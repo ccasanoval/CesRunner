@@ -2,10 +2,13 @@
     <string name="app_name" translatable="false">CesRunner</string>
 
     <string name="back">Atrás</string>
+    <string name="open">Abrir</string>
+    <string name="tracking_on">¡Aun estás guardando la ruta!</string>
 
     <!-- MAIN MENU -->
     <string name="settings">Opciones</string>
-    <string name="start">Empezar!</string>
+    <string name="start">¡Empezar!</string>
+    <string name="check_tracking">Ver ruta activa</string>
     <string name="maps">Mapa</string>
     <string name="tracks">Rutas</string>
     <string name="gnss" translatable="false">GNSS</string>

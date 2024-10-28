@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.entity.SettingsDto
+import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.NumberPicker
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsIntent
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsState
@@ -105,7 +106,7 @@ private fun Content(
             when(state) {
                 is SettingsState.Loading -> {
                     reduce(SettingsIntent.Load)
-                    Loading()
+                    LoadingCompo()
                 }
                 is SettingsState.Init -> {
                     var settings by remember { mutableStateOf(state.settings) }
@@ -117,17 +118,6 @@ private fun Content(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun Loading() {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        CircularProgressIndicator()
     }
 }
 

@@ -22,15 +22,15 @@ sealed class Page(val route: String) {
 
     data object Home: Page("home")
     data object Settings: Page("settings")
+    data object Tracking: Page("tracking")
 }
 
 @Composable
 fun PageNavigation() {
     val navController = rememberNavController()
     NavHost(navController, Page.Home.route) {
-        //homePage()
-        //settingsPage()
         composable(route = Page.Home.route) { HomePage(navController) }
         composable(route = Page.Settings.route) { SettingsPage(navController) }
+        composable(route = Page.Tracking.route) { SettingsPage(navController) }
     }
 }

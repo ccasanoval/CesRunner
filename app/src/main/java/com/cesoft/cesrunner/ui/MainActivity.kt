@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
+import android.provider.Settings
 import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,12 +31,6 @@ import com.cesoft.cesrunner.ui.theme.CesRunnerTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val hasGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        val hasNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        android.util.Log.e("MainAct", "-------- gps = $hasGps net = $hasNetwork")
-
         enableEdgeToEdge()
         setContent {
             CesRunnerTheme {
@@ -48,13 +43,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private var locationDS: LocationDataSource? = null
     override fun onStart() {
         super.onStart()
         askPermissions()
-        if(locationDS == null) locationDS = LocationDataSource(this)
-        locationDS?.requestLocationUpdates()
 
+        /*
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val hasGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        val hasNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        android.util.Log.e("MainAct", "-------- gps = $hasGps net = $hasNetwork loc = ${locationManager.isLocationEnabled}")
+        if( ! locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(intent)
+        }*/
+        val locationDataSource = LocationDataSource(this)
+        locationDataSource.checkGpsStateAndStart()
     }
 
     /// PERMISSIONS ------------------------------------------------------------------------------------
@@ -88,6 +91,7 @@ class MainActivity : ComponentActivity() {
             intent.setAction(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
             intent.setData(Uri.parse("package:${packageName}"))
             startActivity(intent)
+            return false
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (!hasPermission(Manifest.permission.POST_NOTIFICATIONS)) {

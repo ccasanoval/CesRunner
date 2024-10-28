@@ -10,6 +10,12 @@ import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
+import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
+import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
+import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
+import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeSideEffect
 import com.cesoft.cesrunner.ui.home.mvi.HomeState
@@ -19,6 +25,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 
 class HomeViewModel(
+    val readCurrentTracking: ReadCurrentTrackingUC,
+    val saveCurrentTracking: SaveCurrentTrackingUC,
+    val requestLocationUpdates: RequestLocationUpdatesUC,
+    val stopLocationUpdates: StopLocationUpdatesUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
@@ -26,7 +36,7 @@ class HomeViewModel(
         Reducer(
             coroutineScope = viewModelScope,
             defaultDispatcher = coroutineDispatcher,
-            initialInnerState = HomeState.Init,
+            initialInnerState = HomeState.Loading,
             logger = null,
             intentExecutor = this::executeIntent,
         )
@@ -38,13 +48,29 @@ class HomeViewModel(
     }
 
     private fun executeIntent(intent: HomeIntent) =
-        when (intent) {
-            HomeIntent.GoStart -> executeLogout()
+        when(intent) {
+            HomeIntent.Load -> executeLoad()
+            HomeIntent.GoStart -> executeStart()
             HomeIntent.GoSettings -> flow { emit(HomeTransform.AddSideEffect(HomeSideEffect.GoSettings)) }
             HomeIntent.GoMap -> executeLogout()
             HomeIntent.GoTracks -> executeLogout()
             HomeIntent.Close -> executeClose()
         }
+
+    private fun executeLoad() = flow {
+        val res = readCurrentTracking()
+        val currentTracking = res.getOrNull() ?: CurrentTrackingDto.Empty
+        var error: AppError? = null
+        if(res.isFailure) {
+            res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
+        }
+        emit(HomeTransform.GoInit(currentTracking, error))
+    }
+
+    private fun executeStart() = flow {
+        requestLocationUpdates()
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.Start))
+    }
 
     private fun executeClose() = flow {
         emit(HomeTransform.AddSideEffect(HomeSideEffect.Close))
@@ -54,26 +80,13 @@ class HomeViewModel(
         emit(HomeTransform.AddSideEffect(HomeSideEffect.Close))
     }
 
-//    private fun executeLogin(intent: LoginIntent.Login) = flow {
-//        emit(HomeTransform.SetIsLoggingIn(isLoggingIn = true))
-//
-//        delay(300)
-//
-//        emit(LoginTransform.SetIsLoggingIn(isLoggingIn = false))
-//
-//        if (intent.username.isEmpty() || intent.password.isEmpty()) {
-//            emit(LoginTransform.AddSideEffect(LoginSideEffect.ShowInvalidCredentialsError))
-//        } else {
-//            emit(LoginTransform.SetLoggedIn(intent.username))
-//        }
-//    }
     fun consumeSideEffect(
         sideEffect: HomeSideEffect,
         navController: NavController,
         context: Context,
     ) {
         when(sideEffect) {
-            HomeSideEffect.GoStart -> {
+            HomeSideEffect.Start -> {
                 navController.navigate(Page.Settings.route)
             }
             HomeSideEffect.GoSettings -> {

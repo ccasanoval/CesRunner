@@ -34,6 +34,7 @@ class PrefDataSource(
 
     suspend fun readCurrentTracking(): Result<CurrentTrackingDto> {
         val isTracking = context.readBool(PREFS_CURRENT_IS_TRACKING, false)
+        android.util.Log.e(TAG, "readCurrentTracking------- isTracking=$isTracking")
         return Result.success(
             CurrentTrackingDto(
                 isTracking = isTracking
@@ -49,6 +50,8 @@ class PrefDataSource(
     //----------------------------------------------------------------------------------------------
     // Constants
     companion object {
+        private const val TAG = "PrefDS"
+
         private const val PREFS_SETTINGS_PERIOD = "PREFS_SETTINGS_PERIOD"
         private const val PREFS_SETTINGS_PERIOD_DEF = 5
 

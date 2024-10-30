@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +46,7 @@ fun HomePage(
             viewModel.execute(HomeIntent.Close)
         },
     ) { view ->
+        //android.util.Log.e("HomePage", "--------HomePage----- $view")
         when(view) {
             is HomeState.Loading -> {
                 viewModel.execute(HomeIntent.Load)
@@ -85,19 +85,23 @@ private fun Content(
                 Spacer(modifier = Modifier.padding(SepMax))
             }
             HomeButton(
-                title = stringResource(if(isTracking) R.string.check_tracking else R.string.start),
+                title = stringResource(if(isTracking) R.string.menu_check else R.string.menu_start),
                 onClick = { reduce(HomeIntent.GoStart) }
             )
             HomeButton(
-                title = stringResource(R.string.settings),
+                title = stringResource(R.string.menu_settings),
                 onClick = { reduce(HomeIntent.GoSettings) }
             )
             HomeButton(
-                title = stringResource(R.string.tracks),
+                title = stringResource(R.string.menu_tracks),
                 onClick = { reduce(HomeIntent.GoTracks) }
             )
             HomeButton(
-                title = stringResource(R.string.maps),
+                title = stringResource(R.string.menu_maps),
+                onClick = { reduce(HomeIntent.GoMap) }
+            )
+            HomeButton(
+                title = stringResource(R.string.menu_gnss),
                 onClick = { reduce(HomeIntent.GoMap) }
             )
         }

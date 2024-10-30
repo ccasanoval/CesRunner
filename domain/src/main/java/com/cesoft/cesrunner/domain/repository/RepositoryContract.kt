@@ -13,6 +13,6 @@ interface RepositoryContract {
     suspend fun saveCurrentTracking(data: CurrentTrackingDto): Result<Unit>
 
     // TRACKING
-    suspend fun requestLocationUpdates(): Result<MutableStateFlow<Location?>>
-    suspend fun stopLocationUpdates(): Result<Unit>
+    fun requestLocationUpdates(): Result<MutableStateFlow<Location?>>
+    fun stopLocationUpdates(): Result<Unit>
 }

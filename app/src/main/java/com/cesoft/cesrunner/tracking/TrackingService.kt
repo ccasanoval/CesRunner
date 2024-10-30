@@ -11,48 +11,62 @@ import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.cesoft.cesrunner.data.prefs.readBool
 import com.cesoft.cesrunner.data.prefs.writeBool
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
+import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
+import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
+import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
-class TrackingService : LifecycleService() {
+class TrackingService: LifecycleService() {
     //Checks whether the bound activity has really gone away
     // (foreground service with notification created) or simply orientation change (no-op).
     private var configurationChange = false
     private var serviceRunningInForeground = false
-    private val localBinder = LocalBinder()
-    private var currentLocation: Location? = null
+
     private var locationFlow: Job? = null
     private lateinit var notificationManager: NotificationManager
 
-//    @Inject lateinit var getLocations: GetLocationsUseCase
-//    @Inject lateinit var getSession: GetSessionUseCase
-//    @Inject lateinit var readLogin: ReadLoginUseCase
-//    @Inject lateinit var sendTracking: SendTrackingUseCase
-//    @Inject lateinit var sendTrackingBatch: SendTrackingBatchUseCase
-//    @Inject lateinit var saveTrackingItem: SaveTrackingItemUseCase
-//    @Inject lateinit var listTrackingItems: ListTrackingItemsUseCase
-//    @Inject lateinit var clearTrackingItems: ClearTrackingItemsUseCase
+    private val readCurrentTracking: ReadCurrentTrackingUC by inject()
+    private val saveCurrentTracking: SaveCurrentTrackingUC by inject()
+    private val requestLocationUpdates: RequestLocationUpdatesUC by inject()
+    private val stopLocationUpdates: StopLocationUpdatesUC by inject()
 
     override fun onCreate() {
+        Log.e(TAG, "onCreate----------------------------------")
         super.onCreate()
+        _isRunning = true
         TrackingNotification.CANCEL_TRACKING = "$packageName.CANCEL_TRACKING"
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        super.onTaskRemoved(rootIntent)
+    override fun onDestroy() {
+        Log.e(TAG, "onDestroy----------------------------------")
+        _isRunning = false
+        stop()
+        super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.e(TAG, "onStartCommand---------------------------------- $isRunning")
+
         val cancelLocationTrackingFromNotification =
             intent?.getBooleanExtra(TrackingNotification.CANCEL_TRACKING, false)
         if(cancelLocationTrackingFromNotification == true) {
-            unsubscribeToLocationUpdates()
+            stop()
             stopSelf()
         }
 
@@ -64,11 +78,64 @@ class TrackingService : LifecycleService() {
             this@TrackingService, notificationManager)
         startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_LOCATION)
 
+        start()
         // Tells the system not to recreate the service after it's been killed.
-        return super.onStartCommand(intent, flags, START_NOT_STICKY)
+        //return super.onStartCommand(intent, flags, START_NOT_STICKY)
+        return super.onStartCommand(intent, flags, START_STICKY)
     }
 
+    private fun start() {
+        Log.e(TAG, "start----------------------------------")
+        requestLocationUpdates().getOrNull()
+            ?.onEach { location ->
+                location?.let {
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                    val instant = Instant.ofEpochMilli(it.time)
+                    val date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+                    val dateStr = formatter.format(date)
+                    val data = "POS: ${it.latitude}, ${it.longitude}\n"+
+                            "TIME: ${dateStr}\n"+
+                            "PROV: ${it.provider}\n"+
+                            "ACCU: ${it.accuracy}\n"+
+                            "ALT:  ${it.altitude}\n"+
+                            "ORI:  ${it.bearing}\n"+
+                            "SPE:  ${it.speed}\n"+
+                            "MOCK: ${it.isMock}\n"
+                            //"EXT:  ${it.extras}"
+                    //it.isComplete, it.mslAltitudeMeters
+                    Log.e(TAG, "----------- Service location:\n$data ------------")
+                }
+                Log.e(TAG, "----------- Service location: $location ------------")
+                delay(100)
+            }
+            ?.launchIn(lifecycleScope)
+    }
+
+    private fun stop() {
+        Log.e(TAG, "stop----------------------------------")
+        locationFlow?.cancel()
+        stopLocationUpdates()
+        lifecycleScope.launch {
+            writeBool(PREF_TRACKING_STATUS, false)
+        }
+    }
+
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        Log.e(TAG, "onConfigurationChanged---------------------------------$newConfig")
+        super.onConfigurationChanged(newConfig)
+        configurationChange = true
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        Log.e(TAG, "onTaskRemoved----------------------------------")
+    }
+
+    /*
+    private val localBinder = LocalBinder()
     override fun onBind(intent: Intent): IBinder {
+        Log.e(TAG, "onBind----------------------------------")
         super.onBind(intent)
         // MainActivity comes into foreground and binds to service
         stopForeground(STOP_FOREGROUND_REMOVE)//STOP_FOREGROUND_LEGACY
@@ -78,6 +145,7 @@ class TrackingService : LifecycleService() {
     }
 
     override fun onRebind(intent: Intent) {
+        android.util.Log.e(TAG, "onRebind----------------------------------")
         // MainActivity (client) returns to the foreground and rebinds to service,
         // so the service can become a background services.
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -87,6 +155,7 @@ class TrackingService : LifecycleService() {
     }
 
     override fun onUnbind(intent: Intent): Boolean {
+        android.util.Log.e(TAG, "onUnbind----------------------------------")
         lifecycleScope.launch {
             val tracking = readBool(PREF_TRACKING_STATUS)
             Log.e(TAG, "----onUnbind  (configChange=$configurationChange / tracking=$tracking)")
@@ -108,82 +177,17 @@ class TrackingService : LifecycleService() {
         // Ensures onRebind() is called if MainActivity (client) rebinds.
         return true
     }
-
-    override fun onDestroy() {
-        Log.e(TAG, "--------onDestroy()")
-        super.onDestroy()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        //Log.e(TAG, "--------onConfigurationChanged()")
-        super.onConfigurationChanged(newConfig)
-        configurationChange = true
-    }
-
-    fun subscribeToLocationUpdates() {
-        //Log.e(TAG, "--------subscribeToLocationUpdates()")
-        lifecycleScope.launch { writeBool(PREF_TRACKING_STATUS, true) }
-
-        // Binding to this service doesn't actually trigger onStartCommand(). That is needed to
-        // ensure this Service can be promoted to a foreground service,
-        // i.e., the service needs to be officially started (which we do here).
-        try {
-            startService(Intent(applicationContext, TrackingService::class.java))
-        } catch(_: Exception) { }
-
-        // Observe locations via Flow as they are generated by the repository
-        /*
-        locationFlow = getLocations()
-            .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
-            .onEach { location ->
-                currentLocation = location
-                Log.e(TAG, "----------- Service location: ${location.toText()} ------------")
-                delay(100)
-                val res = getSession()
-                if(res.isSuccess) {
-                    // Check if there are locations in db to send to backend
-                    val list = listTrackingItems().getOrNull() ?: listOf()
-                    if(list.isNotEmpty()) {
-                        Log.e(TAG, "---- Sending stored trackings ${list.size} ----")
-                        if(sendTrackingBatch(list).isSuccess) {
-                            clearTrackingItems()
-                        }
-                    }
-                    res.getOrNull()?.let {
-                        if(it.isActive && !it.isPaused) {
-                            if(sendTracking(location).isFailure) {
-                                saveTrackingItem(location)
-                            }
-                        }
-                    }
-                }
-                else {
-                    // If no connection, you can't ask for session... but still send the tracking
-                    if(!isInetAvailable(this)) {
-                        Log.e(TAG, "---- No connection - storing location ----")
-                        saveTrackingItem(location)
-                    }
-                }
-            }
-            .launchIn(lifecycleScope)*/
-    }
-
-    fun unsubscribeToLocationUpdates() {
-        Log.e(TAG, "-------------unsubscribeToLocationUpdates()")
-        locationFlow?.cancel()
-        lifecycleScope.launch {
-            writeBool(PREF_TRACKING_STATUS, false)
-        }
-    }
-
-    inner class LocalBinder : Binder() {
+    inner class LocalBinder: Binder() {
         internal val service: TrackingService
             get() = this@TrackingService
-    }
+    }*/
 
     companion object {
         private const val TAG = "TrackingService"
         private const val NOTIFICATION_ID = 12345678
         private const val PREF_TRACKING_STATUS = "PREF_TRACKING_STATUS"
+        private var _isRunning = false
+        val isRunning: Boolean
+            get() = _isRunning
     }
 }

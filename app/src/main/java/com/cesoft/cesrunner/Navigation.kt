@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cesoft.cesrunner.ui.home.HomePage
 import com.cesoft.cesrunner.ui.settings.SettingsPage
+import com.cesoft.cesrunner.ui.tracking.TrackingPage
 
 
 sealed class Page(val route: String) {
@@ -31,6 +32,6 @@ fun PageNavigation() {
     NavHost(navController, Page.Home.route) {
         composable(route = Page.Home.route) { HomePage(navController) }
         composable(route = Page.Settings.route) { SettingsPage(navController) }
-        composable(route = Page.Tracking.route) { SettingsPage(navController) }
+        composable(route = Page.Tracking.route) { TrackingPage(navController) }
     }
 }

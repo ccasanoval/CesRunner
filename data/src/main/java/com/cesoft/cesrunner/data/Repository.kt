@@ -1,6 +1,8 @@
 package com.cesoft.cesrunner.data
 
+import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.location.Location
 import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.data.prefs.PrefDataSource
@@ -31,7 +33,7 @@ class Repository(
 
 
     /// TRACKING
-    override suspend fun requestLocationUpdates(): Result<MutableStateFlow<Location?>> {
+    override fun requestLocationUpdates(): Result<MutableStateFlow<Location?>> {
         try {
             val locationFlow = locationDataSource.requestLocationUpdates()
             return Result.success(locationFlow)
@@ -40,7 +42,7 @@ class Repository(
             return Result.failure(e)
         }
     }
-    override suspend fun stopLocationUpdates(): Result<Unit> {
+    override fun stopLocationUpdates(): Result<Unit> {
         try {
             locationDataSource.stopLocationUpdates()
             return Result.success(Unit)

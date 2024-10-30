@@ -28,6 +28,12 @@ internal object HomeTransform {
 //    }
 //
 
+    data object GoLoading: ViewTransform<HomeState, HomeSideEffect>() {
+        override fun mutate(currentState: HomeState): HomeState {
+            return HomeState.Loading
+        }
+    }
+
     data class GoInit(
         val data: CurrentTrackingDto,
         val error: AppError?,

@@ -44,14 +44,14 @@ object TrackingNotification {
         return notificationCompatBuilder
             .setStyle(bigTextStyle)
             .setContentTitle(titleText)
-//            .setContentText(mainNotificationText)
-            //.setSmallIcon(R.drawable.smallicon)
+//            .setContentText(mainNotificationText)//TODO: Show current tracking data
+            .setSmallIcon(android.R.drawable.ic_media_play)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setOngoing(true)
             //.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .addAction(
-                android.R.drawable.ic_menu_agenda,
-                context.getString(R.string.back),
+                android.R.drawable.ic_input_add,
+                context.getString(R.string.open),
                 activityPendingIntent
             )
 //            .addAction(

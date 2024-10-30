@@ -9,17 +9,21 @@ import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.SaveSettingsUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
+import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.HomeViewModel
 import com.cesoft.cesrunner.ui.settings.SettingsViewModel
+import com.cesoft.cesrunner.ui.tracking.TrackingViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
+    /// CORE
     single<CoroutineDispatcher> { Dispatchers.Default }
     single<LocationDataSource> { LocationDataSource(get()) }
     single<RepositoryContract> { Repository(get(), get()) }
+    single<TrackingServiceFac> { TrackingServiceFac(get()) }
 
     /// PREF
     single<ReadSettingsUC> { ReadSettingsUC(get()) }
@@ -30,6 +34,8 @@ val appModule = module {
     single<RequestLocationUpdatesUC> { RequestLocationUpdatesUC(get()) }
     single<StopLocationUpdatesUC> { StopLocationUpdatesUC(get()) }
 
-    viewModel { HomeViewModel(get(), get(), get(), get()) }
+    /// VIEWMODEL
+    viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
+    viewModel { TrackingViewModel(get(), get(), get(), get(), get()) }
 }

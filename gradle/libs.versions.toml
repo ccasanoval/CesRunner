@@ -22,6 +22,7 @@ koin-android = "3.5.6"
 koin-compose = "3.5.6"
 securityCrypto = "1.0.0"
 lifecycleService = "2.8.6"
+workRuntimeKtx = "2.9.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,7 @@ koinKspCompiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "
 koinCompose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin-compose" }
 mvi-compose = { module = "com.adidas.mvi:mvi-compose", version.ref = "mviCompose" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

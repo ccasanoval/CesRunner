@@ -1,12 +1,15 @@
 package com.cesoft.cesrunner.domain
 
-import android.net.http.NetworkException
-import android.os.Build
-import androidx.annotation.RequiresExtension
+sealed class AppError: Throwable() {
+    data class UnknownError(override val message: String): AppError()
+    data object NetworkError: AppError() {
+        private fun readResolve(): Any = NetworkError
+    }
 
-sealed class AppError {
-    data class UnknownError(val message: String): AppError()
-    data object NetworkError: AppError()
+    data object NotFound: AppError() {
+        private fun readResolve(): Any = NotFound
+    }
+
     companion object {
         fun fromThrowable(e: Throwable): AppError = when(e) {
             //is NetworkException -> NetworkError

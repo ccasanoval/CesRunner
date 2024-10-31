@@ -20,71 +20,46 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 suspend fun Context.writeString(key: String, value: String) {
     dataStore.edit { pref -> pref[stringPreferencesKey(key)] = value }
 }
-suspend fun Context.readString(key: String): String {
+suspend fun Context.readString(key: String, default: String = ""): String {
     return dataStore.data.map { pref ->
-        pref[stringPreferencesKey(key)] ?: ""
-    }.first()
+        pref[stringPreferencesKey(key)]
+    }.firstOrNull() ?: default
 }
-//fun Context.readStringFlow(key: String): Flow<String> {
-//    return dataStore.data.map { pref ->
-//        pref[stringPreferencesKey(key)] ?: ""
-//    }
-//}
 
 suspend fun Context.writeDouble(key: String, value: Double) {
     dataStore.edit { pref -> pref[doublePreferencesKey(key)] = value }
 }
-suspend fun Context.readDouble(key: String): Double? {
+suspend fun Context.readDouble(key: String, default: Double = 0.0): Double {
     return dataStore.data.map { pref ->
         pref[doublePreferencesKey(key)]
-    }.firstOrNull()
+    }.firstOrNull() ?: default
 }
 
 suspend fun Context.writeInt(key: String, value: Int) {
     dataStore.edit { pref -> pref[intPreferencesKey(key)] = value }
 }
-suspend fun Context.readInt(key: String): Int? {
+suspend fun Context.readInt(key: String, default: Int = 0): Int {
     return dataStore.data.map { pref ->
         pref[intPreferencesKey(key)]
-    }.firstOrNull()
+    }.firstOrNull() ?: default
 }
-//fun Context.readIntFlow(key: String): Flow<Int> {
-//    return dataStore.data.map { pref ->
-//        pref[intPreferencesKey(key)] ?: 0
-//    }
-//}
-
-//suspend fun Context.writeDouble(key: String, value: Double) {
-//    dataStore.edit { pref -> pref[doublePreferencesKey(key)] = value }
-//}
-//fun Context.readDoubleFlow(key: String): Flow<Double> {
-//    return dataStore.data.map { pref ->
-//        pref[doublePreferencesKey(key)] ?: 0.0
-//    }
-//}
 
 suspend fun Context.writeLong(key: String, value: Long) {
     dataStore.edit { pref -> pref[longPreferencesKey(key)] = value }
 }
-suspend fun Context.readLong(key: String): Long {
+suspend fun Context.readLong(key: String, default: Long = 0): Long {
     return dataStore.data.map { pref ->
-        pref[longPreferencesKey(key)] ?: 0L
-    }.first()
+        pref[longPreferencesKey(key)]
+    }.firstOrNull() ?: default
 }
-
-//fun Context.readLongFlow(key: String): Flow<Long> {
-//    return dataStore.data.map { pref ->
-//        pref[longPreferencesKey(key)] ?: 0L
-//    }
-//}
 
 suspend fun Context.writeBool(key: String, value: Boolean) {
     dataStore.edit { pref -> pref[booleanPreferencesKey(key)] = value }
 }
 suspend fun Context.readBool(key: String, default: Boolean = false): Boolean {
     return dataStore.data.map { pref ->
-        pref[booleanPreferencesKey(key)] ?: default
-    }.first()
+        pref[booleanPreferencesKey(key)]
+    }.firstOrNull() ?: default
 }
 //fun Context.readBoolFlow(key: String): Flow<Boolean> {
 //    return dataStore.data.map { pref ->

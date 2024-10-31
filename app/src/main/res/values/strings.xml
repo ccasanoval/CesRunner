@@ -5,6 +5,7 @@
     <string name="open">Abrir</string>
     <string name="stop">Detener</string>
     <string name="pause">Pausar</string>
+    <string name="error">Error</string>
     <string name="accept">Aceptar</string>
     <string name="accept_permissions">Debes aceptar los permisos para que la app pueda funcionar</string>
     <string name="accept_permissions2">Permitir siempre la ubicación y ejecución en segundo plano</string>

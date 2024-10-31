@@ -4,7 +4,7 @@ import com.adidas.mvi.sideeffects.SideEffects
 import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
+import com.cesoft.cesrunner.domain.entity.TrackDto
 
 internal object TrackingTransform {
 
@@ -17,7 +17,7 @@ internal object TrackingTransform {
     }
 
     data class GoInit(
-        val data: CurrentTrackingDto,
+        val data: TrackDto,
         val error: AppError?,
     ): ViewTransform<TrackingState, TrackingSideEffect>() {
         override fun mutate(currentState: TrackingState): TrackingState {

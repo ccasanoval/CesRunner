@@ -4,29 +4,9 @@ import com.adidas.mvi.sideeffects.SideEffects
 import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
+import com.cesoft.cesrunner.domain.entity.TrackDto
 
 internal object HomeTransform {
-
-//    object GoTracks: ViewTransform<HomeState, HomeSideEffect>() {
-//        override fun mutate(currentState: HomeState): HomeState {
-//            return HomeState.
-//        }
-//    }
-//
-//    data class SetIsLoggingIn(val isLoggingIn: Boolean) :
-//        ViewTransform<LoginState, LoginSideEffect>() {
-//        override fun mutate(currentState: LoginState): LoginState {
-//            return LoginState.LoggedOut(isLoggingIn = isLoggingIn)
-//        }
-//    }
-//
-//    data class SetLoggedIn(val username: String) : ViewTransform<LoginState, LoginSideEffect>() {
-//        override fun mutate(currentState: LoginState): LoginState {
-//            return LoginState.LoggedIn(username)
-//        }
-//    }
-//
 
     data object GoLoading: ViewTransform<HomeState, HomeSideEffect>() {
         override fun mutate(currentState: HomeState): HomeState {
@@ -35,7 +15,7 @@ internal object HomeTransform {
     }
 
     data class GoInit(
-        val data: CurrentTrackingDto,
+        val data: TrackDto,
         val error: AppError?,
     ): ViewTransform<HomeState, HomeSideEffect>() {
         override fun mutate(currentState: HomeState): HomeState {

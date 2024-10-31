@@ -8,13 +8,16 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
+import com.cesoft.cesrunner.data.toDateStr
+import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
+import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
-import com.cesoft.cesrunner.tracking.TrackingWork
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingSideEffect
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
@@ -25,9 +28,11 @@ import kotlinx.coroutines.flow.flow
 
 @SuppressLint("StaticFieldLeak")
 class TrackingViewModel(
+    private val createTrack: CreateTrackUC,
     private val trackingServiceFac: TrackingServiceFac,
     private val readCurrentTracking: ReadCurrentTrackingUC,
     private val saveCurrentTracking: SaveCurrentTrackingUC,
+    private val deleteCurrentTracking: DeleteCurrentTrackingUC,
     private val requestLocationUpdates: RequestLocationUpdatesUC,
     private val stopLocationUpdates: StopLocationUpdatesUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
@@ -57,23 +62,42 @@ class TrackingViewModel(
         }
 
     private fun executeLoad() = flow {
-        val tracking = CurrentTrackingDto(isTracking = true)
-        //TrackingWork.create(context)
-        trackingServiceFac.start()
-        saveCurrentTracking(tracking)
-        emit(TrackingTransform.GoInit(tracking, null))
-        //emit(TrackingTransform.AddSideEffect(TrackingSideEffect.StartTracking))
+        val res = readCurrentTracking()
+        val track: TrackDto? = if(res.isSuccess) {
+            res.getOrNull()!!
+        }
+        else {
+            val time = System.currentTimeMillis()
+            val track = TrackDto(
+                time = time,
+                name = "TRACK: "+time.toDateStr(),
+            )
+            val resTrack = createTrack(track)
+            val id = resTrack.getOrNull()
+            if(resTrack.isSuccess && id != null) {
+                saveCurrentTracking(id)
+                track.copy(id = id)
+            }
+            else {
+                null
+            }
+        }
+        if(track == null) {
+            emit(TrackingTransform.GoInit(TrackDto.Empty, AppError.NotFound))
+        }
+        else {
+            trackingServiceFac.start()
+            emit(TrackingTransform.GoInit(track, null))
+        }
     }
 
     private fun executeClose() = flow {
         emit(TrackingTransform.AddSideEffect(TrackingSideEffect.Close))
     }
     private fun executeStop() = flow {
-        val tracking = CurrentTrackingDto(isTracking = false)
-        saveCurrentTracking(tracking)
+        deleteCurrentTracking()
         trackingServiceFac.stop()
         emit(TrackingTransform.AddSideEffect(TrackingSideEffect.Close))
-        //emit(TrackingTransform.GoInit(tracking, null))
     }
 
     fun consumeSideEffect(

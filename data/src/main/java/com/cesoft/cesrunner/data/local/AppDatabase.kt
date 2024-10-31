@@ -5,18 +5,18 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.cesoft.cesrunner.data.local.dao.TrackDao
 import com.cesoft.cesrunner.data.local.dao.TrackPointDao
-import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.entity.TrackPointDto
+import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
+import com.cesoft.cesrunner.data.local.entity.LocalTrackPointDto
 
 @Database(
     entities = [
-        TrackDto::class,
-        TrackPointDto::class,
+        LocalTrackDto::class,
+        LocalTrackPointDto::class,
     ],
     version = 1
 )
 @TypeConverters(Converters::class)
-abstract class AppDatabase : RoomDatabase() {
+abstract class AppDatabase: RoomDatabase() {
     abstract fun trackDao(): TrackDao
     abstract fun trackPointDao(): TrackPointDao
 }

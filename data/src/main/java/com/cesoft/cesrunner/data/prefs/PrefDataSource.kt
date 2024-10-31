@@ -1,8 +1,8 @@
 package com.cesoft.cesrunner.data.prefs
 
 import android.content.Context
-import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
+import com.cesoft.cesrunner.domain.entity.TrackDto
 
 
 class PrefDataSource(
@@ -20,7 +20,7 @@ class PrefDataSource(
 //    }
 
     suspend fun readSettings(): Result<SettingsDto> {
-        val period = context.readInt(PREFS_SETTINGS_PERIOD) ?: PREFS_SETTINGS_PERIOD_DEF
+        val period = context.readInt(PREFS_SETTINGS_PERIOD, PREFS_SETTINGS_PERIOD_DEF)
         return Result.success(
             SettingsDto(
                 period = period
@@ -32,20 +32,26 @@ class PrefDataSource(
         return Result.success(Unit)
     }
 
-    suspend fun readCurrentTracking(): Result<CurrentTrackingDto> {
-        val isTracking = context.readBool(PREFS_CURRENT_IS_TRACKING, false)
-        android.util.Log.e(TAG, "readCurrentTracking------- isTracking=$isTracking")
-        return Result.success(
-            CurrentTrackingDto(
-                isTracking = isTracking
-            )
-        )
+    suspend fun readCurrentTrackingId(default: Long): Long {
+        return context.readLong(PREFS_CURRENT_TRACK, default)
     }
-    suspend fun saveCurrentTracking(data: CurrentTrackingDto): Result<Unit> {
-        context.writeBool(PREFS_CURRENT_IS_TRACKING, data.isTracking)
-        return Result.success(Unit)
+    suspend fun saveCurrentTrackingId(id: Long) {
+        return context.writeLong(PREFS_CURRENT_TRACK, id)
     }
 
+//    suspend fun readCurrentTracking(): Result<CurrentTrackingDto> {
+//        val isTracking = context.readBool(PREFS_CURRENT_IS_TRACKING, false)
+//        android.util.Log.e(TAG, "readCurrentTracking------- isTracking=$isTracking")
+//        return Result.success(
+//            CurrentTrackingDto(
+//                isTracking = isTracking
+//            )
+//        )
+//    }
+//    suspend fun saveCurrentTracking(data: CurrentTrackingDto): Result<Unit> {
+//        context.writeBool(PREFS_CURRENT_IS_TRACKING, data.isTracking)
+//        return Result.success(Unit)
+//    }
 
     //----------------------------------------------------------------------------------------------
     // Constants
@@ -55,7 +61,7 @@ class PrefDataSource(
         private const val PREFS_SETTINGS_PERIOD = "PREFS_SETTINGS_PERIOD"
         private const val PREFS_SETTINGS_PERIOD_DEF = 5
 
-        private const val PREFS_CURRENT_IS_TRACKING = "PREFS_CURRENT_IS_TRACKING"
+        private const val PREFS_CURRENT_TRACK = "PREFS_CURRENT_TRACK"
 
 //        suspend fun setNavigateFrom(context: Context, fromId: Int) {
 //            context.writeInt(PREFS_NAVIGATE_FROM, fromId)

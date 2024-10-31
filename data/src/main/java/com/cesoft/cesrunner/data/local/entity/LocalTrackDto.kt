@@ -3,7 +3,6 @@ package com.cesoft.cesrunner.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.entity.TrackPointDto
 
 const val TrackTableName = "track"
 @Entity(tableName = TrackTableName)
@@ -28,7 +27,7 @@ data class LocalTrackDto(
 
     companion object {
         fun fromModel(data: TrackDto) = LocalTrackDto(
-            id = data.id,
+            id = if(data.id > 0) data.id else 0,//Note that room only create new row id if it's == 0
             time = data.time,
             name = data.name,
             distance = data.distance,

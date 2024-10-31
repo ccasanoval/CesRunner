@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.ui.home
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.widget.Toast
@@ -12,12 +11,8 @@ import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
+import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
-import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
-import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
-import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
-import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeSideEffect
@@ -30,9 +25,6 @@ import kotlinx.coroutines.flow.flow
 class HomeViewModel(
     private val trackingServiceFac: TrackingServiceFac,
     private val readCurrentTracking: ReadCurrentTrackingUC,
-    //val saveCurrentTracking: SaveCurrentTrackingUC,
-    //val requestLocationUpdates: RequestLocationUpdatesUC,
-    //val stopLocationUpdates: StopLocationUpdatesUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
@@ -59,15 +51,17 @@ class HomeViewModel(
 
     private fun executeLoad() = flow {
         val res = readCurrentTracking()
-        val currentTracking = res.getOrNull() ?: CurrentTrackingDto.Empty
-        if(currentTracking.isTracking) {
+        val currentTrack = res.getOrNull() ?: TrackDto.Empty
+        if(currentTrack.isCreated) {
             trackingServiceFac.start()
         }
         var error: AppError? = null
-        if(res.isFailure) {
+        val e = res.exceptionOrNull()
+        if(res.isFailure && e !is AppError.NotFound) {
             res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
         }
-        emit(HomeTransform.GoInit(currentTracking, error))
+        android.util.Log.e(TAG, "executeLoad------------ $currentTrack $e")
+        emit(HomeTransform.GoInit(currentTrack, error))
     }
 
     private fun executeStart() = flow {
@@ -104,5 +98,9 @@ class HomeViewModel(
             }
             HomeSideEffect.Close -> (context as Activity).finish()
         }
+    }
+
+    companion object {
+        private const val TAG = "HomeVM"
     }
 }

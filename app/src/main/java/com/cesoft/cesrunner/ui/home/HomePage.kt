@@ -21,10 +21,9 @@ import org.koin.androidx.compose.koinViewModel
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
+import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.ui.common.ErrorCompo
 import com.cesoft.cesrunner.ui.common.LoadingCompo
-import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMed
 
 @Composable
@@ -74,15 +73,20 @@ private fun Content(
                 ErrorCompo(it)
             }
 
-            val isTracking = state.currentTracking.isTracking
+            val isTracking = state.currentTrack.isCreated
             if (isTracking) {
                 Text(
                     text = stringResource(R.string.tracking_on),
-                    modifier = Modifier.padding(SepMax)
+                    modifier = Modifier.padding(SepMed)
+                )
+                Text(
+                    text = state.currentTrack.name,
+                    modifier = Modifier.padding(SepMed)
                 )
             }
             else {
-                Spacer(modifier = Modifier.padding(SepMax))
+                Spacer(modifier = Modifier.padding(SepMed))
+                Spacer(modifier = Modifier.padding(SepMed))
             }
             HomeButton(
                 title = stringResource(if(isTracking) R.string.menu_check else R.string.menu_start),
@@ -126,7 +130,7 @@ private fun HomeButton(
 @Composable
 private fun HomePage_Preview() {
     val state = HomeState.Init(
-        currentTracking = CurrentTrackingDto(isTracking = true),
+        currentTrack = TrackDto(id = 69, name = "Tracking A"),
         error = AppError.NetworkError,
     )
     Content(state) { }

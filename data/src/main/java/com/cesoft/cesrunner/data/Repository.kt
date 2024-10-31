@@ -7,7 +7,8 @@ import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
 import com.cesoft.cesrunner.data.local.entity.LocalTrackPointDto
 import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.data.prefs.PrefDataSource
-import com.cesoft.cesrunner.domain.entity.CurrentTrackingDto
+import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.Common.ID_NULL
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
@@ -27,11 +28,15 @@ class Repository(
         return PrefDataSource(context).saveSettings(data)
     }
 
-    override suspend fun readCurrentTracking(): Result<CurrentTrackingDto> {
-        return PrefDataSource(context).readCurrentTracking()
+    override suspend fun readCurrentTrack(): Result<TrackDto> {
+        val id = PrefDataSource(context).readCurrentTrackingId(ID_NULL)
+android.util.Log.e(TAG, "readCurrentTrack ********* ------------  id = $id")
+        return if(id > ID_NULL) readTrack(id) else Result.failure(AppError.NotFound)
     }
-    override suspend fun saveCurrentTracking(data: CurrentTrackingDto): Result<Unit> {
-        return PrefDataSource(context).saveCurrentTracking(data)
+    override suspend fun saveCurrentTrack(id: Long): Result<Unit> {
+        android.util.Log.e(TAG, "saveCurrentTrack ********* ------------  id = $id")
+        PrefDataSource(context).saveCurrentTrackingId(id)
+        return Result.success(Unit)
     }
 
     /// TRACKING SERVICE
@@ -55,9 +60,22 @@ class Repository(
     }
 
     /// TRACKING DATABASE
-    override suspend fun createTrack(data: TrackDto): Result<Unit> {
+    override suspend fun createTrack(data: TrackDto): Result<Long> {
         try {
-            db.trackDao().create(LocalTrackDto.fromModel(data))
+            val id: Long = db.trackDao().create(LocalTrackDto.fromModel(data))
+            android.util.Log.e(TAG, "createTrack ********* ------------  id = $id")///Por qie devieñve -1
+
+
+            return if( id > 0) Result.success(id)
+            else Result.failure(Throwable())
+        }
+        catch(e: Throwable) {
+            return Result.failure(e)
+        }
+    }
+    override suspend fun updateTrack(data: TrackDto): Result<Unit> {
+        try {
+            db.trackDao().update(LocalTrackDto.fromModel(data))
             return Result.success(Unit)
         }
         catch(e: Throwable) {
@@ -83,11 +101,27 @@ class Repository(
             return Result.failure(e)
         }
     }
-    override suspend fun readAllTrack(): Result<List<TrackDto>> {
-        return Result.success(listOf())
+    override suspend fun readAllTracks(): Result<List<TrackDto>> {
+        try {
+            //val points = db.trackPointDao().readByTrackId(id)
+            val tracks = db.trackDao().getAll()
+            return Result.success(tracks.map { it.toModel(listOf()) })
+        }
+        catch(e: Throwable) {
+            return Result.failure(e)
+        }
     }
     override suspend fun deleteTrack(id: Long): Result<Unit> {
-        return Result.success(Unit)
+        try {
+            db.trackPointDao().deleteByTrackId(id)
+            return Result.success(Unit)
+        }
+        catch(e: Throwable) {
+            return Result.failure(e)
+        }
     }
 
+    companion object {
+        private const val TAG = "Repo"
+    }
 }

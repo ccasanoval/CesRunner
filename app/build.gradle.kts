@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.room.ktx)
 
     // Test
     testImplementation(libs.junit)

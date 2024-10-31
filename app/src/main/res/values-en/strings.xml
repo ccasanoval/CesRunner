@@ -9,6 +9,7 @@
     <string name="open">Open</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
+    <string name="error">Error</string>
     <string name="accept">Accept</string>
     <string name="accept_permissions">You must grant all permissions for this app to work</string>
     <string name="accept_permissions2">Allow all the time the location, notifications and work in background</string>

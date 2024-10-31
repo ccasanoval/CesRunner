@@ -97,8 +97,9 @@ class MainActivity : ComponentActivity() {
                 return false
             }
         }
+        //TODO: No navega a home !!!!!!! salvo cuando pulsas boton !!!!!!!!!!
         /// Disable battery optimization : also, check Manifest
-        val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+        /*val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
         if (!pm.isIgnoringBatteryOptimizations(packageName)) {
             Log.e(TAG, "isIgnoringBatteryOptimizations------- FALSE")
             val intent = Intent()
@@ -106,7 +107,7 @@ class MainActivity : ComponentActivity() {
             intent.setAction(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
             intent.setData(Uri.parse("package:${packageName}"))
             startActivity(intent)
-        }
+        }*/
         return true
     }
 

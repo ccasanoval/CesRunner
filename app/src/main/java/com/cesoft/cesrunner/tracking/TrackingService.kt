@@ -147,7 +147,7 @@ class TrackingService: LifecycleService() {
                                     speedMax = speedMax,
                                 )
                             } ?: run {
-                                newTrack = TrackDto(
+                                newTrack = track.copy(
                                     id = track.id,
                                     distance = 0,
                                     timeIni = time,//location.time,

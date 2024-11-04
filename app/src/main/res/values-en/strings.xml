@@ -11,8 +11,9 @@
     <string name="stop">Stop</string>
     <string name="error">Error</string>
     <string name="accept">Accept</string>
+    <string name="permissions">Required permissions:</string>
     <string name="accept_permissions">You must grant all permissions for this app to work</string>
-    <string name="accept_permissions2">Allow all the time the location, notifications and work in background</string>
+    <string name="accept_permissions2">Allow the location all the time, notifications and the work in background</string>
     <string name="tracking_on">You\'re still recording the tracking!</string>
     <string name="period">Period</string>
     <string name="minutes">(min.)</string>

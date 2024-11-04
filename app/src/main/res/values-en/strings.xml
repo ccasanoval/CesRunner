@@ -14,7 +14,16 @@
     <string name="permissions">Required permissions:</string>
     <string name="accept_permissions">You must grant all permissions for this app to work</string>
     <string name="accept_permissions2">Allow the location all the time, notifications and the work in background</string>
-    <string name="tracking_on">You\'re still recording the tracking!</string>
+    <string name="tracking_on">Active route:</string>
     <string name="period">Period</string>
     <string name="minutes">(min.)</string>
+
+    <string name="date">Date</string>
+    <string name="accuracy">Accuracy</string>
+    <string name="provider">Provider</string>
+    <string name="distance">Distance</string>
+    <string name="speed_max">Max Speed</string>
+    <string name="speed_min">Min Speed</string>
+    <string name="altitude_max">Max Altitude</string>
+    <string name="altitude_min">Min Altitude</string>
 </resources>

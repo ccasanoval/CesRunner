@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.cesoft.cesrunner.data.prefs.writeBool
+import com.cesoft.cesrunner.data.toDateStr
 import com.cesoft.cesrunner.domain.Common.ID_NULL
 import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -93,10 +94,7 @@ class TrackingService: LifecycleService() {
         requestLocationUpdates().getOrNull()
             ?.onEach { location ->
                 location?.let { loc ->
-                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-                    val instant = Instant.ofEpochMilli(loc.time)
-                    val date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-                    val dateStr = formatter.format(date)
+                    val dateStr = loc.time.toDateStr()
                     val data = "POS: ${loc.latitude}, ${loc.longitude}\n" +
                             "TIME: ${dateStr}\n" +
                             "PROV: ${loc.provider}\n" +
@@ -136,7 +134,7 @@ class TrackingService: LifecycleService() {
                                 val altMin = min(track.altitudeMin, loc.altitude.toInt())
                                 val speedMax = max(track.speedMax, loc.speed.toInt())
                                 val speedMin = min(track.speedMin, loc.speed.toInt())
-                                Log.e(TAG, "----------- Service location: addTrackPoint: ${track.distance} / $distance ------------")
+                                Log.e(TAG, "----------- Service location: updateTrack: ${track.distance} / $distance ------------")
                                 newTrack = track.copy(
                                     id = track.id,
                                     distance = distance.toInt(),
@@ -147,6 +145,7 @@ class TrackingService: LifecycleService() {
                                     speedMax = speedMax,
                                 )
                             } ?: run {
+                                Log.e(TAG, "----------- Service location: updateTrack: ${track.distance}  NEW  ------------")
                                 newTrack = track.copy(
                                     id = track.id,
                                     distance = 0,

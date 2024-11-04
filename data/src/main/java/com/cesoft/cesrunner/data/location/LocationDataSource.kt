@@ -2,11 +2,9 @@ package com.cesoft.cesrunner.data.location
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.provider.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class LocationDataSource(
@@ -15,19 +13,19 @@ class LocationDataSource(
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
     // Cached location in the system: doesn't activate GPS chip
-    @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(): Location? {
-        return locationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER)
-    }
+//    @SuppressLint("MissingPermission")
+//    fun getLastKnownLocation(): Location? {
+//        return locationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER)
+//    }
 
-    private var _currentLocation: Location? = null
+    //private var _currentLocation: Location? = null
     private val _locationFlow: MutableStateFlow<Location?> = MutableStateFlow(null)
     private val _locationListener: LocationListener = object : LocationListener {
         @SuppressLint("MissingPermission")
         override fun onLocationChanged(location: Location) {
-            _currentLocation = location
+            //_currentLocation = location
             _locationFlow.tryEmit(location)
-            android.util.Log.e(TAG, "*** onLocationChanged: $_currentLocation")
+            android.util.Log.e(TAG, "*** onLocationChanged: $location")
         }
         override fun onProviderEnabled(provider: String) {
             android.util.Log.e(TAG, "*** locationListener: $provider")
@@ -38,8 +36,8 @@ class LocationDataSource(
     }
     @SuppressLint("MissingPermission")
     fun requestLocationUpdates(): MutableStateFlow<Location?> {
-        val minInterval = 30*1000L//millis
-        val minDistance = 0f//5f//m
+        val minInterval = 50*1000L//millis
+        val minDistance = 0f//m
         //https://stackoverflow.com/questions/35456254/application-getting-wrong-location-until-open-inbuilt-google-map-application
         //TODO: Add network provider?
         locationManager.requestLocationUpdates(
@@ -53,13 +51,13 @@ class LocationDataSource(
         locationManager.removeUpdates(_locationListener)
     }
 
-    fun isGpsOn(): Boolean =locationManager.isLocationEnabled
-    fun checkGpsStateAndStart() {
-        if( ! locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            context.startActivity(intent)
-        }
-    }
+//    fun isGpsOn(): Boolean = locationManager.isLocationEnabled
+//    fun checkGpsStateAndStart() {
+//        if( ! locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+//            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+//            context.startActivity(intent)
+//        }
+//    }
 
     companion object {
         private const val TAG = "LocationDS"

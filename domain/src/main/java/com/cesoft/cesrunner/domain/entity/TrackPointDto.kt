@@ -1,7 +1,9 @@
 package com.cesoft.cesrunner.domain.entity
 
+import com.cesoft.cesrunner.domain.Common.ID_NULL
+
 data class TrackPointDto(
-    val id: Long,
+    val id: Long = ID_NULL,
     val latitude: Double,
     val longitude: Double,
     val time: Long,

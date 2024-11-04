@@ -5,6 +5,7 @@ import com.cesoft.cesrunner.data.Repository
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
+import com.cesoft.cesrunner.domain.usecase.AddTrackPointUC
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
 import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
@@ -15,6 +16,7 @@ import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.SaveSettingsUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
+import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.HomeViewModel
 import com.cesoft.cesrunner.ui.settings.SettingsViewModel
@@ -34,19 +36,19 @@ val appModule = module {
         Room.databaseBuilder(get(), AppDatabase::class.java, "CesRunner").build()
     }
 
-    /// PREF
-    single<ReadSettingsUC> { ReadSettingsUC(get()) }
-    single<SaveSettingsUC> { SaveSettingsUC(get()) }
-    single<ReadCurrentTrackingUC> { ReadCurrentTrackingUC(get()) }
-    single<SaveCurrentTrackingUC> { SaveCurrentTrackingUC(get()) }
-    single<DeleteCurrentTrackingUC> { DeleteCurrentTrackingUC(get()) }
-    /// TRACKING SERVICE
-    single<RequestLocationUpdatesUC> { RequestLocationUpdatesUC(get()) }
-    single<StopLocationUpdatesUC> { StopLocationUpdatesUC(get()) }
-    /// TRACKING DB
+    /// USE CASES
+    single<AddTrackPointUC> { AddTrackPointUC(get()) }
     single<CreateTrackUC> { CreateTrackUC(get()) }
-    single<ReadTrackUC> { ReadTrackUC(get()) }
+    single<DeleteCurrentTrackingUC> { DeleteCurrentTrackingUC(get()) }
     single<ReadAllTracksUC> { ReadAllTracksUC(get()) }
+    single<ReadCurrentTrackingUC> { ReadCurrentTrackingUC(get()) }
+    single<ReadSettingsUC> { ReadSettingsUC(get()) }
+    single<ReadTrackUC> { ReadTrackUC(get()) }
+    single<RequestLocationUpdatesUC> { RequestLocationUpdatesUC(get()) }
+    single<SaveCurrentTrackingUC> { SaveCurrentTrackingUC(get()) }
+    single<SaveSettingsUC> { SaveSettingsUC(get()) }
+    single<StopLocationUpdatesUC> { StopLocationUpdatesUC(get()) }
+    single<UpdateTrackUC> { UpdateTrackUC(get()) }
 
     /// VIEWMODEL
     viewModel { HomeViewModel(get(), get(), get()) }

@@ -9,30 +9,39 @@ const val TrackTableName = "track"
 data class LocalTrackDto(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
-    val time: Long,
+    val timeIni: Long,
+    val timeEnd: Long,
     val name: String,
-    val distance: Long,
-    val altitude: Long,
-    val speed: Float,
+    val distance: Int,
+    val altitudeMin: Int,
+    val altitudeMax: Int,
+    val speedMin: Int,
+    val speedMax: Int,
 ) {
     fun toModel(points: List<LocalTrackPointDto>) = TrackDto(
         id = id,
-        time = time,
+        timeIni = timeIni,
+        timeEnd = timeEnd,
         name = name,
         distance = distance,
-        altitude = altitude,
-        speed = speed,
+        altitudeMin = altitudeMin,
+        altitudeMax = altitudeMax,
+        speedMin = speedMin,
+        speedMax = speedMax,
         points = points.map { it.toModel() }
     )
 
     companion object {
         fun fromModel(data: TrackDto) = LocalTrackDto(
             id = if(data.id > 0) data.id else 0,//Note that room only create new row id if it's == 0
-            time = data.time,
+            timeIni = data.timeIni,
+            timeEnd = data.timeEnd,
             name = data.name,
             distance = data.distance,
-            altitude = data.altitude,
-            speed = data.speed,
+            altitudeMin = data.altitudeMin,
+            altitudeMax = data.altitudeMax,
+            speedMin = data.speedMin,
+            speedMax = data.speedMax,
         )
     }
 }

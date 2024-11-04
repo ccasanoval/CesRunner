@@ -69,11 +69,12 @@ class TrackingViewModel(
         else {
             val time = System.currentTimeMillis()
             val track = TrackDto(
-                time = time,
+                timeIni = time,
                 name = "TRACK: "+time.toDateStr(),
             )
             val resTrack = createTrack(track)
             val id = resTrack.getOrNull()
+            android.util.Log.e(TAG, "executeLoad---------- $id ")
             if(resTrack.isSuccess && id != null) {
                 saveCurrentTracking(id)
                 track.copy(id = id)
@@ -118,5 +119,9 @@ class TrackingViewModel(
 //                trackingServiceFac.stop()
 //            }
         }
+    }
+
+    companion object {
+        private const val TAG = "TrackingVM"
     }
 }

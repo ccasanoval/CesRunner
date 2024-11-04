@@ -14,6 +14,8 @@
     <string name="tracking_on">Ruta activa:</string>
 
     <string name="date">Fecha</string>
+    <string name="time_ini">Inicio</string>
+    <string name="time_end">Fin</string>
     <string name="accuracy">Precisión</string>
     <string name="provider">Fuente</string>
     <string name="distance">Distancia</string>

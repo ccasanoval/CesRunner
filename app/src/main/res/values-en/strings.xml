@@ -19,6 +19,8 @@
     <string name="minutes">(min.)</string>
 
     <string name="date">Date</string>
+    <string name="time_ini">Start</string>
+    <string name="time_end">Finish</string>
     <string name="accuracy">Accuracy</string>
     <string name="provider">Provider</string>
     <string name="distance">Distance</string>

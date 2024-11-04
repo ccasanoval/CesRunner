@@ -23,24 +23,27 @@ class LocationDataSource(
     private var _currentLocation: Location? = null
     private val _locationFlow: MutableStateFlow<Location?> = MutableStateFlow(null)
     private val _locationListener: LocationListener = object : LocationListener {
+        @SuppressLint("MissingPermission")
         override fun onLocationChanged(location: Location) {
             _currentLocation = location
             _locationFlow.tryEmit(location)
-            android.util.Log.e(TAG, "onLocationChanged: $_currentLocation ----------------")
+            android.util.Log.e(TAG, "*** onLocationChanged: $_currentLocation")
         }
         override fun onProviderEnabled(provider: String) {
-            android.util.Log.e(TAG, "locationListener: $provider ----------------")
+            android.util.Log.e(TAG, "*** locationListener: $provider")
         }
         override fun onProviderDisabled(provider: String) {
-            android.util.Log.e(TAG, "onProviderDisabled: $provider --------------")
+            android.util.Log.e(TAG, "*** onProviderDisabled: $provider")
         }
     }
     @SuppressLint("MissingPermission")
     fun requestLocationUpdates(): MutableStateFlow<Location?> {
         val minInterval = 30*1000L//millis
         val minDistance = 0f//5f//m
+        //https://stackoverflow.com/questions/35456254/application-getting-wrong-location-until-open-inbuilt-google-map-application
+        //TODO: Add network provider?
         locationManager.requestLocationUpdates(
-            LocationManager.FUSED_PROVIDER,
+            LocationManager.GPS_PROVIDER,// FUSED_PROVIDER, ==> Google doesn't want FUSED to work!!
             minInterval,
             minDistance,
             _locationListener)

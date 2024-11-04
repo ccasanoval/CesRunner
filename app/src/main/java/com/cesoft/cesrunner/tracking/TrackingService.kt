@@ -36,15 +36,13 @@ import kotlin.math.min
 class TrackingService: LifecycleService() {
     //Checks whether the bound activity has really gone away
     // (foreground service with notification created) or simply orientation change (no-op).
-    private var configurationChange = false
-    private var serviceRunningInForeground = false
+    //private var configurationChange = false
 
     private var lastLocation: LocationDto? = null
-    private var locationFlow: Job? = null
     private lateinit var notificationManager: NotificationManager
 
     private val readCurrentTracking: ReadCurrentTrackingUC by inject()
-    private val saveCurrentTracking: SaveCurrentTrackingUC by inject()
+    //private val saveCurrentTracking: SaveCurrentTrackingUC by inject()
     private val requestLocationUpdates: RequestLocationUpdatesUC by inject()
     private val stopLocationUpdates: StopLocationUpdatesUC by inject()
     private val addTrackPoint: AddTrackPointUC by inject()
@@ -160,6 +158,7 @@ class TrackingService: LifecycleService() {
                                     speedMax = location.speed.toInt(),
                                 )
                             }
+                            if(lastLocation?.latitude == newLocation.latitude && lastLocation?.longitude == newLocation.longitude)Log.e(TAG, "****** SAME LOCATION ******")
                             lastLocation = newLocation
                             updateTrack(newTrack)
                             Log.e(TAG, "----------- Service location: updateTrack: $newTrack ------------")
@@ -174,7 +173,6 @@ class TrackingService: LifecycleService() {
 
     private fun stop() {
         Log.e(TAG, "stop----------------------------------")
-        locationFlow?.cancel()
         stopLocationUpdates()
         lifecycleScope.launch {
             writeBool(PREF_TRACKING_STATUS, false)
@@ -185,7 +183,7 @@ class TrackingService: LifecycleService() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         Log.e(TAG, "onConfigurationChanged---------------------------------$newConfig")
         super.onConfigurationChanged(newConfig)
-        configurationChange = true
+        //configurationChange = true
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {

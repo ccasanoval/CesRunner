@@ -93,7 +93,7 @@ android.util.Log.e(TAG, "readCurrentTrack ********* ------------  id = $id")
     }
     override suspend fun readTrack(id: Long): Result<TrackDto> {
         try {
-            val points = db.trackPointDao().readByTrackId(id)
+            val points = db.trackPointDao().getByTrackId(id)
             val track = db.trackDao().getById(id)
             return Result.success(track.toModel(points))
         }
@@ -115,6 +115,19 @@ android.util.Log.e(TAG, "readCurrentTrack ********* ------------  id = $id")
         try {
             db.trackPointDao().deleteByTrackId(id)
             return Result.success(Unit)
+        }
+        catch(e: Throwable) {
+            return Result.failure(e)
+        }
+    }
+
+    override suspend fun getLastLocation(id: Long): Result<TrackPointDto> {
+        try {
+            db.trackPointDao().getLastByTrackId(id)?.let {
+                return Result.success(it.toModel())
+            } ?: run {
+                return Result.failure(AppError.NotFound)
+            }
         }
         catch(e: Throwable) {
             return Result.failure(e)

@@ -1,7 +1,6 @@
 package com.cesoft.cesrunner.domain.repository
 
 import android.location.Location
-import com.cesoft.cesrunner.domain.Common.ID_NULL
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
@@ -25,5 +24,6 @@ interface RepositoryContract {
     suspend fun readTrack(id: Long): Result<TrackDto>
     suspend fun readAllTracks(): Result<List<TrackDto>>
     suspend fun deleteTrack(id: Long): Result<Unit>
+    suspend fun getLastLocation(id: Long): Result<TrackPointDto>
 
 }

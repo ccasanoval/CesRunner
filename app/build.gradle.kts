@@ -80,4 +80,6 @@ dependencies {
     implementation(libs.mvi)
     implementation(libs.mvi.compose)
 
+    /// MAPS - Open Street Maps
+    implementation(libs.osmdroid.android)
 }

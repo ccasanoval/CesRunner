@@ -50,13 +50,12 @@ class TrackingViewModel(
         reducer.executeIntent(intent)
     }
     private fun executeIntent(intent: TrackingIntent) =
-        when (intent) {
-            is TrackingIntent.Load -> executeLoad()
-            //is TrackingIntent.Init -> executeInit()
+        when(intent) {
+            TrackingIntent.Load,
+            TrackingIntent.Refresh -> executeLoad()
 
-            is TrackingIntent.Close -> executeClose()
-
-            is TrackingIntent.Stop -> executeStop()
+            TrackingIntent.Close -> executeClose()
+            TrackingIntent.Stop -> executeStop()
 
             else -> executeClose()
         }
@@ -70,7 +69,8 @@ class TrackingViewModel(
             val time = System.currentTimeMillis()
             val track = TrackDto(
                 timeIni = time,
-                name = "TRACK: "+time.toDateStr(),
+                timeEnd = time,
+                name = "TRACK: "+time.toDateStr()+" $time",
             )
             val resTrack = createTrack(track)
             val id = resTrack.getOrNull()

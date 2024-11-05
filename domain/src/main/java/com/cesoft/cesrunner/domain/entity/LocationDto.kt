@@ -10,6 +10,9 @@ class LocationDto(
     val latitude: Double,
     val longitude: Double,
 ) {
+    override fun toString(): String {
+        return "LocationDto { latitude: $latitude, longiturde: $longitude }"
+    }
     fun distanceTo(location: LocationDto) = calculationByDistance(location, this)
     //fun distanceTo(lat: Double, lng: Double) = calculationByDistance(LocationDto(lat,lng), this)
     companion object {

@@ -145,7 +145,7 @@ private fun HomeButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier.padding(SepMed).fillMaxWidth()
+        modifier = Modifier.padding(SepMed).fillMaxWidth(.6f)
     ) {
         Text(title)
     }

@@ -13,7 +13,10 @@ interface TrackPointDao {
     //suspend fun getAll(): List<LocalTrackPointDto>
 
     @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id")
-    suspend fun readByTrackId(id: Long): List<LocalTrackPointDto>
+    suspend fun getByTrackId(id: Long): List<LocalTrackPointDto>
+
+    @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id ORDER BY id DESC LIMIT 1")
+    suspend fun getLastByTrackId(id: Long): LocalTrackPointDto?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(data: LocalTrackPointDto)

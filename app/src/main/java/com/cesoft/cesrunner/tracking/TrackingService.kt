@@ -15,6 +15,7 @@ import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.domain.usecase.AddTrackPointUC
+import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
@@ -48,6 +49,8 @@ class TrackingService: LifecycleService() {
     private val stopLocationUpdates: StopLocationUpdatesUC by inject()
     private val addTrackPoint: AddTrackPointUC by inject()
     private val updateTrack: UpdateTrackUC by inject()
+    private val getLastLocation: GetLastLocationUC by inject()
+    //private val setLastLocation: SetLastLocationUC by inject()
 
     override fun onCreate() {
         Log.e(TAG, "onCreate----------------------------------")
@@ -121,13 +124,19 @@ class TrackingService: LifecycleService() {
                                 bearing = loc.bearing,
                                 speed = loc.speed
                             )
+                            if(lastLocation == null) {
+                                val lastPoint = getLastLocation(track.id).getOrNull()
+                                lastLocation = lastPoint?.toLocationDto()
+                                Log.e(TAG, "----------- Service location: lastLocation: id = ${track.id} // pt = $lastPoint // loc = $lastLocation ------------")
+                            }
                             addTrackPoint(track.id, point)
                             Log.e(TAG, "----------- Service location: addTrackPoint: ${track.id} $point ------------")
 
                             /// Update Track
                             val newLocation = LocationDto.fromLocation(location)
-                            var newTrack = TrackDto.Empty
+                            var newTrack = track
                             val time = System.currentTimeMillis()
+
                             lastLocation?.let { last ->
                                 val distance = track.distance + last.distanceTo(newLocation)
                                 val altMax = max(track.altitudeMax, loc.altitude.toInt())
@@ -148,8 +157,6 @@ class TrackingService: LifecycleService() {
                                 Log.e(TAG, "----------- Service location: updateTrack: ${track.distance}  NEW  ------------")
                                 newTrack = track.copy(
                                     id = track.id,
-                                    distance = 0,
-                                    timeIni = time,//location.time,
                                     timeEnd = time,
                                     altitudeMax = location.altitude.toInt(),
                                     altitudeMin = location.altitude.toInt(),
@@ -157,7 +164,7 @@ class TrackingService: LifecycleService() {
                                     speedMax = location.speed.toInt(),
                                 )
                             }
-                            if(lastLocation?.latitude == newLocation.latitude && lastLocation?.longitude == newLocation.longitude)Log.e(TAG, "****** SAME LOCATION ******")
+                            //if(lastLocation?.latitude == newLocation.latitude && lastLocation?.longitude == newLocation.longitude)Log.e(TAG, "****** SAME LOCATION ******")
                             lastLocation = newLocation
                             updateTrack(newTrack)
                             Log.e(TAG, "----------- Service location: updateTrack: $newTrack ------------")

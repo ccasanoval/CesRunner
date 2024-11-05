@@ -14,13 +14,16 @@
     <string name="tracking_on">Ruta activa:</string>
 
     <string name="date">Fecha</string>
+    <string name="time">Tiempo</string>
     <string name="time_ini">Inicio</string>
     <string name="time_end">Fin</string>
     <string name="accuracy">Precisión</string>
     <string name="provider">Fuente</string>
     <string name="distance">Distancia</string>
+    <string name="speed">Velocidad</string>
     <string name="speed_max">Velocidad Max</string>
     <string name="speed_min">Velocidad Min</string>
+    <string name="altitude">Altitud</string>
     <string name="altitude_max">Altitud Max</string>
     <string name="altitude_min">Altitud Min</string>
 

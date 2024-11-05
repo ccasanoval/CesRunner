@@ -12,4 +12,6 @@ data class TrackPointDto(
     val altitude: Double,
     val bearing: Float,
     val speed: Float,
-)
+) {
+    fun toLocationDto() = LocationDto(latitude, longitude)
+}

@@ -1,11 +1,13 @@
 package com.cesoft.cesrunner.ui.tracking
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
@@ -18,13 +20,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.data.toDateStr
+import com.cesoft.cesrunner.data.toTimeStr
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.ui.common.LoadingCompo
-import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
+import com.cesoft.cesrunner.ui.common.OpenStreetMapView
+import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fonBig
@@ -78,49 +83,69 @@ private fun TrackingInfo(
     state: TrackingState.Init,
     reduce: (intent: TrackingIntent) -> Unit,
 ) {
-    //TODO: Update like home screen
-    LaunchedEffect(state) {
-        while(true) {
-            android.util.Log.e("TrackingPage", "TrackingInfo----------------")
-            //reduce(TrackingIntent.Refresh)
-            delay(30_000)
-        }
-    }
+    android.util.Log.e("TrackingPage", "TrackingInfo---------------------------")
     Column(
         verticalArrangement = Arrangement.Center,
-        //horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize().padding(SepMax)
     ) {
-        //Text(stringResource(R.string.tra))
+        //TODO: Alert: seguro que quiere detener la ruta?
+        Button(
+            onClick = { reduce(TrackingIntent.Stop) },
+            modifier = Modifier.fillMaxWidth(.5f),
+        ) {
+            Text(stringResource(R.string.stop))
+        }
+
+        TrackData(state, reduce)
+
+        Spacer(modifier = Modifier.padding(SepMax))
+
+        //TODO: Map
+//        OpenStreetMapView(
+//            points = state.currentTracking.points,
+//            modifier = Modifier.fillMaxWidth().height(300.dp).border(2.dp, Green)
+//        )
+
+        Spacer(modifier = Modifier.padding(SepMax))
+
+
+    }
+}
+
+@Composable
+private fun TrackData(
+    state: TrackingState.Init,
+    reduce: (intent: TrackingIntent) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        LaunchedEffect(state) {
+            while (true) {
+                android.util.Log.e("TrackingPage", "TrackingInfo----------------")
+                reduce(TrackingIntent.Refresh)
+                delay(30_000)
+            }
+        }
         //TODO: Allow changing value..
         Text(
             text = state.currentTracking.name,
             fontWeight = FontWeight.Bold,
             fontSize = fonBig,
-            modifier = Modifier.padding(vertical = SepMax)
+            modifier = Modifier.padding(vertical = SepMin)
         )
-        InfoRow(stringResource(R.string.distance), "${state.currentTracking.distance} m")
-        InfoRow(stringResource(R.string.time_ini), state.currentTracking.timeIni.toDateStr())
-        InfoRow(stringResource(R.string.time_end), state.currentTracking.timeEnd.toDateStr())
-        InfoRow(stringResource(R.string.speed_max), "${state.currentTracking.speedMax} m/s")
-        InfoRow(stringResource(R.string.speed_min), "${state.currentTracking.speedMin} m/s")
-        InfoRow(stringResource(R.string.altitude_max), "${state.currentTracking.altitudeMax} m")
-        InfoRow(stringResource(R.string.altitude_min), "${state.currentTracking.altitudeMax} m")
-
-
-        Spacer(modifier = Modifier.padding(SepMax))
-
-        //TODO: Mapa
-
-        Spacer(modifier = Modifier.padding(SepMax))
-
-        //TODO: Alert: seguro que quiere detener la ruta?
-        Button(
-            onClick = { reduce(TrackingIntent.Stop) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(R.string.stop))
-        }
+        val distance = "${state.currentTracking.distance} m"
+        val timeIni = state.currentTracking.timeIni.toDateStr()
+        val timeEnd = state.currentTracking.timeEnd.toDateStr()
+        val duration = state.currentTracking.timeEnd - state.currentTracking.timeIni
+        val speed = "${state.currentTracking.speedMin} - ${state.currentTracking.speedMax} m/s"
+        val altitude = "${state.currentTracking.altitudeMin} - ${state.currentTracking.altitudeMax} m"
+        //val durationStr = if(duration > 60*60) "${duration}"
+        InfoRow(stringResource(R.string.distance), distance)
+        InfoRow(stringResource(R.string.time_ini), timeIni)
+        InfoRow(stringResource(R.string.time_end), timeEnd)
+        InfoRow(stringResource(R.string.time), duration.toTimeStr())
+        InfoRow(stringResource(R.string.speed), speed)
+        InfoRow(stringResource(R.string.altitude), altitude)
     }
 }
 
@@ -130,7 +155,7 @@ private fun InfoRow(label: String, value: String) {
         Text(
             text = label,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.5f).padding(vertical = SepMin)
+            modifier = Modifier.weight(0.5f).padding(top = SepMin)
         )
         Text(
             text = value,

@@ -41,7 +41,7 @@ class HomeViewModel(
     }
     private fun executeIntent(intent: HomeIntent) =
         when(intent) {
-            HomeIntent.Load -> executeLoad()
+            HomeIntent.Load,
             HomeIntent.Refresh -> executeLoad()
             HomeIntent.GoStart -> executeStart()
             HomeIntent.GoSettings -> executeSettings()

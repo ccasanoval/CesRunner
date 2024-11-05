@@ -15,6 +15,7 @@ mviCompose = "0.1.0"
 navigationCompose = "2.8.3"
 appcompat = "1.7.0"
 material = "1.12.0"
+osmdroidAndroid = "6.1.16"
 roomRuntime = "2.6.1"
 koin = "3.5.6"
 koin-annotations = "1.3.1"
@@ -56,6 +57,7 @@ koinCompose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "
 mvi-compose = { module = "com.adidas.mvi:mvi-compose", version.ref = "mviCompose" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroidAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -34,6 +35,7 @@ import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.data.toDateStr
 import com.cesoft.cesrunner.data.toTimeStr
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
@@ -172,7 +174,7 @@ private fun TrackData(
             while (true) {
                 android.util.Log.e("TrackingPage", "TrackingInfo----------------")
                 reduce(TrackingIntent.Refresh)
-                delay(30_000)
+                delay(TrackingService.MIN_PERIOD/2)
             }
         }
         //TODO: Allow changing value..
@@ -186,13 +188,18 @@ private fun TrackData(
         val timeIni = state.currentTracking.timeIni.toDateStr()
         val timeEnd = state.currentTracking.timeEnd.toDateStr()
         val duration = state.currentTracking.timeEnd - state.currentTracking.timeIni
-        val speed = "${state.currentTracking.speedMin} - ${state.currentTracking.speedMax} m/s"
         val altitude = "${state.currentTracking.altitudeMin} - ${state.currentTracking.altitudeMax} m"
+        val speedMin = state.currentTracking.speedMin
+        val speedMax = state.currentTracking.speedMax
+        val speed = String.format(
+            Locale.current.platformLocale,
+            "%d - %d m/s == %.0f - %.0f Km/h",
+            speedMin, speedMax, speedMin*3.6, speedMax*3.6)
         //val durationStr = if(duration > 60*60) "${duration}"
         InfoRow(stringResource(R.string.distance), distance)
+        InfoRow(stringResource(R.string.time), duration.toTimeStr())
         InfoRow(stringResource(R.string.time_ini), timeIni)
         InfoRow(stringResource(R.string.time_end), timeEnd)
-        InfoRow(stringResource(R.string.time), duration.toTimeStr())
         InfoRow(stringResource(R.string.speed), speed)
         InfoRow(stringResource(R.string.altitude), altitude)
     }

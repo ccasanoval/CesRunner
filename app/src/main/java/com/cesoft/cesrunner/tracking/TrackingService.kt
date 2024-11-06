@@ -93,7 +93,8 @@ class TrackingService: LifecycleService() {
     //https://www.gpxgenerator.com
     private fun start() {
         Log.e(TAG, "start----------------------------------")
-        requestLocationUpdates(_minInterval, _minDistance.toFloat()).getOrNull()
+        val minDistance = 0.5f// _minDistance.toFloat()
+        requestLocationUpdates(_minInterval, minDistance).getOrNull()
             ?.onEach { location ->
                 location?.let { loc ->
                     val dateStr = loc.time.toDateStr()
@@ -128,6 +129,7 @@ class TrackingService: LifecycleService() {
                                 lastLocation = lastPoint?.toLocationDto()
                                 Log.e(TAG, "----------- Service location: lastLocation: id = ${track.id} // pt = $lastPoint // loc = $lastLocation ------------")
                             }
+                            //TODO: if points current and previous are identical -> Just insert one of x (4) identical.. so db doesn't grows uselessly
                             addTrackPoint(track.id, point)
                             Log.e(TAG, "----------- Service location: addTrackPoint: ${track.id} $point ------------")
 
@@ -171,7 +173,7 @@ class TrackingService: LifecycleService() {
                     }
                 }
                 Log.e(TAG, "----------- Service location: $location ------------")
-                delay(100)
+                delay(500)
             }
             ?.launchIn(lifecycleScope)
     }
@@ -251,17 +253,22 @@ class TrackingService: LifecycleService() {
         private const val NOTIFICATION_ID = 12345678
         private const val PREF_TRACKING_STATUS = "PREF_TRACKING_STATUS"
 
+        private const val A_MINUTE = 60_000L
+        private const val MAX_PERIOD = 10* A_MINUTE
+        const val MIN_PERIOD = A_MINUTE / 2
+
         private var _isRunning = false
         val isRunning: Boolean
             get() = _isRunning
 
-        private var _minInterval: Long = 30_000L // milliseconds
+        private var _minInterval: Long = MIN_PERIOD // milliseconds
         var period: Long
             get() = _minInterval
             set(value: Long) {// Minutes
-                if(value < 1) _minInterval = 30L
-                else if(value > 10) _minInterval = 10*60_000L
-                else _minInterval = value * 60_000L
+                _minInterval =
+                    if(value < 1) MIN_PERIOD
+                    else if(value > 10) MAX_PERIOD
+                    else value * A_MINUTE
             }
 
         private var _minDistance: Int = 0        // meters

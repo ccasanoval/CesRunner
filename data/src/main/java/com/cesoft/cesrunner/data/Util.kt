@@ -25,7 +25,7 @@ fun Long.toTimeStr(): String {
     val minutes = (time - days*d - hours*h) / m
     val seconds = (time - days*d - hours*h - minutes*m)
     if(days > 0) str = "${days}d "
-    str += "$hours:$minutes:$seconds"
+    str += "${hours}h ${minutes}m ${seconds}s"
     //if(hours > 0) str += "${hours}h "
     //if(minutes > 0) str += "${minutes}m "
     //if(seconds > 0) str += "${seconds}s "

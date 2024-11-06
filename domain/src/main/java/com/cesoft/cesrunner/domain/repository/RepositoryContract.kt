@@ -14,7 +14,8 @@ interface RepositoryContract {
     suspend fun saveCurrentTrack(id: Long): Result<Unit>
 
     // TRACKING SERVICE
-    fun requestLocationUpdates(): Result<MutableStateFlow<Location?>>
+    fun requestLocationUpdates(minInterval: Long, minDistance: Float):
+            Result<MutableStateFlow<Location?>>
     fun stopLocationUpdates(): Result<Unit>
 
     // TRACKING DATABASE

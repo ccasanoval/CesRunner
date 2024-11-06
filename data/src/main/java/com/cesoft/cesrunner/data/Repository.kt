@@ -30,19 +30,18 @@ class Repository(
 
     override suspend fun readCurrentTrack(): Result<TrackDto> {
         val id = PrefDataSource(context).readCurrentTrackingId(ID_NULL)
-android.util.Log.e(TAG, "readCurrentTrack ********* ------------  id = $id")
         return if(id > ID_NULL) readTrack(id) else Result.failure(AppError.NotFound)
     }
     override suspend fun saveCurrentTrack(id: Long): Result<Unit> {
-        android.util.Log.e(TAG, "saveCurrentTrack ********* ------------  id = $id")
         PrefDataSource(context).saveCurrentTrackingId(id)
         return Result.success(Unit)
     }
 
     /// TRACKING SERVICE
-    override fun requestLocationUpdates(): Result<MutableStateFlow<Location?>> {
+    override fun requestLocationUpdates(minInterval: Long, minDistance: Float):
+            Result<MutableStateFlow<Location?>> {
         try {
-            val locationFlow = locationDataSource.requestLocationUpdates()
+            val locationFlow = locationDataSource.requestLocationUpdates(minInterval, minDistance)
             return Result.success(locationFlow)
         }
         catch(e: Exception) {
@@ -63,9 +62,7 @@ android.util.Log.e(TAG, "readCurrentTrack ********* ------------  id = $id")
     override suspend fun createTrack(data: TrackDto): Result<Long> {
         try {
             val id: Long = db.trackDao().create(LocalTrackDto.fromModel(data))
-            android.util.Log.e(TAG, "createTrack ********* ------------  id = $id")///Por qie devieñve -1
-
-
+            android.util.Log.e(TAG, "createTrack ********* ------------  id = $id")
             return if( id > 0) Result.success(id)
             else Result.failure(Throwable())
         }

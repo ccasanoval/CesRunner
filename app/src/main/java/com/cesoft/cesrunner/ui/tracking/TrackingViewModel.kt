@@ -10,10 +10,12 @@ import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.data.toDateStr
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
 import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
+import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
@@ -33,8 +35,9 @@ class TrackingViewModel(
     private val readCurrentTracking: ReadCurrentTrackingUC,
     private val saveCurrentTracking: SaveCurrentTrackingUC,
     private val deleteCurrentTracking: DeleteCurrentTrackingUC,
-    private val requestLocationUpdates: RequestLocationUpdatesUC,
-    private val stopLocationUpdates: StopLocationUpdatesUC,
+    //private val requestLocationUpdates: RequestLocationUpdatesUC,
+    ///private val stopLocationUpdates: StopLocationUpdatesUC,
+    private val readSettings: ReadSettingsUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TrackingIntent, State<TrackingState, TrackingSideEffect>> {
 
@@ -63,14 +66,16 @@ class TrackingViewModel(
     private fun executeLoad() = flow {
         val res = readCurrentTracking()
         val track: TrackDto? = if(res.isSuccess) {
-            res.getOrNull()!!
+            res.getOrNull()
         }
         else {
+            val settings = readSettings().getOrNull() ?: SettingsDto.Empty
             val time = System.currentTimeMillis()
             val track = TrackDto(
+                period = settings.period,
                 timeIni = time,
                 timeEnd = time,
-                name = "TRACK: "+time.toDateStr()+" $time",
+                name = "TRACK: "+time.toDateStr(),
             )
             val resTrack = createTrack(track)
             val id = resTrack.getOrNull()
@@ -87,7 +92,7 @@ class TrackingViewModel(
             emit(TrackingTransform.GoInit(TrackDto.Empty, AppError.NotFound))
         }
         else {
-            trackingServiceFac.start()
+            trackingServiceFac.start(track.period, 0)
             emit(TrackingTransform.GoInit(track, null))
         }
     }

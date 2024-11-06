@@ -20,7 +20,7 @@ class PrefDataSource(
 //    }
 
     suspend fun readSettings(): Result<SettingsDto> {
-        val period = context.readInt(PREFS_SETTINGS_PERIOD, PREFS_SETTINGS_PERIOD_DEF)
+        val period = context.readInt(PREFS_SETTINGS_PERIOD, SettingsDto.DEFAULT_PERIOD)
         return Result.success(
             SettingsDto(
                 period = period
@@ -59,7 +59,6 @@ class PrefDataSource(
         private const val TAG = "PrefDS"
 
         private const val PREFS_SETTINGS_PERIOD = "PREFS_SETTINGS_PERIOD"
-        private const val PREFS_SETTINGS_PERIOD_DEF = 5
 
         private const val PREFS_CURRENT_TRACK = "PREFS_CURRENT_TRACK"
 

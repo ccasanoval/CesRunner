@@ -4,6 +4,7 @@ import com.cesoft.cesrunner.domain.Common.ID_NULL
 
 data class TrackDto(
     val id: Long = ID_NULL,
+    val period: Int = 0,
     val timeIni: Long = 0,
     val timeEnd: Long = 0,
     val name: String = "",
@@ -18,7 +19,7 @@ data class TrackDto(
         get() = id != ID_NULL
     companion object {
         val Empty = TrackDto(
-            ID_NULL, 0L, 0L, "",
+            ID_NULL, 0,0L, 0L, "",
             0, 0, 0, 0, 0,
             listOf()
         )

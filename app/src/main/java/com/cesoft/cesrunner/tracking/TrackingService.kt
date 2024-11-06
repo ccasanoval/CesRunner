@@ -34,7 +34,6 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import kotlin.math.min
 
-
 class TrackingService: LifecycleService() {
     //Checks whether the bound activity has really gone away
     // (foreground service with notification created) or simply orientation change (no-op).
@@ -94,7 +93,7 @@ class TrackingService: LifecycleService() {
     //https://www.gpxgenerator.com
     private fun start() {
         Log.e(TAG, "start----------------------------------")
-        requestLocationUpdates().getOrNull()
+        requestLocationUpdates(_minInterval, _minDistance.toFloat()).getOrNull()
             ?.onEach { location ->
                 location?.let { loc ->
                     val dateStr = loc.time.toDateStr()
@@ -251,8 +250,27 @@ class TrackingService: LifecycleService() {
         private const val TAG = "TrackingService"
         private const val NOTIFICATION_ID = 12345678
         private const val PREF_TRACKING_STATUS = "PREF_TRACKING_STATUS"
+
         private var _isRunning = false
         val isRunning: Boolean
             get() = _isRunning
+
+        private var _minInterval: Long = 30_000L // milliseconds
+        var period: Long
+            get() = _minInterval
+            set(value: Long) {// Minutes
+                if(value < 1) _minInterval = 30L
+                else if(value > 10) _minInterval = 10*60_000L
+                else _minInterval = value * 60_000L
+            }
+
+        private var _minDistance: Int = 0        // meters
+        var distance: Int
+            get() = _minDistance
+            set(value: Int) {// meters
+                if(value < 0) _minDistance = 0
+                else if(value > 1000) _minDistance = 1000
+                else _minDistance = value
+            }
     }
 }

@@ -1,5 +1,6 @@
 package com.cesoft.cesrunner.ui.tracking
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,17 +11,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
@@ -28,7 +35,6 @@ import com.cesoft.cesrunner.data.toDateStr
 import com.cesoft.cesrunner.data.toTimeStr
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.ui.common.LoadingCompo
-import com.cesoft.cesrunner.ui.common.OpenStreetMapView
 import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
@@ -37,6 +43,9 @@ import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 
 @Composable
 fun TrackingPage(
@@ -73,13 +82,13 @@ private fun Content(
             LoadingCompo()
         }
         is TrackingState.Init -> {
-            TrackingInfo(state, reduce)
+            ScreenCompo(state, reduce)
         }
     }
 }
 
 @Composable
-private fun TrackingInfo(
+private fun ScreenCompo(
     state: TrackingState.Init,
     reduce: (intent: TrackingIntent) -> Unit,
 ) {
@@ -99,18 +108,58 @@ private fun TrackingInfo(
 
         TrackData(state, reduce)
 
-        Spacer(modifier = Modifier.padding(SepMax))
+        Spacer(modifier = Modifier.padding(SepMax*2))
+        HorizontalDivider(thickness = 3.dp, color = Green)
 
         //TODO: Map
 //        OpenStreetMapView(
 //            points = state.currentTracking.points,
-//            modifier = Modifier.fillMaxWidth().height(300.dp).border(2.dp, Green)
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(300.dp)
+//                .border(2.dp, Green)
+//                .padding(SepMax*2)
 //        )
+        MapCompo(state)
 
         Spacer(modifier = Modifier.padding(SepMax))
 
-
     }
+}
+
+@SuppressLint("UnrememberedMutableState")
+@Composable
+private fun MapCompo(state: TrackingState.Init) {
+    var geoPoint by mutableStateOf(GeoPoint(0.0,0.0))
+    LaunchedEffect(state) {
+        if(state.currentTracking.points.isNotEmpty()) {
+            val lat = state.currentTracking.points.last().latitude
+            val lon = state.currentTracking.points.last().longitude
+            geoPoint = GeoPoint(lat, lon)
+            android.util.Log.e("TrackingPAge", "------------------ $lat / $lon ")
+        }
+    }
+    AndroidView(
+        modifier = Modifier.fillMaxWidth().height(300.dp).border(2.dp, Color.Red),
+        factory = { context ->
+            // Creates the view
+            MapView(context).apply {
+                // Do anything that needs to happen on the view init here
+                // For example set the tile source or add a click listener
+                setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)//USGS_TOPO//USGS_SAT // OPEN_SEAMAP // HIKEBIKEMAP//TODO: Settings
+                setOnClickListener {
+                    TODO("Handle click here")
+                }
+            }
+        },
+        update = { view ->
+            // Code to update or recompose the view goes here
+            // Since geoPoint is read here, the view will recompose whenever it is updated
+            view.controller.setCenter(geoPoint)
+            //view.controller.zoomTo(12)
+        }
+    )
+
 }
 
 @Composable
@@ -151,27 +200,29 @@ private fun TrackData(
 
 @Composable
 private fun InfoRow(label: String, value: String) {
-    Row {
+    Row(modifier = Modifier.padding(top = SepMin)) {
         Text(
             text = label,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.5f).padding(top = SepMin)
+            modifier = Modifier.weight(0.3f)
         )
         Text(
             text = value,
-            modifier = Modifier.weight(0.5f)
+            modifier = Modifier.weight(0.6f)
         )
     }
+    HorizontalDivider()
 }
 
-
+//--------------------------------------------------------------------------------------------------
 @Preview
 @Composable
-private fun TrackingPage_Preview() {
+private fun TrackData_Preview() {
+    val timeIni = System.currentTimeMillis() - 5*60*60*1000 - 35*60*1000 - 45*1000
     val state = TrackingState.Init(
         currentTracking = TrackDto.Empty.copy(
             name = "Tracking A",
-            timeIni = System.currentTimeMillis() - 5*60*60*1000,
+            timeIni = timeIni,
             timeEnd = System.currentTimeMillis(),
             distance = 690,
             altitudeMax = 1200,
@@ -180,7 +231,28 @@ private fun TrackingPage_Preview() {
             speedMin = 5,
         )
     )
-    Surface {
-        TrackingInfo(state) { }
+    Surface(modifier = Modifier.fillMaxSize()) {
+        TrackData(state) { }
     }
 }
+
+//@Preview
+//@Composable
+//private fun TrackingPage_Preview() {
+//    val timeIni = System.currentTimeMillis() - 5*60*60*1000 - 35*60*1000 - 45*1000
+//    val state = TrackingState.Init(
+//        currentTracking = TrackDto.Empty.copy(
+//            name = "Tracking A",
+//            timeIni = timeIni,
+//            timeEnd = System.currentTimeMillis(),
+//            distance = 690,
+//            altitudeMax = 1200,
+//            altitudeMin = 600,
+//            speedMax = 15,
+//            speedMin = 5,
+//        )
+//    )
+//    Surface {
+//        ScreenCompo(state) { }
+//    }
+//}

@@ -35,9 +35,9 @@ class LocationDataSource(
         }
     }
     @SuppressLint("MissingPermission")
-    fun requestLocationUpdates(): MutableStateFlow<Location?> {
-        val minInterval = 50*1000L//millis
-        val minDistance = 0f//m
+    fun requestLocationUpdates(minInterval: Long, minDistance: Float): MutableStateFlow<Location?> {
+        //val minInterval = 30*1000L//millis
+        //val minDistance = 0f//m
         //https://stackoverflow.com/questions/35456254/application-getting-wrong-location-until-open-inbuilt-google-map-application
         //TODO: Add network provider?
         locationManager.requestLocationUpdates(

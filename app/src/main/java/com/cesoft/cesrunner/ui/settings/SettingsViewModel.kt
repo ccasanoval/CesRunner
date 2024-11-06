@@ -74,12 +74,7 @@ class SettingsViewModel(
             SettingsSideEffect.Close -> {
                 android.util.Log.e("AAA", "------------------- 0")
                 navController.popBackStack()
-//                navController.navigate(route = Page.Home.route) {
-//                    launchSingleTop = true
-//                    restoreState = true
-//                }
             }
         }
     }
-
 }

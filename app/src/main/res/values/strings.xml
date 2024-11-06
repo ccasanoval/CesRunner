@@ -20,6 +20,7 @@
     <string name="accuracy">Precisión</string>
     <string name="provider">Fuente</string>
     <string name="distance">Distancia</string>
+    <string name="kilometer">Kilómetro</string>
     <string name="speed">Velocidad</string>
     <string name="speed_max">Velocidad Max</string>
     <string name="speed_min">Velocidad Min</string>

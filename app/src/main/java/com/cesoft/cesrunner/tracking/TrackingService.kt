@@ -5,34 +5,30 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
 import android.content.res.Configuration
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.data.prefs.writeBool
 import com.cesoft.cesrunner.data.toDateStr
 import com.cesoft.cesrunner.domain.Common.ID_NULL
 import com.cesoft.cesrunner.domain.entity.LocationDto
-import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.domain.usecase.AddTrackPointUC
 import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
-import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.random.Random
 
 class TrackingService: LifecycleService() {
     //Checks whether the bound activity has really gone away
@@ -51,18 +47,31 @@ class TrackingService: LifecycleService() {
     private val getLastLocation: GetLastLocationUC by inject()
     //private val setLastLocation: SetLastLocationUC by inject()
 
+    private lateinit var textToSpeech: TextToSpeech
+    private var speechKm: Int = 0
+
     override fun onCreate() {
         Log.e(TAG, "onCreate----------------------------------")
         super.onCreate()
         _isRunning = true
         TrackingNotification.CANCEL_TRACKING = "$packageName.CANCEL_TRACKING"
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        textToSpeech = TextToSpeech(applicationContext) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                Log.e(TAG, "TextToSpeech: Initialization Success")
+            } else{
+                Log.e(TAG, "TextToSpeech: Initialization Failed")
+            }
+        }
+        //textToSpeech.language = Locale.US
     }
 
     override fun onDestroy() {
         Log.e(TAG, "onDestroy----------------------------------")
-        _isRunning = false
         stop()
+        _isRunning = false
+        textToSpeech.shutdown()
         super.onDestroy()
     }
 
@@ -93,6 +102,7 @@ class TrackingService: LifecycleService() {
     //https://www.gpxgenerator.com
     private fun start() {
         Log.e(TAG, "start----------------------------------")
+        textToSpeech.speak("Comienza la carrera", TextToSpeech.QUEUE_FLUSH, null, packageName)
         val minDistance = 0.5f// _minDistance.toFloat()
         requestLocationUpdates(_minInterval, minDistance).getOrNull()
             ?.onEach { location ->
@@ -109,6 +119,7 @@ class TrackingService: LifecycleService() {
                     //"EXT:  ${it.extras}"
                     //it.isComplete, it.mslAltitudeMeters
                     Log.e(TAG, "----------- Service location:\n$data")
+                    textToSpeech.speak("Otro punto", TextToSpeech.QUEUE_FLUSH, null, packageName+Random.nextInt())
 
                     /// Current Tracking
                     readCurrentTracking().getOrNull()?.let { track ->
@@ -127,11 +138,12 @@ class TrackingService: LifecycleService() {
                             if(lastLocation == null) {
                                 val lastPoint = getLastLocation(track.id).getOrNull()
                                 lastLocation = lastPoint?.toLocationDto()
-                                Log.e(TAG, "----------- Service location: lastLocation: id = ${track.id} // pt = $lastPoint // loc = $lastLocation ------------")
+                                speechKm = track.distance / 1000
+                                //Log.e(TAG, "----------- Service location: lastLocation: id = ${track.id} // pt = $lastPoint // loc = $lastLocation // speechKm = $speechKm------------")
                             }
                             //TODO: if points current and previous are identical -> Just insert one of x (4) identical.. so db doesn't grows uselessly
                             addTrackPoint(track.id, point)
-                            Log.e(TAG, "----------- Service location: addTrackPoint: ${track.id} $point ------------")
+                            //Log.e(TAG, "----------- Service location: addTrackPoint: ${track.id} $point ------------")
 
                             /// Update Track
                             val newLocation = LocationDto.fromLocation(location)
@@ -140,6 +152,12 @@ class TrackingService: LifecycleService() {
 
                             lastLocation?.let { last ->
                                 val distance = track.distance + last.distanceTo(newLocation)
+                                if(distance / 1000 > speechKm) {
+                                    //Log.e(TAG, "----------- Service location:  SPEECH $speechKm ------------")
+                                    val text = getString(R.string.kilometer)
+                                    textToSpeech.speak("$text $speechKm", TextToSpeech.QUEUE_FLUSH, null, packageName)
+                                    speechKm = (distance / 1000).toInt()
+                                }
                                 val altMax = max(track.altitudeMax, loc.altitude.toInt())
                                 val altMin = min(track.altitudeMin, loc.altitude.toInt())
                                 val speedMax = max(track.speedMax, loc.speed.toInt())

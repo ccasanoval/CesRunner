@@ -174,7 +174,7 @@ private fun TrackData(
             while (true) {
                 android.util.Log.e("TrackingPage", "TrackingInfo----------------")
                 reduce(TrackingIntent.Refresh)
-                delay(TrackingService.MIN_PERIOD/2)
+                delay(TrackingService.MIN_PERIOD/4)//TODO: DATABASE DATA FLOW !!!
             }
         }
         //TODO: Allow changing value..
@@ -193,8 +193,8 @@ private fun TrackData(
         val speedMax = state.currentTracking.speedMax
         val speed = String.format(
             Locale.current.platformLocale,
-            "%d - %d m/s == %.0f - %.0f Km/h",
-            speedMin, speedMax, speedMin*3.6, speedMax*3.6)
+            "%.0f - %.0f Km/h (%d - %d m/s)",
+            speedMin*3.6, speedMax*3.6, speedMin, speedMax)
         //val durationStr = if(duration > 60*60) "${duration}"
         InfoRow(stringResource(R.string.distance), distance)
         InfoRow(stringResource(R.string.time), duration.toTimeStr())
@@ -234,8 +234,8 @@ private fun TrackData_Preview() {
             distance = 690,
             altitudeMax = 1200,
             altitudeMin = 600,
-            speedMax = 15,
-            speedMin = 5,
+            speedMax = 5,
+            speedMin = 1,
         )
     )
     Surface(modifier = Modifier.fillMaxSize()) {

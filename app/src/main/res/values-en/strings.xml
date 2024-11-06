@@ -25,6 +25,7 @@
     <string name="accuracy">Accuracy</string>
     <string name="provider">Provider</string>
     <string name="distance">Distance</string>
+    <string name="kilometer">Kilometer</string>
     <string name="speed">Speed</string>
     <string name="speed_max">Max Speed</string>
     <string name="speed_min">Min Speed</string>

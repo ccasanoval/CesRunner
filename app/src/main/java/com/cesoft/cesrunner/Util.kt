@@ -2,7 +2,6 @@ package com.cesoft.cesrunner
 
 import android.content.Context
 import android.location.Location
-import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import java.time.Instant
 import java.time.LocalDateTime

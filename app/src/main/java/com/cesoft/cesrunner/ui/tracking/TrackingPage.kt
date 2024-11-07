@@ -1,6 +1,8 @@
 package com.cesoft.cesrunner.ui.tracking
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +40,7 @@ import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.ui.common.LoadingCompo
+import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
 import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
@@ -95,6 +99,13 @@ private fun ScreenCompo(
     reduce: (intent: TrackingIntent) -> Unit,
 ) {
     android.util.Log.e("TrackingPage", "TrackingInfo---------------------------")
+    val context = LocalContext.current
+    val showAlert = remember { mutableStateOf(true) }
+    TurnLocationOnDialog(showAlert) {
+        showAlert.value = false
+        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        context.startActivity(intent)
+    }
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

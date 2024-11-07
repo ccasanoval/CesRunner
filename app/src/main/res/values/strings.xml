@@ -7,6 +7,7 @@
     <string name="pause">Pausar</string>
     <string name="error">Error</string>
     <string name="accept">Aceptar</string>
+    <string name="cancel">Cancelar</string>
 
     <string name="permissions">Permisos neceesarios:</string>
     <string name="accept_permissions">Debes aceptar los permisos para que la app pueda funcionar</string>
@@ -33,6 +34,9 @@
     <string name="hours">Horas</string>
     <string name="minutes">Minutos</string>
     <string name="seconds">Segundos</string>
+
+    <string name="location_off">La ubicación está apagada</string>
+    <string name="location_off_msg">La ubicación debe estar activa para poder trazar la ruta</string>
 
     <!-- MAIN MENU -->
     <string name="menu_settings">Opciones</string>

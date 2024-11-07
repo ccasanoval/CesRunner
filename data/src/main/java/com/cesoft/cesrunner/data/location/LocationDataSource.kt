@@ -36,13 +36,12 @@ class LocationDataSource(
     }
     @SuppressLint("MissingPermission")
     fun requestLocationUpdates(minInterval: Long, minDistance: Float): MutableStateFlow<Location?> {
-        //val minInterval = 30*1000L//millis
-        //val minDistance = 0f//m
+        // FUSED_PROVIDER, ==> Google doesn't want FUSED to work!!
         //https://stackoverflow.com/questions/35456254/application-getting-wrong-location-until-open-inbuilt-google-map-application
         //TODO: Add network provider?
         locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,// FUSED_PROVIDER, ==> Google doesn't want FUSED to work!!
-            minInterval,
+            LocationManager.GPS_PROVIDER,
+            minInterval / 2,
             minDistance,
             _locationListener)
         return _locationFlow

@@ -80,14 +80,14 @@ class TrackingViewModel(
             val settings = readSettings().getOrNull() ?: SettingsDto.Empty
             val time = System.currentTimeMillis()
             val track = TrackDto(
-                period = settings.period,
+                minInterval = settings.period,
+                minDistance = 0.5f,//TODO: Add to settings
                 timeIni = time,
                 timeEnd = time,
                 name = "TRACK: "+time.toDateStr(),
             )
             val resTrack = createTrack(track)
             val id = resTrack.getOrNull()
-            android.util.Log.e(TAG, "executeLoad---------- $id ")
             if(resTrack.isSuccess && id != null) {
                 saveCurrentTracking(id)
                 track.copy(id = id)
@@ -100,7 +100,7 @@ class TrackingViewModel(
             emit(TrackingTransform.GoInit(TrackDto.Empty, AppError.NotFound))
         }
         else {
-            trackingServiceFac.start(track.period, 0)
+            trackingServiceFac.start(track.minInterval, track.minDistance)
             emit(TrackingTransform.GoInit(track, null))
         }
     }

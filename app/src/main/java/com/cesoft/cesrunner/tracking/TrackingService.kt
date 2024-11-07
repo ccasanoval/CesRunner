@@ -41,13 +41,11 @@ class TrackingService: LifecycleService() {
 
     private val readCurrentTrack: ReadCurrentTrackUC by inject()
     private val readLastTrack: ReadLastTrackUC by inject()
-    //private val saveCurrentTrack: SaveCurrentTrackUC by inject()
     private val requestLocationUpdates: RequestLocationUpdatesUC by inject()
     private val stopLocationUpdates: StopLocationUpdatesUC by inject()
     private val addTrackPoint: AddTrackPointUC by inject()
     private val updateTrack: UpdateTrackUC by inject()
     private val getLastLocation: GetLastLocationUC by inject()
-    //private val setLastLocation: SetLastLocationUC by inject()
 
     private lateinit var textToSpeech: TextToSpeech
     private var speechKm: Float = 0f
@@ -100,9 +98,9 @@ class TrackingService: LifecycleService() {
 
     //https://www.gpxgenerator.com
     private fun start() {
-        Log.e(TAG, "start----------------------------------")
+        Log.e(TAG, "start---------------------------------- minInterval = $_minInterval")
         val k = getString(R.string.kilometers)
-        val minDistance = 0.5f// _minDistance.toFloat()
+        val minDistance = 0f//.5f// _minDistance.toFloat()
         speak("Comienza la carrera")
         requestLocationUpdates(_minInterval, minDistance).getOrNull()
             ?.onEach { location ->
@@ -146,29 +144,29 @@ class TrackingService: LifecycleService() {
                                     speechKm = (distance.toInt() / 100)/10f
                                     speak("$speechKm $k")
                                 }
-                                val altMax = max(track.altitudeMax, loc.altitude.toInt())
-                                val altMin = min(track.altitudeMin, loc.altitude.toInt())
-                                val speedMax = max(track.speedMax, loc.speed.toInt())
-                                val speedMin = min(track.speedMin, loc.speed.toInt())
+//                                val altMax = max(track.altitudeMax, loc.altitude.toInt())
+//                                val altMin = min(track.altitudeMin, loc.altitude.toInt())
+//                                val speedMax = max(track.speedMax, loc.speed.toInt())
+//                                val speedMin = min(track.speedMin, loc.speed.toInt())
                                 Log.e(TAG, "----------- Service location: updateTrack: ${track.distance} / $distance ------------")
                                 newTrack = track.copy(
                                     id = track.id,
                                     distance = distance.toInt(),
                                     timeEnd = time,//location.time,
-                                    altitudeMax = altMax,
-                                    altitudeMin = altMin,
-                                    speedMin = speedMin,
-                                    speedMax = speedMax,
+//                                    altitudeMax = altMax,
+//                                    altitudeMin = altMin,
+//                                    speedMin = speedMin,
+//                                    speedMax = speedMax,
                                 )
                             } ?: run {
                                 Log.e(TAG, "----------- Service location: updateTrack: ${track.distance}  NEW  ------------")
                                 newTrack = track.copy(
                                     id = track.id,
                                     timeEnd = time,
-                                    altitudeMax = location.altitude.toInt(),
-                                    altitudeMin = location.altitude.toInt(),
-                                    speedMin = location.speed.toInt(),
-                                    speedMax = location.speed.toInt(),
+//                                    altitudeMax = location.altitude.toInt(),
+//                                    altitudeMin = location.altitude.toInt(),
+//                                    speedMin = location.speed.toInt(),
+//                                    speedMax = location.speed.toInt(),
                                 )
                             }
                             //if(lastLocation?.latitude == newLocation.latitude && lastLocation?.longitude == newLocation.longitude)Log.e(TAG, "****** SAME LOCATION ******")
@@ -270,20 +268,21 @@ class TrackingService: LifecycleService() {
         private var _minInterval: Long = MIN_PERIOD // milliseconds
         var period: Long
             get() = _minInterval
-            set(value: Long) {// Minutes
+            set(value: Long) {// minutes
                 _minInterval =
                     if(value < 1) MIN_PERIOD
                     else if(value > 10) MAX_PERIOD
                     else value * A_MINUTE
             }
 
-        private var _minDistance: Int = 0        // meters
-        var distance: Int
+        private var _minDistance: Float = 0f        // meters
+        var distance: Float
             get() = _minDistance
-            set(value: Int) {// meters
-                if(value < 0) _minDistance = 0
-                else if(value > 1000) _minDistance = 1000
-                else _minDistance = value
+            set(value: Float) {// meters
+                _minDistance =
+                    if(value < 0) 0f
+                    else if(value > 1000) 1000f
+                    else value
             }
     }
 }

@@ -54,7 +54,7 @@ class HomeViewModel(
         val res = readCurrentTracking()
         val currentTrack = res.getOrNull() ?: TrackDto.Empty
         if(currentTrack.isCreated) {
-            trackingServiceFac.start(currentTrack.period, 0)
+            trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
         }
         var error: AppError? = null
         val e = res.exceptionOrNull()

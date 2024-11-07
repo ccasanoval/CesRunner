@@ -9,14 +9,14 @@ const val TrackTableName = "track"
 data class LocalTrackDto(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
+    val name: String,
     val timeIni: Long,
     val timeEnd: Long,
-    val name: String,
     val distance: Int,
-    val altitudeMin: Int,
-    val altitudeMax: Int,
-    val speedMin: Int,
-    val speedMax: Int,
+//    val altitudeMin: Int,
+//    val altitudeMax: Int,
+//    val speedMin: Int,
+//    val speedMax: Int,
 ) {
     fun toModel(points: List<LocalTrackPointDto>) = TrackDto(
         id = id,
@@ -24,10 +24,10 @@ data class LocalTrackDto(
         timeEnd = timeEnd,
         name = name,
         distance = distance,
-        altitudeMin = altitudeMin,
-        altitudeMax = altitudeMax,
-        speedMin = speedMin,
-        speedMax = speedMax,
+//        altitudeMin = altitudeMin,
+//        altitudeMax = altitudeMax,
+//        speedMin = speedMin,
+//        speedMax = speedMax,
         points = points.map { it.toModel() }
     )
 
@@ -38,10 +38,10 @@ data class LocalTrackDto(
             timeEnd = data.timeEnd,
             name = data.name,
             distance = data.distance,
-            altitudeMin = data.altitudeMin,
-            altitudeMax = data.altitudeMax,
-            speedMin = data.speedMin,
-            speedMax = data.speedMax,
+//            altitudeMin = data.altitudeMin,
+//            altitudeMax = data.altitudeMax,
+//            speedMin = data.speedMin,
+//            speedMax = data.speedMax,
         )
     }
 }

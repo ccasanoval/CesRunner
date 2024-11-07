@@ -38,6 +38,7 @@ import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
@@ -134,9 +135,7 @@ private fun ScreenCompo(
 //                .padding(SepMax*2)
 //        )
         MapCompo(state)
-
         Spacer(modifier = Modifier.padding(SepMax))
-
     }
 }
 
@@ -199,13 +198,22 @@ private fun TrackData(
         val timeIni = state.currentTracking.timeIni.toDateStr()
         val timeEnd = state.currentTracking.timeEnd.toDateStr()
         val duration = state.currentTracking.timeEnd - state.currentTracking.timeIni
-        val altitude = "${state.currentTracking.altitudeMin} - ${state.currentTracking.altitudeMax} m"
-        val speedMin = state.currentTracking.speedMin
-        val speedMax = state.currentTracking.speedMax
+        val altitudes = state.currentTracking.points.map { it.altitude }
+        val altitudeMax = altitudes.maxOrNull() ?: 0
+        val altitudeMin = altitudes.minOrNull() ?: 0
+        val altitude = "$altitudeMin - $altitudeMax m"
+        //val speedMin = state.currentTracking.speedMin
+        //val speedMax = state.currentTracking.speedMax
+        val speeds = state.currentTracking.points.map { it.speed }
+        val speedMax = speeds.maxOrNull() ?: 0f
+        val speedMed = speeds.average()
         val speed = String.format(
             Locale.current.platformLocale,
-            "%.0f - %.0f Km/h (%d - %d m/s)",
-            speedMin*3.6, speedMax*3.6, speedMin, speedMax)
+            //"%.0f - %.0f Km/h (%d - %d m/s)",
+            //speedMin*3.6, speedMax*3.6, speedMin, speedMax)
+            "%.0f Km/h (max %.0f)",
+            speedMed*3.6, speedMax*3.6
+        )
         //val durationStr = if(duration > 60*60) "${duration}"
         InfoRow(stringResource(R.string.distance), distance)
         InfoRow(stringResource(R.string.time), duration.toTimeStr())
@@ -243,10 +251,13 @@ private fun TrackData_Preview() {
             timeIni = timeIni,
             timeEnd = System.currentTimeMillis(),
             distance = 690,
-            altitudeMax = 1200,
-            altitudeMin = 600,
-            speedMax = 5,
-            speedMin = 1,
+            points = listOf(
+                TrackPointDto(0,0.0,0.0,0,0f,"",50.0,0f,5f)
+            )
+//            altitudeMax = 1200,
+//            altitudeMin = 600,
+//            speedMax = 5,
+//            speedMin = 1,
         )
     )
     Surface(modifier = Modifier.fillMaxSize()) {

@@ -12,7 +12,7 @@ import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeSideEffect
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.flow
 
 class HomeViewModel(
     private val trackingServiceFac: TrackingServiceFac,
-    private val readCurrentTracking: ReadCurrentTrackingUC,
+    private val readCurrentTracking: ReadCurrentTrackUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 

@@ -32,8 +32,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
-import com.cesoft.cesrunner.data.toDateStr
-import com.cesoft.cesrunner.data.toTimeStr
+import com.cesoft.cesrunner.toDateStr
+import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.ui.common.LoadingCompo

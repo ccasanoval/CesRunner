@@ -20,13 +20,19 @@
     <string name="accuracy">Precisión</string>
     <string name="provider">Fuente</string>
     <string name="distance">Distancia</string>
-    <string name="kilometer">Kilómetro</string>
     <string name="speed">Velocidad</string>
     <string name="speed_max">Velocidad Max</string>
     <string name="speed_min">Velocidad Min</string>
     <string name="altitude">Altitud</string>
     <string name="altitude_max">Altitud Max</string>
     <string name="altitude_min">Altitud Min</string>
+    <string name="kilometer">Kilómetro</string>
+    <string name="kilometers">Kilómetros</string>
+    <string name="stop_tracking">Terminó la carrera</string>
+    <string name="days">Días</string>
+    <string name="hours">Horas</string>
+    <string name="minutes">Minutos</string>
+    <string name="seconds">Segundos</string>
 
     <!-- MAIN MENU -->
     <string name="menu_settings">Opciones</string>
@@ -38,7 +44,7 @@
 
     <!-- SETTINGS -->
     <string name="period">Período</string>
-    <string name="minutes">(min.)</string>
+    <string name="min">(min.)</string>
 
 
 </resources>

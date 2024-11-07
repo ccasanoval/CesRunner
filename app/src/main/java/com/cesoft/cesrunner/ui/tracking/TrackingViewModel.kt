@@ -8,17 +8,15 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.data.toDateStr
+import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
-import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackingUC
-import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackingUC
+import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackUC
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
-import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
-import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingSideEffect
@@ -32,9 +30,9 @@ import kotlinx.coroutines.flow.flow
 class TrackingViewModel(
     private val createTrack: CreateTrackUC,
     private val trackingServiceFac: TrackingServiceFac,
-    private val readCurrentTracking: ReadCurrentTrackingUC,
+    private val readCurrentTracking: ReadCurrentTrackUC,
     private val saveCurrentTracking: SaveCurrentTrackingUC,
-    private val deleteCurrentTracking: DeleteCurrentTrackingUC,
+    private val deleteCurrentTracking: DeleteCurrentTrackUC,
     //private val requestLocationUpdates: RequestLocationUpdatesUC,
     ///private val stopLocationUpdates: StopLocationUpdatesUC,
     private val readSettings: ReadSettingsUC,
@@ -54,8 +52,8 @@ class TrackingViewModel(
     }
     private fun executeIntent(intent: TrackingIntent) =
         when(intent) {
-            TrackingIntent.Load,
-            TrackingIntent.Refresh -> executeLoad()
+            TrackingIntent.Load -> executeLoad()
+            TrackingIntent.Refresh -> executeRefresh()
 
             TrackingIntent.Close -> executeClose()
             TrackingIntent.Stop -> executeStop()
@@ -63,6 +61,16 @@ class TrackingViewModel(
             else -> executeClose()
         }
 
+    private fun executeRefresh() = flow {
+        val res = readCurrentTracking()
+        res.getOrNull()?.let {
+            emit(TrackingTransform.GoInit(it, null))
+        } ?: run {
+            val error = res.exceptionOrNull()
+                ?.let { AppError.fromThrowable(it) } ?: run { AppError.NotFound }
+            emit(TrackingTransform.GoInit(TrackDto.Empty, error))
+        }
+    }
     private fun executeLoad() = flow {
         val res = readCurrentTracking()
         val track: TrackDto? = if(res.isSuccess) {

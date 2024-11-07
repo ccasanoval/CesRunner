@@ -98,6 +98,16 @@ class Repository(
             return Result.failure(e)
         }
     }
+    override suspend fun readLastTrack(): Result<TrackDto> {
+        try {
+            val track = db.trackDao().getLast()
+            val points = db.trackPointDao().getByTrackId(track.id)
+            return Result.success(track.toModel(points))
+        }
+        catch(e: Throwable) {
+            return Result.failure(e)
+        }
+    }
     override suspend fun readAllTracks(): Result<List<TrackDto>> {
         try {
             //val points = db.trackPointDao().readByTrackId(id)

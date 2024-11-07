@@ -16,6 +16,9 @@ interface TrackDao {
     @Query("SELECT * FROM $TrackTableName WHERE id = :id")
     suspend fun getById(id: Long): LocalTrackDto
 
+    @Query("SELECT * FROM $TrackTableName ORDER BY id DESC LIMIT 1")
+    suspend fun getLast(): LocalTrackDto
+
     @Upsert
     suspend fun create(data: LocalTrackDto): Long
 

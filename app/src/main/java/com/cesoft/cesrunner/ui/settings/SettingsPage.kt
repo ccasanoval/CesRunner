@@ -133,7 +133,7 @@ private fun Settings(
         item {
             NumberPicker(
                 title = stringResource(R.string.period),
-                subtitle = stringResource(R.string.minutes),
+                subtitle = stringResource(R.string.min),
                 modifier = Modifier,
                 min = 0,
                 max = 15,

@@ -143,6 +143,7 @@ class TrackingService: LifecycleService() {
                                     //Log.e(TAG, "----------- Service location:  SPEECH $speechKm ------------")
                                     speechKm = (distance.toInt() / 100)/10f
                                     speak("$speechKm $k")
+                                    //TODO: also say the time running!
                                 }
 //                                val altMax = max(track.altitudeMax, loc.altitude.toInt())
 //                                val altMin = min(track.altitudeMin, loc.altitude.toInt())

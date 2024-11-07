@@ -1,16 +1,13 @@
 package com.cesoft.cesrunner.ui.tracking
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
@@ -24,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,13 +31,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
-import com.cesoft.cesrunner.toDateStr
-import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
+import com.cesoft.cesrunner.toDateStr
+import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
+import com.cesoft.cesrunner.ui.common.rememberMapView
 import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
@@ -50,9 +47,7 @@ import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
 
 @Composable
 fun TrackingPage(
@@ -125,53 +120,67 @@ private fun ScreenCompo(
         Spacer(modifier = Modifier.padding(SepMax*2))
         HorizontalDivider(thickness = 3.dp, color = Green)
 
-        //TODO: Map
-//        OpenStreetMapView(
-//            points = state.currentTracking.points,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(300.dp)
-//                .border(2.dp, Green)
-//                .padding(SepMax*2)
-//        )
+        //TODO: Map---------------------------------
         MapCompo(state)
+
         Spacer(modifier = Modifier.padding(SepMax))
     }
 }
 
-@SuppressLint("UnrememberedMutableState")
+//TODO: Draw polyline with path
+//TODO: Remember the user zoom setting
 @Composable
-private fun MapCompo(state: TrackingState.Init) {
-    var geoPoint by mutableStateOf(GeoPoint(0.0,0.0))
+fun MapCompo(state: TrackingState.Init) {
+    val context = LocalContext.current
+    val mapView = rememberMapView(context)
+    var lat = state.currentTracking.points.last().latitude
+    var lon = state.currentTracking.points.last().longitude
+    var geoPoint by remember { mutableStateOf(GeoPoint(lat, lon)) }
+    mapView.refreshDrawableState()
     LaunchedEffect(state) {
-        if(state.currentTracking.points.isNotEmpty()) {
-            val lat = state.currentTracking.points.last().latitude
-            val lon = state.currentTracking.points.last().longitude
-            geoPoint = GeoPoint(lat, lon)
-            android.util.Log.e("TrackingPAge", "------------------ $lat / $lon ")
-        }
+        lat = state.currentTracking.points.last().latitude
+        lon = state.currentTracking.points.last().longitude
+        geoPoint = GeoPoint(lat, lon)
+        mapView.refreshDrawableState()
     }
     AndroidView(
-        modifier = Modifier.fillMaxWidth().height(300.dp).border(2.dp, Color.Red),
+        factory = { mapView },
+        modifier = Modifier
+    ) { view ->
+        android.util.Log.e("TrackingPAge", "OsmdroidMapView------b------------ $geoPoint ")
+        view.controller.setCenter(geoPoint)
+        view.controller.zoomTo(22.0)
+    }
+    /*AndroidView(
+        modifier = Modifier.fillMaxSize(),
         factory = { context ->
-            // Creates the view
             MapView(context).apply {
-                // Do anything that needs to happen on the view init here
-                // For example set the tile source or add a click listener
-                setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)//USGS_TOPO//USGS_SAT // OPEN_SEAMAP // HIKEBIKEMAP//TODO: Settings
-                setOnClickListener {
-                    TODO("Handle click here")
-                }
+                setTileSource(TileSourceFactory.USGS_TOPO) // .MAPNIK doen't give me any proper view, just empty grey screen
+                maxZoomLevel = 25.0
+                minZoomLevel = 6.0
+                isHorizontalMapRepetitionEnabled = false
+                isVerticalMapRepetitionEnabled = false
+                setScrollableAreaLimitLatitude(
+                    MapView.getTileSystem().maxLatitude,
+                    MapView.getTileSystem().minLatitude, 0
+                )
+                setScrollableAreaLimitLongitude(
+                    MapView.getTileSystem().minLongitude,
+                    MapView.getTileSystem().maxLongitude,
+                    0
+                )
+                this.controller.setCenter(geoPoint)
+
+                setBuiltInZoomControls(true)
+                setMultiTouchControls(true)
+                setUseDataConnection(true)
+                tileProvider.clearTileCache()
+
             }
         },
         update = { view ->
-            // Code to update or recompose the view goes here
-            // Since geoPoint is read here, the view will recompose whenever it is updated
-            view.controller.setCenter(geoPoint)
-            //view.controller.zoomTo(12)
         }
-    )
-
+    )*/
 }
 
 @Composable

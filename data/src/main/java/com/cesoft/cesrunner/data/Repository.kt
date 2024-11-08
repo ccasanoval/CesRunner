@@ -29,11 +29,10 @@ class Repository(
     override suspend fun saveSettings(data: SettingsDto): Result<Unit> {
         return PrefDataSource(context).saveSettings(data)
     }
-
-//    override suspend fun readCurrentTrack(): Result<TrackDto> {
-//        val id = PrefDataSource(context).readCurrentTrackingId(ID_NULL)
-//        return if(id > ID_NULL) readTrack(id) else Result.failure(AppError.NotFound)
-//    }
+    override suspend fun readCurrentTrack(): Result<TrackDto> {
+        val id = PrefDataSource(context).readCurrentTrackingId(ID_NULL)
+        return if(id > ID_NULL) readTrack(id) else Result.failure(AppError.NotFound)
+    }
     override suspend fun saveCurrentTrack(id: Long): Result<Unit> {
         PrefDataSource(context).saveCurrentTrackingId(id)
         return Result.success(Unit)
@@ -127,7 +126,6 @@ class Repository(
     }
     override suspend fun readAllTracks(): Result<List<TrackDto>> {
         try {
-            //val points = db.trackPointDao().readByTrackId(id)
             val tracks = db.trackDao().getAll()
             return Result.success(tracks.map { it.toModel(listOf()) })
         }
@@ -144,17 +142,6 @@ class Repository(
             return Result.failure(e)
         }
     }
-
-//    override suspend fun readPointsFlow(id: Long): Result<Flow<TrackPointDto>> {
-//        try {
-//            val f: Flow<List<LocalTrackPointDto>> = db.trackPointDao().getFlowByTrackId(id)
-//            return Result.success(it.map { it.toM } .toModel())
-//            //return Result.failure(AppError.NotFound)
-//        }
-//        catch(e: Throwable) {
-//            return Result.failure(e)
-//        }
-//    }
 
     override suspend fun getLastLocation(id: Long): Result<TrackPointDto> {
         try {

@@ -13,6 +13,7 @@ interface RepositoryContract {
     suspend fun saveSettings(data: SettingsDto): Result<Unit>
     suspend fun saveCurrentTrack(id: Long): Result<Unit>
     suspend fun readCurrentTrackId(): Result<Long>
+    suspend fun readCurrentTrack(): Result<TrackDto>
 
     // TRACKING SERVICE
     fun requestLocationUpdates(minInterval: Long, minDistance: Float):

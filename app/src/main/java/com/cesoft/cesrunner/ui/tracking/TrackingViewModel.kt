@@ -10,12 +10,15 @@ import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.Common.ID_NULL
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
 import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackUC
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackIdUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
+import com.cesoft.cesrunner.domain.usecase.ReadTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
@@ -30,11 +33,11 @@ import kotlinx.coroutines.flow.flow
 class TrackingViewModel(
     private val createTrack: CreateTrackUC,
     private val trackingServiceFac: TrackingServiceFac,
-    private val readCurrentTracking: ReadCurrentTrackUC,
+    private val readCurrentTrackId: ReadCurrentTrackIdUC,
+    private val readCurrentTrack: ReadCurrentTrackUC,
+    private val readTrackFlow: ReadTrackFlowUC,
     private val saveCurrentTracking: SaveCurrentTrackingUC,
     private val deleteCurrentTracking: DeleteCurrentTrackUC,
-    //private val requestLocationUpdates: RequestLocationUpdatesUC,
-    ///private val stopLocationUpdates: StopLocationUpdatesUC,
     private val readSettings: ReadSettingsUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TrackingIntent, State<TrackingState, TrackingSideEffect>> {
@@ -53,7 +56,6 @@ class TrackingViewModel(
     private fun executeIntent(intent: TrackingIntent) =
         when(intent) {
             TrackingIntent.Load -> executeLoad()
-            TrackingIntent.Refresh -> executeRefresh()
 
             TrackingIntent.Close -> executeClose()
             TrackingIntent.Stop -> executeStop()
@@ -61,47 +63,33 @@ class TrackingViewModel(
             else -> executeClose()
         }
 
-    private fun executeRefresh() = flow {
-        val res = readCurrentTracking()
-        res.getOrNull()?.let {
-            emit(TrackingTransform.GoInit(it, null))
-        } ?: run {
-            val error = res.exceptionOrNull()
-                ?.let { AppError.fromThrowable(it) } ?: run { AppError.NotFound }
-            emit(TrackingTransform.GoInit(TrackDto.Empty, error))
-        }
-    }
     private fun executeLoad() = flow {
-        val res = readCurrentTracking()
-        val track: TrackDto? = if(res.isSuccess) {
-            res.getOrNull()
-        }
-        else {
+        var id = readCurrentTrackId().getOrNull() ?: ID_NULL
+        if(id == ID_NULL) {
             val settings = readSettings().getOrNull() ?: SettingsDto.Empty
             val time = System.currentTimeMillis()
             val track = TrackDto(
                 minInterval = settings.minInterval,
-                minDistance = settings.minDistance.toFloat(),
+                minDistance = settings.minDistance,
                 timeIni = time,
                 timeEnd = time,
-                name = "TRACK: "+time.toDateStr(),
+                name = time.toDateStr(),
             )
             val resTrack = createTrack(track)
-            val id = resTrack.getOrNull()
-            if(resTrack.isSuccess && id != null) {
+            id = resTrack.getOrNull() ?: ID_NULL
+            if (resTrack.isSuccess && id != ID_NULL) {
                 saveCurrentTracking(id)
-                track.copy(id = id)
-            }
-            else {
-                null
             }
         }
-        if(track == null) {
-            emit(TrackingTransform.GoInit(TrackDto.Empty, AppError.NotFound))
-        }
-        else {
-            trackingServiceFac.start(track.minInterval, track.minDistance)
-            emit(TrackingTransform.GoInit(track, null))
+        val track = readCurrentTrack().getOrNull() ?: TrackDto.Empty
+        trackingServiceFac.start(track.minInterval, track.minDistance)
+        val res = readTrackFlow(id)
+        res.getOrNull()?.let {
+            emit(TrackingTransform.GoInit(it))
+        } ?: run {
+            val e: AppError = res.exceptionOrNull()
+                ?.let { AppError.DataBaseError(it) } ?: run { AppError.NotFound }
+            emit(TrackingTransform.GoInit(flow { }, e))
         }
     }
 

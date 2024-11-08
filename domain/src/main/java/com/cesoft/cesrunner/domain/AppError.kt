@@ -10,6 +10,10 @@ sealed class AppError: Throwable() {
         private fun readResolve(): Any = NotFound
     }
 
+    data class DataBaseError(val e: Throwable): AppError() {
+        private fun readResolve(): Any = NotFound
+    }
+
     companion object {
         fun fromThrowable(e: Throwable): AppError = when(e) {
             //is NetworkException -> NetworkError

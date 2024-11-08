@@ -35,7 +35,6 @@ import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
-import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
 import com.cesoft.cesrunner.ui.common.addMyLocation
@@ -47,7 +46,8 @@ import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fontBig
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
 import org.osmdroid.util.GeoPoint
 
@@ -117,77 +117,84 @@ private fun ScreenCompo(
             Text(stringResource(R.string.stop))
         }
 
-        TrackData(state, reduce)
+        TrackDataFlow(state, reduce)
 
         Spacer(modifier = Modifier.padding(SepMax*2))
         HorizontalDivider(thickness = 3.dp, color = Green)
 
         //TODO: Map---------------------------------
-        MapCompo(state)
+        MapCompo(state.trackFlow)
 
         Spacer(modifier = Modifier.padding(SepMax))
     }
 }
 
-//TODO: Draw polyline with path
-//TODO: Remember the user zoom setting
 @Composable
-fun MapCompo(state: TrackingState.Init) {
+fun MapCompo(track: Flow<TrackDto>) {
     android.util.Log.e("TrackingPAge", "MapCompo------000000------------ ")
     val context = LocalContext.current
     val mapView = rememberMapView(context)
-    if(state.currentTracking.points.isEmpty()) return
-    var lat = state.currentTracking.points.last().latitude
-    var lon = state.currentTracking.points.last().longitude
-    var geoPoint by remember { mutableStateOf(GeoPoint(lat, lon)) }
-    mapView.refreshDrawableState()
-    LaunchedEffect(state) {
-        lat = state.currentTracking.points.last().latitude
-        lon = state.currentTracking.points.last().longitude
-        geoPoint = GeoPoint(lat, lon)
-        mapView.refreshDrawableState()
-        android.util.Log.e("TrackingPAge", "MapCompo------aaaaaaaaaaa------------ $geoPoint ")
+    var points by remember { mutableStateOf(listOf<GeoPoint>()) }
+    LaunchedEffect(track) {
+        track.collect {
+            android.util.Log.e("TrackingPAge", "MapCompo------aaaaaaaaaaa 1------------ ${it.points.size} ")
+            points = it.points.map { p -> GeoPoint(p.latitude, p.longitude) }
+            mapView.refreshDrawableState()
+        }
     }
     AndroidView(
         factory = { mapView },
         modifier = Modifier
     ) { view ->
-        android.util.Log.e("TrackingPAge", "MapCompo------bbbbbbbbbb------------ $geoPoint ")
-        view.controller.setCenter(geoPoint)
         //view.controller.zoomTo(20.0)
         view.overlays.removeAll { true }
         addMyLocation(context, view)
-        if(state.currentTracking.points.isNotEmpty()) {
-            createPolyline(mapView, state.currentTracking.points.map { GeoPoint(it.latitude, it.longitude) })
+        if(points.isNotEmpty()) {
+            view.controller.setCenter(points.last())
+            createPolyline(mapView, points)
         }
     }
 }
 
 @Composable
-private fun TrackData(
+private fun TrackDataFlow(
     state: TrackingState.Init,
     reduce: (intent: TrackingIntent) -> Unit
 ) {
+    var track by remember { mutableStateOf(TrackDto.Empty) }
+    LaunchedEffect(state) {
+        state.trackFlow.collect {
+            android.util.Log.e("TrackingPage", "TrackDataFlow---------------- points = ${it.points.size} ")
+            track = it
+        }
+    }
+    TrackData(track)
+}
+@Composable
+private fun TrackData(
+    track: TrackDto
+) {
+    android.util.Log.e("TrackingPage", "TrackData---------------- points = ${track.points.size} ")
     Column(modifier = Modifier.fillMaxWidth()) {
-        LaunchedEffect(state) {
+        /*LaunchedEffect(state) {
             while (true) {
                 //android.util.Log.e("TrackingPage", "TrackingInfo----------------")
                 reduce(TrackingIntent.Refresh)
                 delay(TrackingService.MIN_PERIOD/4)//TODO: DATABASE DATA FLOW !!!
             }
-        }
+        }*/
         //TODO: Allow changing value..
         Text(
-            text = state.currentTracking.name,
+            text = track.name,
             fontWeight = FontWeight.Bold,
             fontSize = fontBig,
             modifier = Modifier.padding(vertical = SepMin)
         )
-        val distance = "${state.currentTracking.distance} m"
-        val timeIni = state.currentTracking.timeIni.toDateStr()
-        val timeEnd = state.currentTracking.timeEnd.toDateStr()
-        val duration = state.currentTracking.timeEnd - state.currentTracking.timeIni
-        val altitudes = state.currentTracking.points.map { it.altitude }
+        val distance = "${track.distance} m"
+        val timeIni = track.timeIni.toDateStr()
+        val timeEnd = track.timeEnd.toDateStr()
+        val duration = track.timeEnd - track.timeIni
+        val altitudes = track.points.map { it.altitude }
         val altitudeMax = altitudes.maxOrNull() ?: 0.0
         val altitudeMin = altitudes.minOrNull() ?: 0.0
         val altitude = String.format(//"$altitudeMin - $altitudeMax m"
@@ -195,7 +202,7 @@ private fun TrackData(
             "%.0f - %.0f m (dif %.0f)",
             altitudeMin, altitudeMax, altitudeMax - altitudeMin
         )
-        val speeds = state.currentTracking.points.map { it.speed }
+        val speeds = track.points.map { it.speed }
         val speedMax = speeds.maxOrNull() ?: 0f
         val speedMed = speeds.average()
         val speed = String.format(
@@ -237,17 +244,28 @@ private fun InfoRow(label: String, value: String) {
 private fun TrackData_Preview() {
     val timeIni = System.currentTimeMillis() - 5*60*60*1000 - 35*60*1000 - 45*1000
     val state = TrackingState.Init(
-        currentTracking = TrackDto.Empty.copy(
-            name = "Tracking A",
-            timeIni = timeIni,
-            timeEnd = System.currentTimeMillis(),
-            distance = 690,
-            points = listOf(
-                TrackPointDto(0,0.0,0.0,0,0f,"",50.0,0f,5f)
+        trackFlow = flowOf(
+            TrackDto.Empty.copy(
+                name = "Tracking A",
+                timeIni = timeIni,
+                timeEnd = System.currentTimeMillis(),
+                distance = 690,
+                points = listOf(
+                    TrackPointDto(
+                        id = 69,
+                        latitude = 0.0,
+                        longitude = 0.0,
+                        time = 0,
+                        accuracy = 0f,
+                        provider = "",
+                        altitude = 50.0,
+                        bearing = 0f,
+                        speed = 5f)
+                )
             )
         )
     )
     Surface(modifier = Modifier.fillMaxSize()) {
-        TrackData(state) { }
+        TrackDataFlow(state) { }
     }
 }

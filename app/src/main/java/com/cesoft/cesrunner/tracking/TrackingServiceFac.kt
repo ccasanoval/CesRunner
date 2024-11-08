@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.Intent
 
 class TrackingServiceFac(private val context: Context) {
-    fun start(minInterval: Int, minDistance: Float) {
+    fun start(minInterval: Int, minDistance: Int) {
         TrackingService.period = minInterval.toLong()
-        TrackingService.distance = minDistance
+        TrackingService.distance = minDistance.toFloat()
         if( ! TrackingService.isRunning) {
             val intent = Intent(context, TrackingService::class.java)
             context.startService(intent)

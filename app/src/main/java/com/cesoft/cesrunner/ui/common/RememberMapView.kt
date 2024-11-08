@@ -20,6 +20,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 @Composable
 fun rememberMapView(context : Context): MapView {
+    android.util.Log.e("RememberMapView", "CREATE---------------------")
     val pack = context.packageName
     val prefs = context.getSharedPreferences(pack+"OSM", Context.MODE_PRIVATE)
     Configuration.getInstance().load(context, prefs)
@@ -33,6 +34,7 @@ fun rememberMapView(context : Context): MapView {
 }
 
 private fun initMap(mapView: MapView) {
+    android.util.Log.e("RememberMapView", "initMap---------------------")
     mapView.apply {
         isHorizontalMapRepetitionEnabled = false
         isVerticalMapRepetitionEnabled = false

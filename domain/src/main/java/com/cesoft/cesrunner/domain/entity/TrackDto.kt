@@ -6,7 +6,7 @@ data class TrackDto(
     val id: Long = ID_NULL,
     val name: String = "",
     val minInterval: Int = 0,
-    val minDistance: Float = 0f,
+    val minDistance: Int = 0,
     val timeIni: Long = 0,
     val timeEnd: Long = 0,
     val distance: Int = 0,
@@ -21,7 +21,7 @@ data class TrackDto(
     companion object {
         val Empty = TrackDto(
             ID_NULL, "",
-            0,0f,0,0, 0,
+            0,0,0,0, 0,
             listOf()
         )
     }

@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.cesoft.cesrunner.data.local.entity.LocalTrackPointDto
 import com.cesoft.cesrunner.data.local.entity.TrackPointTableName
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TrackPointDao {
@@ -14,6 +15,9 @@ interface TrackPointDao {
 
     @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id")
     suspend fun getByTrackId(id: Long): List<LocalTrackPointDto>
+
+    @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id")
+    fun getFlowByTrackId(id: Long): Flow<List<LocalTrackPointDto>>
 
     @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id ORDER BY id DESC LIMIT 1")
     suspend fun getLastByTrackId(id: Long): LocalTrackPointDto?

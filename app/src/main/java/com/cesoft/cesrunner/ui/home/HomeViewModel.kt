@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.flow
 
 class HomeViewModel(
     private val trackingServiceFac: TrackingServiceFac,
-    private val readCurrentTracking: ReadCurrentTrackUC,
+    private val readCurrentTrack: ReadCurrentTrackUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
@@ -51,7 +51,7 @@ class HomeViewModel(
         }
 
     private fun executeLoad() = flow {
-        val res = readCurrentTracking()
+        val res = readCurrentTrack()
         val currentTrack = res.getOrNull() ?: TrackDto.Empty
         if(currentTrack.isCreated) {
             trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)

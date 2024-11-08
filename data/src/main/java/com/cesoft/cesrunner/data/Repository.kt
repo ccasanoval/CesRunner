@@ -13,7 +13,9 @@ import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 class Repository(
     private val context: Context,
@@ -28,14 +30,18 @@ class Repository(
         return PrefDataSource(context).saveSettings(data)
     }
 
-    override suspend fun readCurrentTrack(): Result<TrackDto> {
-        val id = PrefDataSource(context).readCurrentTrackingId(ID_NULL)
-        return if(id > ID_NULL) readTrack(id) else Result.failure(AppError.NotFound)
-    }
+//    override suspend fun readCurrentTrack(): Result<TrackDto> {
+//        val id = PrefDataSource(context).readCurrentTrackingId(ID_NULL)
+//        return if(id > ID_NULL) readTrack(id) else Result.failure(AppError.NotFound)
+//    }
     override suspend fun saveCurrentTrack(id: Long): Result<Unit> {
         PrefDataSource(context).saveCurrentTrackingId(id)
         return Result.success(Unit)
     }
+    override suspend fun readCurrentTrackId(): Result<Long> {
+        return Result.success(PrefDataSource(context).readCurrentTrackingId(ID_NULL))
+    }
+
 
     /// TRACKING SERVICE
     override fun requestLocationUpdates(minInterval: Long, minDistance: Float):
@@ -98,6 +104,17 @@ class Repository(
             return Result.failure(e)
         }
     }
+    override suspend fun readTrackFlow(id: Long): Result<Flow<TrackDto>> {
+        try {
+            val points = db.trackPointDao().getFlowByTrackId(id)
+            return Result.success(
+                points.map { db.trackDao().getById(id).toModel(it) }
+            )
+        }
+        catch(e: Throwable) {
+            return Result.failure(e)
+        }
+    }
     override suspend fun readLastTrack(): Result<TrackDto> {
         try {
             val track = db.trackDao().getLast()
@@ -127,6 +144,17 @@ class Repository(
             return Result.failure(e)
         }
     }
+
+//    override suspend fun readPointsFlow(id: Long): Result<Flow<TrackPointDto>> {
+//        try {
+//            val f: Flow<List<LocalTrackPointDto>> = db.trackPointDao().getFlowByTrackId(id)
+//            return Result.success(it.map { it.toM } .toModel())
+//            //return Result.failure(AppError.NotFound)
+//        }
+//        catch(e: Throwable) {
+//            return Result.failure(e)
+//        }
+//    }
 
     override suspend fun getLastLocation(id: Long): Result<TrackPointDto> {
         try {

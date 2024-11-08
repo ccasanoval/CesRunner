@@ -4,7 +4,6 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,6 +38,8 @@ import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.tracking.TrackingService
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
+import com.cesoft.cesrunner.ui.common.addMyLocation
+import com.cesoft.cesrunner.ui.common.createPolyline
 import com.cesoft.cesrunner.ui.common.rememberMapView
 import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
@@ -122,7 +123,7 @@ private fun ScreenCompo(
         HorizontalDivider(thickness = 3.dp, color = Green)
 
         //TODO: Map---------------------------------
-        MapCompo(state, this)
+        MapCompo(state)
 
         Spacer(modifier = Modifier.padding(SepMax))
     }
@@ -131,40 +132,34 @@ private fun ScreenCompo(
 //TODO: Draw polyline with path
 //TODO: Remember the user zoom setting
 @Composable
-fun MapCompo(
-    state: TrackingState.Init,
-    colScope: ColumnScope,
-    modifier: Modifier = Modifier
-) {
+fun MapCompo(state: TrackingState.Init) {
+    android.util.Log.e("TrackingPAge", "MapCompo------000000------------ ")
     val context = LocalContext.current
     val mapView = rememberMapView(context)
-    val points = state.currentTracking.points
-    if(points.isEmpty()) {
-        with(colScope) {
-            Spacer(modifier = modifier.weight(0.1f))
-        }
-        return
-    }
-
-//    val lat = state.currentTracking.points.last().latitude
-//    val lon = state.currentTracking.points.last().longitude
-//    var geoPoint = GeoPoint(lat, lon)
-    android.util.Log.e("TrackingPAge", "OsmdroidMapView------0------------  ")
-//    mapView.refreshDrawableState()
-    mapView.controller.zoomTo(20.0)
+    if(state.currentTracking.points.isEmpty()) return
+    var lat = state.currentTracking.points.last().latitude
+    var lon = state.currentTracking.points.last().longitude
+    var geoPoint by remember { mutableStateOf(GeoPoint(lat, lon)) }
+    mapView.refreshDrawableState()
     LaunchedEffect(state) {
-        val lat = state.currentTracking.points.last().latitude
-        val lon = state.currentTracking.points.last().longitude
-        val geoPoint = GeoPoint(lat, lon)
-        android.util.Log.e("TrackingPAge", "OsmdroidMapView------a------------ $geoPoint ")
+        lat = state.currentTracking.points.last().latitude
+        lon = state.currentTracking.points.last().longitude
+        geoPoint = GeoPoint(lat, lon)
         mapView.refreshDrawableState()
+        android.util.Log.e("TrackingPAge", "MapCompo------aaaaaaaaaaa------------ $geoPoint ")
     }
     AndroidView(
         factory = { mapView },
         modifier = Modifier
     ) { view ->
-        android.util.Log.e("TrackingPAge", "OsmdroidMapView------b------------  ")
-        //view.controller.setCenter(geoPoint)
+        android.util.Log.e("TrackingPAge", "MapCompo------bbbbbbbbbb------------ $geoPoint ")
+        view.controller.setCenter(geoPoint)
+        //view.controller.zoomTo(20.0)
+        view.overlays.removeAll { true }
+        addMyLocation(context, view)
+        if(state.currentTracking.points.isNotEmpty()) {
+            createPolyline(mapView, state.currentTracking.points.map { GeoPoint(it.latitude, it.longitude) })
+        }
     }
 }
 
@@ -176,7 +171,7 @@ private fun TrackData(
     Column(modifier = Modifier.fillMaxWidth()) {
         LaunchedEffect(state) {
             while (true) {
-                android.util.Log.e("TrackingPage", "TrackingInfo----------------")
+                //android.util.Log.e("TrackingPage", "TrackingInfo----------------")
                 reduce(TrackingIntent.Refresh)
                 delay(TrackingService.MIN_PERIOD/4)//TODO: DATABASE DATA FLOW !!!
             }

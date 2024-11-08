@@ -1,7 +1,6 @@
 package com.cesoft.cesrunner.ui.common
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,7 +45,7 @@ private fun initMap(mapView: MapView) {
             )
         )
         minZoomLevel = 4.0
-        controller.setZoom(14.0)
+        controller.setZoom(20.0)
     }
 }
 

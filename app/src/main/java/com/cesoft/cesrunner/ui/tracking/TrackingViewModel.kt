@@ -80,8 +80,8 @@ class TrackingViewModel(
             val settings = readSettings().getOrNull() ?: SettingsDto.Empty
             val time = System.currentTimeMillis()
             val track = TrackDto(
-                minInterval = settings.period,
-                minDistance = 0.5f,//TODO: Add to settings
+                minInterval = settings.minInterval,
+                minDistance = settings.minDistance.toFloat(),
                 timeIni = time,
                 timeEnd = time,
                 name = "TRACK: "+time.toDateStr(),

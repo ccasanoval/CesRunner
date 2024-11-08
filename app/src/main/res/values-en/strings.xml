@@ -34,12 +34,15 @@
     <string name="altitude_min">Min Altitude</string>
     <string name="kilometer">Kilometer</string>
     <string name="kilometers">Kilometers</string>
+    <string name="meters">meters</string>
     <string name="stop_tracking">Done running</string>
     <string name="days">Days</string>
     <string name="hours">Hours</string>
     <string name="minutes">Minutes</string>
     <string name="seconds">Seconds</string>
 
+    <string name="voice_on">Voice on</string>
+    <string name="min_activate_location">Minimum values to get a new location:</string>
     <string name="location_off">Location is off</string>
     <string name="location_off_msg">Must turn on the location to trace the route</string>
 </resources>

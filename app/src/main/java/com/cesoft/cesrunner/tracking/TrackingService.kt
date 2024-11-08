@@ -19,6 +19,7 @@ import com.cesoft.cesrunner.domain.usecase.AddTrackPointUC
 import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadLastTrackUC
+import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
@@ -39,6 +40,7 @@ class TrackingService: LifecycleService() {
     private var lastLocation: LocationDto? = null
     private lateinit var notificationManager: NotificationManager
 
+    private val readSettings: ReadSettingsUC by inject()
     private val readCurrentTrack: ReadCurrentTrackUC by inject()
     private val readLastTrack: ReadLastTrackUC by inject()
     private val requestLocationUpdates: RequestLocationUpdatesUC by inject()
@@ -47,10 +49,14 @@ class TrackingService: LifecycleService() {
     private val updateTrack: UpdateTrackUC by inject()
     private val getLastLocation: GetLastLocationUC by inject()
 
+    //TODO: Make class apart!
     private lateinit var textToSpeech: TextToSpeech
     private var speechKm: Float = 0f
-    private fun speak(text: String) =
-        textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, null, packageName)
+    private suspend fun speak(text: String) {
+        if (readSettings().getOrNull()?.voice == true) {
+            textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, null, packageName)
+        }
+    }
 
     override fun onCreate() {
         Log.e(TAG, "onCreate----------------------------------")
@@ -101,7 +107,6 @@ class TrackingService: LifecycleService() {
         Log.e(TAG, "start---------------------------------- minInterval = $_minInterval")
         val k = getString(R.string.kilometers)
         val minDistance = 0f//.5f// _minDistance.toFloat()
-        speak("Comienza la carrera")
         requestLocationUpdates(_minInterval, minDistance).getOrNull()
             ?.onEach { location ->
                 location?.let { loc ->

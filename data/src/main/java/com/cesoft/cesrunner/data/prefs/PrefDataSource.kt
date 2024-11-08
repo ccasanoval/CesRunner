@@ -21,14 +21,20 @@ class PrefDataSource(
 
     suspend fun readSettings(): Result<SettingsDto> {
         val period = context.readInt(PREFS_SETTINGS_PERIOD, SettingsDto.DEFAULT_PERIOD)
+        val distance = context.readInt(PREFS_SETTINGS_DISTANCE, SettingsDto.DEFAULT_DISTANCE)
+        val voice = context.readBool(PREFS_SETTINGS_VOICE, SettingsDto.DEFAULT_VOICE)
         return Result.success(
             SettingsDto(
-                period = period
+                minInterval = period,
+                minDistance = distance,
+                voice = voice
             )
         )
     }
     suspend fun saveSettings(data: SettingsDto): Result<Unit> {
-        context.writeInt(PREFS_SETTINGS_PERIOD, data.period)
+        context.writeInt(PREFS_SETTINGS_PERIOD, data.minInterval)
+        context.writeInt(PREFS_SETTINGS_DISTANCE, data.minDistance)
+        context.writeBool(PREFS_SETTINGS_VOICE, data.voice)
         return Result.success(Unit)
     }
 
@@ -59,6 +65,8 @@ class PrefDataSource(
         private const val TAG = "PrefDS"
 
         private const val PREFS_SETTINGS_PERIOD = "PREFS_SETTINGS_PERIOD"
+        private const val PREFS_SETTINGS_DISTANCE = "PREFS_SETTINGS_DISTANCE"
+        private const val PREFS_SETTINGS_VOICE = "PREFS_SETTINGS_VOICE"
 
         private const val PREFS_CURRENT_TRACK = "PREFS_CURRENT_TRACK"
 

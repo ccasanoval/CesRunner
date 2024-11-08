@@ -9,4 +9,4 @@ val SepMax = 20.dp
 
 val fontBiggest = 24.sp
 val fontBigger = 22.sp
-val fonBig = 20.sp
+val fontBig = 20.sp

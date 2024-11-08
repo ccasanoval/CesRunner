@@ -4,6 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,7 +43,7 @@ import com.cesoft.cesrunner.ui.common.rememberMapView
 import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
-import com.cesoft.cesrunner.ui.theme.fonBig
+import com.cesoft.cesrunner.ui.theme.fontBig
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
 import kotlinx.coroutines.delay
@@ -94,7 +95,7 @@ private fun ScreenCompo(
     state: TrackingState.Init,
     reduce: (intent: TrackingIntent) -> Unit,
 ) {
-    android.util.Log.e("TrackingPage", "TrackingInfo---------------------------")
+    //android.util.Log.e("TrackingPage", "ScreenCompo---------------------------")
     val context = LocalContext.current
     val showAlert = remember { mutableStateOf(true) }
     TurnLocationOnDialog(showAlert) {
@@ -121,7 +122,7 @@ private fun ScreenCompo(
         HorizontalDivider(thickness = 3.dp, color = Green)
 
         //TODO: Map---------------------------------
-        MapCompo(state)
+        MapCompo(state, this)
 
         Spacer(modifier = Modifier.padding(SepMax))
     }
@@ -130,57 +131,41 @@ private fun ScreenCompo(
 //TODO: Draw polyline with path
 //TODO: Remember the user zoom setting
 @Composable
-fun MapCompo(state: TrackingState.Init) {
+fun MapCompo(
+    state: TrackingState.Init,
+    colScope: ColumnScope,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     val mapView = rememberMapView(context)
-    var lat = state.currentTracking.points.last().latitude
-    var lon = state.currentTracking.points.last().longitude
-    var geoPoint by remember { mutableStateOf(GeoPoint(lat, lon)) }
-    mapView.refreshDrawableState()
+    val points = state.currentTracking.points
+    if(points.isEmpty()) {
+        with(colScope) {
+            Spacer(modifier = modifier.weight(0.1f))
+        }
+        return
+    }
+
+//    val lat = state.currentTracking.points.last().latitude
+//    val lon = state.currentTracking.points.last().longitude
+//    var geoPoint = GeoPoint(lat, lon)
+    android.util.Log.e("TrackingPAge", "OsmdroidMapView------0------------  ")
+//    mapView.refreshDrawableState()
+    mapView.controller.zoomTo(20.0)
     LaunchedEffect(state) {
-        lat = state.currentTracking.points.last().latitude
-        lon = state.currentTracking.points.last().longitude
-        geoPoint = GeoPoint(lat, lon)
+        val lat = state.currentTracking.points.last().latitude
+        val lon = state.currentTracking.points.last().longitude
+        val geoPoint = GeoPoint(lat, lon)
+        android.util.Log.e("TrackingPAge", "OsmdroidMapView------a------------ $geoPoint ")
         mapView.refreshDrawableState()
     }
     AndroidView(
         factory = { mapView },
         modifier = Modifier
     ) { view ->
-        android.util.Log.e("TrackingPAge", "OsmdroidMapView------b------------ $geoPoint ")
-        view.controller.setCenter(geoPoint)
-        view.controller.zoomTo(22.0)
+        android.util.Log.e("TrackingPAge", "OsmdroidMapView------b------------  ")
+        //view.controller.setCenter(geoPoint)
     }
-    /*AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = { context ->
-            MapView(context).apply {
-                setTileSource(TileSourceFactory.USGS_TOPO) // .MAPNIK doen't give me any proper view, just empty grey screen
-                maxZoomLevel = 25.0
-                minZoomLevel = 6.0
-                isHorizontalMapRepetitionEnabled = false
-                isVerticalMapRepetitionEnabled = false
-                setScrollableAreaLimitLatitude(
-                    MapView.getTileSystem().maxLatitude,
-                    MapView.getTileSystem().minLatitude, 0
-                )
-                setScrollableAreaLimitLongitude(
-                    MapView.getTileSystem().minLongitude,
-                    MapView.getTileSystem().maxLongitude,
-                    0
-                )
-                this.controller.setCenter(geoPoint)
-
-                setBuiltInZoomControls(true)
-                setMultiTouchControls(true)
-                setUseDataConnection(true)
-                tileProvider.clearTileCache()
-
-            }
-        },
-        update = { view ->
-        }
-    )*/
 }
 
 @Composable
@@ -200,7 +185,7 @@ private fun TrackData(
         Text(
             text = state.currentTracking.name,
             fontWeight = FontWeight.Bold,
-            fontSize = fonBig,
+            fontSize = fontBig,
             modifier = Modifier.padding(vertical = SepMin)
         )
         val distance = "${state.currentTracking.distance} m"
@@ -208,11 +193,13 @@ private fun TrackData(
         val timeEnd = state.currentTracking.timeEnd.toDateStr()
         val duration = state.currentTracking.timeEnd - state.currentTracking.timeIni
         val altitudes = state.currentTracking.points.map { it.altitude }
-        val altitudeMax = altitudes.maxOrNull() ?: 0
-        val altitudeMin = altitudes.minOrNull() ?: 0
-        val altitude = "$altitudeMin - $altitudeMax m"
-        //val speedMin = state.currentTracking.speedMin
-        //val speedMax = state.currentTracking.speedMax
+        val altitudeMax = altitudes.maxOrNull() ?: 0.0
+        val altitudeMin = altitudes.minOrNull() ?: 0.0
+        val altitude = String.format(//"$altitudeMin - $altitudeMax m"
+            Locale.current.platformLocale,
+            "%.0f - %.0f m (dif %.0f)",
+            altitudeMin, altitudeMax, altitudeMax - altitudeMin
+        )
         val speeds = state.currentTracking.points.map { it.speed }
         val speedMax = speeds.maxOrNull() ?: 0f
         val speedMed = speeds.average()
@@ -263,34 +250,9 @@ private fun TrackData_Preview() {
             points = listOf(
                 TrackPointDto(0,0.0,0.0,0,0f,"",50.0,0f,5f)
             )
-//            altitudeMax = 1200,
-//            altitudeMin = 600,
-//            speedMax = 5,
-//            speedMin = 1,
         )
     )
     Surface(modifier = Modifier.fillMaxSize()) {
         TrackData(state) { }
     }
 }
-
-//@Preview
-//@Composable
-//private fun TrackingPage_Preview() {
-//    val timeIni = System.currentTimeMillis() - 5*60*60*1000 - 35*60*1000 - 45*1000
-//    val state = TrackingState.Init(
-//        currentTracking = TrackDto.Empty.copy(
-//            name = "Tracking A",
-//            timeIni = timeIni,
-//            timeEnd = System.currentTimeMillis(),
-//            distance = 690,
-//            altitudeMax = 1200,
-//            altitudeMin = 600,
-//            speedMax = 15,
-//            speedMin = 5,
-//        )
-//    )
-//    Surface {
-//        ScreenCompo(state) { }
-//    }
-//}

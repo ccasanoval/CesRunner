@@ -29,12 +29,15 @@
     <string name="altitude_min">Altitud Min</string>
     <string name="kilometer">Kilómetro</string>
     <string name="kilometers">Kilómetros</string>
+    <string name="meters">metros</string>
     <string name="stop_tracking">Terminó la carrera</string>
     <string name="days">Días</string>
     <string name="hours">Horas</string>
     <string name="minutes">Minutos</string>
     <string name="seconds">Segundos</string>
 
+    <string name="voice_on">Voz activa</string>
+    <string name="min_activate_location">Mínimo cambio para obtener una nueva ubicación:</string>
     <string name="location_off">La ubicación está apagada</string>
     <string name="location_off_msg">La ubicación debe estar activa para poder trazar la ruta</string>
 

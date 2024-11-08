@@ -33,9 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
+import com.cesoft.cesrunner.ui.theme.fontBig
 import kotlinx.coroutines.launch
 
 @Composable
@@ -51,10 +51,10 @@ fun NumberPicker(
     Row(modifier = modifier) {
         val mod2 = Modifier.padding(horizontal = SepMin)
         if(title.isNotBlank())
-            Text(text = title, fontSize = 22.sp, modifier = mod2)
+            Text(text = title, fontSize = fontBig, modifier = mod2.weight(.5f))
         HorizontalNumberPicker(mod2, min, max, value, onSelect)
         if(subtitle.isNotBlank())
-            Text(subtitle, fontSize = 20.sp, textAlign = TextAlign.Right, modifier = mod2)
+            Text(subtitle, fontSize = fontBig, textAlign = TextAlign.Right, modifier = mod2)
     }
 }
 
@@ -106,7 +106,7 @@ fun HorizontalNumberPicker(
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium,
                         letterSpacing = 0.02.em,
-                        fontSize = 22.sp
+                        fontSize = fontBig
                     ),
                     modifier = Modifier
                         .padding(horizontal = SepMin)
@@ -117,7 +117,7 @@ fun HorizontalNumberPicker(
         }
     }
 }
-
+/*
 @Composable
 fun VerticalNumberPicker(
     modifier: Modifier = Modifier,
@@ -160,13 +160,12 @@ fun VerticalNumberPicker(
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium,
                         letterSpacing = 0.02.em,
-                        fontSize = 22.sp
+                        fontSize = fontBig
                     )
                 )
                 Spacer(modifier = Modifier.height(6.dp))
             })
         }
-        /*
         val spinnerGradient = Brush.linearGradient(
             0.0f to Color(0xFFFFFFFF),
             0.3f to Color(0x00000000),
@@ -181,9 +180,9 @@ fun VerticalNumberPicker(
                 .background(brush = spinnerGradient)
                 .height(106.dp)
                 .width(40.dp)
-        )*/
+        )
     }
-}
+}*/
 
 //--------------------------------------------------------------------------------------------------
 @Preview
@@ -214,15 +213,15 @@ private fun HorizontalNumberPicker_Preview() {
     }
 }
 
-@Preview
-@Composable
-private fun VerticalNumberPicker_Preview() {
-    val modifier = Modifier.border(1.dp, Color.Red)
-    Surface {
-        Row {
-            VerticalNumberPicker(modifier, 0, 10, 5) { }
-            Text("AAAA", modifier = Modifier.size(SepMed))
-            VerticalNumberPicker(modifier, 30, 300, 150) { }
-        }
-    }
-}
+//@Preview
+//@Composable
+//private fun VerticalNumberPicker_Preview() {
+//    val modifier = Modifier.border(1.dp, Color.Red)
+//    Surface {
+//        Row {
+//            VerticalNumberPicker(modifier, 0, 10, 5) { }
+//            Text("AAAA", modifier = Modifier.size(SepMed))
+//            VerticalNumberPicker(modifier, 30, 300, 150) { }
+//        }
+//    }
+//}

@@ -19,7 +19,7 @@ internal object TrackingTransform {
     }
 
     data class GoInit(
-        val data: Flow<TrackDto>,
+        val data: Flow<TrackDto?>,
         //val data: TrackDto,
         //val points: Flow<TrackPointDto>,
         val error: AppError? = null,

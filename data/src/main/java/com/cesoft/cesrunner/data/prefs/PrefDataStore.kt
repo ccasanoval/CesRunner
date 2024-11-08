@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -51,6 +52,11 @@ suspend fun Context.readLong(key: String, default: Long = 0): Long {
     return dataStore.data.map { pref ->
         pref[longPreferencesKey(key)]
     }.firstOrNull() ?: default
+}
+fun Context.readLongFlow(key: String): Flow<Long?> {
+    return dataStore.data.map { pref ->
+        pref[longPreferencesKey(key)]
+    }
 }
 
 suspend fun Context.writeBool(key: String, value: Boolean) {

@@ -3,6 +3,7 @@ package com.cesoft.cesrunner.data.prefs
 import android.content.Context
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import kotlinx.coroutines.flow.Flow
 
 
 class PrefDataSource(
@@ -40,6 +41,9 @@ class PrefDataSource(
 
     suspend fun readCurrentTrackingId(default: Long): Long {
         return context.readLong(PREFS_CURRENT_TRACK, default)
+    }
+    fun readCurrentTrackingIdFlow(): Flow<Long?> {
+        return context.readLongFlow(PREFS_CURRENT_TRACK)
     }
     suspend fun saveCurrentTrackingId(id: Long) {
         return context.writeLong(PREFS_CURRENT_TRACK, id)

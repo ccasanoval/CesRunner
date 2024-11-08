@@ -47,6 +47,7 @@ import com.cesoft.cesrunner.ui.theme.fontBig
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
 import org.osmdroid.util.GeoPoint
@@ -130,15 +131,15 @@ private fun ScreenCompo(
 }
 
 @Composable
-fun MapCompo(track: Flow<TrackDto>) {
+fun MapCompo(track: Flow<TrackDto?>) {
     android.util.Log.e("TrackingPAge", "MapCompo------000000------------ ")
     val context = LocalContext.current
     val mapView = rememberMapView(context)
     var points by remember { mutableStateOf(listOf<GeoPoint>()) }
     LaunchedEffect(track) {
         track.collect {
-            android.util.Log.e("TrackingPAge", "MapCompo------aaaaaaaaaaa 1------------ ${it.points.size} ")
-            points = it.points.map { p -> GeoPoint(p.latitude, p.longitude) }
+            android.util.Log.e("TrackingPAge", "MapCompo------aaaaaaaaaaa 1------------ ${it?.points?.size ?: 0} ")
+            points = it?.points?.map { p -> GeoPoint(p.latitude, p.longitude) } ?: listOf()
             mapView.refreshDrawableState()
         }
     }
@@ -164,8 +165,8 @@ private fun TrackDataFlow(
     var track by remember { mutableStateOf(TrackDto.Empty) }
     LaunchedEffect(state) {
         state.trackFlow.collect {
-            android.util.Log.e("TrackingPage", "TrackDataFlow---------------- points = ${it.points.size} ")
-            track = it
+            android.util.Log.e("TrackingPage", "TrackDataFlow---------------- points = ${it?.points?.size ?: -1} ")
+            track = it ?: TrackDto.Empty
         }
     }
     TrackData(track)

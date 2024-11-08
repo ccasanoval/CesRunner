@@ -27,9 +27,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
@@ -59,6 +61,7 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -100,11 +103,17 @@ private fun Content(
     state: HomeState.Init,
     reduce: (intent: HomeIntent) -> Unit,
 ) {
+    android.util.Log.e("HomePage", "Content---------------- 0000 ")
+    var track by remember { mutableStateOf<TrackDto?>(null) }
     LaunchedEffect(state) {
-        while(true) {
-            android.util.Log.e("HomePage", "Content----------------")
-            reduce(HomeIntent.Refresh)
-            delay(30_000)
+//        while(true) {
+//            android.util.Log.e("HomePage", "Content----------------")
+//            reduce(HomeIntent.Refresh)
+//            delay(30_000)
+//        }
+        state.trackFlow.collect { t ->
+            android.util.Log.e("HomePage", "Content---------------- a $t")
+            t?.let { track = it }
         }
     }
     Surface {
@@ -117,7 +126,7 @@ private fun Content(
                 ErrorCompo(it)
             }
 
-            val isTracking = state.currentTrack.isCreated
+            val isTracking = track?.isCreated == true
             if (isTracking) {
                 val context = LocalContext.current
                 val showAlert = remember { mutableStateOf(true) }
@@ -132,10 +141,10 @@ private fun Content(
                     modifier = Modifier.padding(SepMin)
                 )
                 Text(
-                    text = state.currentTrack.name,
+                    text = track!!.name,
                     modifier = Modifier.padding(SepMin)
                 )
-                val distance = state.currentTrack.distance
+                val distance = track!!.distance
                 val distanceStr = if(distance < 1000) "$distance m"
                 else String.format("%.3f Km", distance / 1000f)
                 //val speed = state.currentTrack.speedMax//TODO: Current Speed
@@ -195,7 +204,7 @@ private fun HomeButton(
 @Composable
 private fun HomePage_Preview() {
     val state = HomeState.Init(
-        currentTrack = TrackDto(id = 69, name = "Tracking A"),
+        trackFlow = flowOf(TrackDto(id = 69, name = "Tracking A")),
         error = AppError.NetworkError,
     )
     Content(state) { }

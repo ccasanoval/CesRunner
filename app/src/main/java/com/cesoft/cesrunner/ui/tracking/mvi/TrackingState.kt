@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 sealed class TrackingState: LoggableState {
     data object Loading: TrackingState()
     data class Init(
-        val trackFlow: Flow<TrackDto>,
+        val trackFlow: Flow<TrackDto?>,
         //val currentTracking: TrackDto,
         //val pointFlow: Flow<TrackPointDto>,
         val error: AppError? = null

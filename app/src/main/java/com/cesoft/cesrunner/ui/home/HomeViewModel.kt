@@ -13,6 +13,7 @@ import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
+import com.cesoft.cesrunner.domain.usecase.ReadTrackFlowUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeSideEffect
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.flow
 class HomeViewModel(
     private val trackingServiceFac: TrackingServiceFac,
     private val readCurrentTrack: ReadCurrentTrackUC,
+    private val readTrackFlow: ReadTrackFlowUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
@@ -41,8 +43,8 @@ class HomeViewModel(
     }
     private fun executeIntent(intent: HomeIntent) =
         when(intent) {
-            HomeIntent.Load,
-            HomeIntent.Refresh -> executeLoad()
+            HomeIntent.Load -> executeLoad()
+            //HomeIntent.Refresh -> executeLoad()
             HomeIntent.GoStart -> executeStart()
             HomeIntent.GoSettings -> executeSettings()
             HomeIntent.GoMap -> executeClose()
@@ -51,18 +53,19 @@ class HomeViewModel(
         }
 
     private fun executeLoad() = flow {
-        val res = readCurrentTrack()
-        val currentTrack = res.getOrNull() ?: TrackDto.Empty
+        val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
         if(currentTrack.isCreated) {
             trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
         }
+        val res = readTrackFlow(currentTrack.id)
         var error: AppError? = null
         val e = res.exceptionOrNull()
         if(res.isFailure && e !is AppError.NotFound) {
             res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
         }
+        val trackFlow = res.getOrNull() ?: flow {  }
         android.util.Log.e(TAG, "executeLoad------------ $currentTrack $e")
-        emit(HomeTransform.GoInit(currentTrack, error))
+        emit(HomeTransform.GoInit(trackFlow, error))
     }
 
     private fun executeStart() = flow {

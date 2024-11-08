@@ -13,7 +13,9 @@ interface RepositoryContract {
     suspend fun saveSettings(data: SettingsDto): Result<Unit>
     suspend fun saveCurrentTrack(id: Long): Result<Unit>
     suspend fun readCurrentTrackId(): Result<Long>
+    suspend fun readCurrentTrackIdFlow(): Result<Flow<Long?>>
     suspend fun readCurrentTrack(): Result<TrackDto>
+    //suspend fun readCurrentTrackFlow(): Result<Flow<TrackDto?>>
 
     // TRACKING SERVICE
     fun requestLocationUpdates(minInterval: Long, minDistance: Float):
@@ -25,7 +27,7 @@ interface RepositoryContract {
     suspend fun updateTrack(data: TrackDto): Result<Unit>
     suspend fun addTrackPoint(id: Long, data: TrackPointDto): Result<Unit>
     suspend fun readTrack(id: Long): Result<TrackDto>
-    suspend fun readTrackFlow(id: Long): Result<Flow<TrackDto>>
+    suspend fun readTrackFlow(id: Long): Result<Flow<TrackDto?>>
     suspend fun readLastTrack(): Result<TrackDto>
     suspend fun readAllTracks(): Result<List<TrackDto>>
     suspend fun deleteTrack(id: Long): Result<Unit>

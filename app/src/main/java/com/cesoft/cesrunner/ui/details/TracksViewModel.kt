@@ -1,13 +1,16 @@
 package com.cesoft.cesrunner.ui.details
 
 import android.content.Context
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
+import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsIntent
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsSideEffect
@@ -18,7 +21,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 
 class TrackDetailsViewModel(
-    val readAllTracks: ReadAllTracksUC,
+    private val savedStateHandle: SavedStateHandle,
+    private val readAllTracks: ReadAllTracksUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TrackDetailsIntent, State<TrackDetailsState, TrackDetailsSideEffect>> {
 
@@ -54,13 +58,15 @@ class TrackDetailsViewModel(
         emit(TrackDetailsTransform.AddSideEffect(TrackDetailsSideEffect.Close))
     }
     private fun executeLoad() = flow {
-        val res = readAllTracks()
+        val id = Page.TrackDetail.getId(savedStateHandle)
+        android.util.Log.e("AAAA", "------------------ id = $id")
+//        val res = readAllTracks()
         var error: AppError? = null
-        val e = res.exceptionOrNull()
-        if(res.isFailure && e !is AppError.NotFound) {
-            res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
-        }
-        val tracks = res.getOrNull() ?: listOf()
-        emit(TrackDetailsTransform.GoInit(tracks, error))
+//        val e = res.exceptionOrNull()
+//        if(res.isFailure && e !is AppError.NotFound) {
+//            res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
+//        }
+//        val tracks = res.getOrNull() ?: listOf()
+        emit(TrackDetailsTransform.GoInit(TrackDto.Empty, error))
     }
 }

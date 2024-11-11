@@ -49,7 +49,9 @@ class TracksViewModel(
     ) {
         when (sideEffect) {
             TracksSideEffect.Close -> { navController.popBackStack() }
-            is TracksSideEffect.Details -> { navController.navigate(Page.TrackDetail.route) }
+            is TracksSideEffect.Details -> {
+                navController.navigate(Page.TrackDetail.createRoute(sideEffect.id))
+            }
         }
     }
 

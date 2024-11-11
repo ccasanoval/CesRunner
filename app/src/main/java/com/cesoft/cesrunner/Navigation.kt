@@ -29,7 +29,12 @@ sealed class Page(val route: String) {
     data object Tracking: Page("tracking")
     data object Map: Page("map")
     data object Tracks: Page("tracks")
-    data object TrackDetail: Page("trackDetail")
+    data object TrackDetail: Page("trackDetail/{id}") {
+        private const val ARG_ID = "id"
+        fun createRoute(id: Long) = "trackDetail/$id"
+        fun getId(savedStateHandle: SavedStateHandle): Long? =
+            savedStateHandle.get<String>(ARG_ID)?.toLong()
+    }
 }
 
 @Composable

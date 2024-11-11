@@ -67,5 +67,5 @@ val appModule = module {
     viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { MapViewModel(get(), ) }
     viewModel { TracksViewModel(get(), ) }
-    viewModel { TrackDetailsViewModel(get(), ) }
+    viewModel { TrackDetailsViewModel(get(), get()) }
 }

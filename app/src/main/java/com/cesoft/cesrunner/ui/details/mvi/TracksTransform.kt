@@ -5,9 +5,6 @@ import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.ui.tracking.mvi.TrackingSideEffect
-import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
-import kotlinx.coroutines.flow.Flow
 
 internal object TrackDetailsTransform {
     data class AddSideEffect(
@@ -19,7 +16,7 @@ internal object TrackDetailsTransform {
     }
 
     data class GoInit(
-        val data: List<TrackDto>,
+        val data: TrackDto,
         val error: AppError? = null,
     ) : ViewTransform<TrackDetailsState, TrackDetailsSideEffect>() {
         override fun mutate(currentState: TrackDetailsState): TrackDetailsState {

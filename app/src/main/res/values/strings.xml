@@ -47,6 +47,7 @@
     <string name="menu_check">¡Ver ruta!</string>
     <string name="menu_maps">Mapa</string>
     <string name="menu_tracks">Rutas</string>
+    <string name="menu_track_details">Info de ruta</string>
     <string name="menu_gnss" translatable="false">GNSS</string>
 
     <!-- SETTINGS -->

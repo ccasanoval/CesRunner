@@ -1,58 +1,35 @@
 package com.cesoft.cesrunner.ui.home
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
-import android.location.LocationManager
-import android.provider.ContactsContract
 import android.provider.Settings
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.content.getSystemService
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.ui.common.ErrorCompo
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
@@ -60,7 +37,6 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
 
@@ -97,7 +73,6 @@ fun HomePage(
     }
 }
 
-@SuppressLint("DefaultLocale")
 @Composable
 private fun Content(
     state: HomeState.Init,
@@ -125,7 +100,6 @@ private fun Content(
             state.error?.let {
                 ErrorCompo(it)
             }
-
             val isTracking = track?.isCreated == true
             if (isTracking) {
                 val context = LocalContext.current
@@ -141,12 +115,10 @@ private fun Content(
                     modifier = Modifier.padding(SepMin)
                 )
                 Text(
-                    text = track!!.name,
+                    text = track?.name ?:"",
                     modifier = Modifier.padding(SepMin)
                 )
-                val distance = track!!.distance
-                val distanceStr = if(distance < 1000) "$distance m"
-                else String.format("%.3f Km", distance / 1000f)
+                val distanceStr = track?.distance?.toDistanceStr() ?: ""
                 //val speed = state.currentTrack.speedMax//TODO: Current Speed
                 Text(
                     text = distanceStr,

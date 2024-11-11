@@ -5,7 +5,6 @@ import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import kotlinx.coroutines.flow.Flow
 
 internal object TrackingTransform {

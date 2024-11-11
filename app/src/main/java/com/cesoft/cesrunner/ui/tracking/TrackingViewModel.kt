@@ -111,14 +111,6 @@ class TrackingViewModel(
             TrackingSideEffect.Close -> {
                 navController.popBackStack()
             }
-//            TrackingSideEffect.StartTracking -> {
-//                execute(TrackingIntent.Init)
-//            }
-//            TrackingSideEffect.StopTracking -> {
-//                val tracking = CurrentTrackingDto(isTracking = true)
-//                saveCurrentTracking(tracking)
-//                trackingServiceFac.stop()
-//            }
         }
     }
 

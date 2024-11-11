@@ -2,6 +2,7 @@ package com.cesoft.cesrunner
 
 import android.content.Context
 import android.location.Location
+import androidx.compose.ui.text.intl.Locale
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import java.time.Instant
 import java.time.LocalDateTime
@@ -65,3 +66,13 @@ fun Location.toTrackPointDto() = TrackPointDto(
     bearing = bearing,
     speed = speed
 )
+
+fun Int.toDistanceStr(): String {
+    return if(this < 1000) "$this m"
+    else {
+        val a = (this/100)/10f
+        val b = this / 1000
+        if(a == b.toFloat()) String.format(Locale.current.platformLocale,"%.1f Km", a)
+        else String.format(Locale.current.platformLocale,"%d Km", b)
+    }
+}

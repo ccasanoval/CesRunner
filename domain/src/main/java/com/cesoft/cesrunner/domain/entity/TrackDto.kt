@@ -18,6 +18,7 @@ data class TrackDto(
 ) {
     val isCreated: Boolean
         get() = id != ID_NULL
+    val time = timeEnd - timeIni
     companion object {
         val Empty = TrackDto(
             ID_NULL, "",

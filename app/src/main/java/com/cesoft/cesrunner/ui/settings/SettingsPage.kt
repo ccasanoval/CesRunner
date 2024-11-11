@@ -35,6 +35,7 @@ import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.NumberPicker
+import com.cesoft.cesrunner.ui.common.ToolbarCompo
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsIntent
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsState
 import com.cesoft.cesrunner.ui.theme.SepMax
@@ -64,14 +65,13 @@ fun SettingsPage(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     state: SettingsState,
     reduce: (intent: SettingsIntent) -> Unit,
 ) {
     var onClose by remember { mutableStateOf({ reduce(SettingsIntent.Close) }) }
-    Scaffold(
+    /*Scaffold(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -99,22 +99,23 @@ private fun Content(
 //                    }
 //                },
             )
-        },
-    ) { innerPadding ->
-        Surface(modifier = Modifier.padding(innerPadding)) {
-            when(state) {
-                is SettingsState.Loading -> {
-                    reduce(SettingsIntent.Load)
-                    LoadingCompo()
+        },*/
+    ToolbarCompo(
+        title = stringResource(R.string.menu_settings),
+        onBack = onClose
+    ) {
+        when(state) {
+            is SettingsState.Loading -> {
+                reduce(SettingsIntent.Load)
+                LoadingCompo()
+            }
+            is SettingsState.Init -> {
+                var settings by remember { mutableStateOf(state.settings) }
+                onClose = {
+                    reduce(SettingsIntent.Save(settings))
+                    //reduce(SettingsIntent.Close)
                 }
-                is SettingsState.Init -> {
-                    var settings by remember { mutableStateOf(state.settings) }
-                    onClose = {
-                        reduce(SettingsIntent.Save(settings))
-                        //reduce(SettingsIntent.Close)
-                    }
-                    Settings(state.settings) { settings = it }
-                }
+                Settings(state.settings) { settings = it }
             }
         }
     }

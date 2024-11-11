@@ -1,4 +1,4 @@
-package com.cesoft.cesrunner.ui.tracks
+package com.cesoft.cesrunner.ui.details
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -27,16 +27,16 @@ import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.ToolbarCompo
+import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsIntent
+import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsState
 import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fontMed
-import com.cesoft.cesrunner.ui.tracks.mvi.TracksIntent
-import com.cesoft.cesrunner.ui.tracks.mvi.TracksState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun TracksPage(
+fun TrackDetailsPage(
     navController: NavController,
-    viewModel: TracksViewModel = koinViewModel(),
+    viewModel: TrackDetailsViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
     MviScreen(
@@ -49,7 +49,7 @@ fun TracksPage(
             )
         },
         onBackPressed = {
-            viewModel.execute(TracksIntent.Close)
+            viewModel.execute(TrackDetailsIntent.Close)
         },
     ) { state ->
         Content(state = state, reduce = viewModel::execute)
@@ -58,19 +58,19 @@ fun TracksPage(
 
 @Composable
 fun Content(
-    state: TracksState,
-    reduce: (TracksIntent) -> Unit,//KFunction1<TracksIntent, Unit>
+    state: TrackDetailsState,
+    reduce: (TrackDetailsIntent) -> Unit,//KFunction1<TracksIntent, Unit>
 ) {
     ToolbarCompo(
         title = stringResource(R.string.menu_tracks),
-        onBack = { reduce(TracksIntent.Close) }
+        onBack = { reduce(TrackDetailsIntent.Close) }
     ) {
         when (state) {
-            is TracksState.Loading -> {
-                reduce(TracksIntent.Load)
+            is TrackDetailsState.Loading -> {
+                reduce(TrackDetailsIntent.Load)
                 LoadingCompo()
             }
-            is TracksState.Init -> {
+            is TrackDetailsState.Init -> {
                 TracksData(state = state, reduce = reduce)
             }
         }
@@ -79,8 +79,8 @@ fun Content(
 
 @Composable
 fun TracksData(
-    state: TracksState.Init,
-    reduce: (TracksIntent) -> Unit,
+    state: TrackDetailsState.Init,
+    reduce: (TrackDetailsIntent) -> Unit,
 ) {
     Column(modifier = Modifier) {
         //TODO: Search bar
@@ -93,7 +93,6 @@ fun TracksData(
         LazyColumn {
             for(t in state.tracks) {
                 item {
-                    Item(t) { reduce(TracksIntent.Details(t.id)) }
                 }
             }
         }
@@ -136,7 +135,7 @@ private fun Item(data: TrackDto, onClick: () -> Unit) {
 @Preview
 private fun TrackPage_Preview() {
     val time = System.currentTimeMillis()
-    val state = TracksState.Init(
+    val state = TrackDetailsState.Init(
         tracks = listOf(
             TrackDto(
                 id = 69,

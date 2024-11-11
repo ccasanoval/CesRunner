@@ -72,7 +72,7 @@ fun Int.toDistanceStr(): String {
     else {
         val a = (this/100)/10f
         val b = this / 1000
-        if(a == b.toFloat()) String.format(Locale.current.platformLocale,"%.1f Km", a)
-        else String.format(Locale.current.platformLocale,"%d Km", b)
+        if(a == b.toFloat()) String.format(Locale.current.platformLocale,"%d Km", b)
+        else String.format(Locale.current.platformLocale,"%.1f Km", a)
     }
 }

@@ -22,6 +22,7 @@ import com.cesoft.cesrunner.domain.usecase.SaveSettingsUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
+import com.cesoft.cesrunner.ui.details.TrackDetailsViewModel
 import com.cesoft.cesrunner.ui.home.HomeViewModel
 import com.cesoft.cesrunner.ui.map.MapViewModel
 import com.cesoft.cesrunner.ui.settings.SettingsViewModel
@@ -66,4 +67,5 @@ val appModule = module {
     viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { MapViewModel(get(), ) }
     viewModel { TracksViewModel(get(), ) }
+    viewModel { TrackDetailsViewModel(get(), ) }
 }

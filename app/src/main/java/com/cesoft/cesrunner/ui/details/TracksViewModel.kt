@@ -1,4 +1,4 @@
-package com.cesoft.cesrunner.ui.tracks
+package com.cesoft.cesrunner.ui.details
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -7,54 +7,51 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
-import com.cesoft.cesrunner.ui.tracks.mvi.TracksIntent
-import com.cesoft.cesrunner.ui.tracks.mvi.TracksSideEffect
-import com.cesoft.cesrunner.ui.tracks.mvi.TracksState
-import com.cesoft.cesrunner.ui.tracks.mvi.TracksTransform
+import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsIntent
+import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsSideEffect
+import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsState
+import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsTransform
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 
-class TracksViewModel(
+class TrackDetailsViewModel(
     val readAllTracks: ReadAllTracksUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
-): ViewModel(), MviHost<TracksIntent, State<TracksState, TracksSideEffect>> {
+): ViewModel(), MviHost<TrackDetailsIntent, State<TrackDetailsState, TrackDetailsSideEffect>> {
 
     private val reducer =
         Reducer(
             coroutineScope = viewModelScope,
             defaultDispatcher = coroutineDispatcher,
-            initialInnerState = TracksState.Loading,
+            initialInnerState = TrackDetailsState.Loading,
             logger = null,
             intentExecutor = this::executeIntent,
         )
 
     override val state = reducer.state
-    override fun execute(intent: TracksIntent) {
+    override fun execute(intent: TrackDetailsIntent) {
         reducer.executeIntent(intent)
     }
-    private fun executeIntent(intent: TracksIntent) =
+    private fun executeIntent(intent: TrackDetailsIntent) =
         when (intent) {
-            TracksIntent.Load -> executeLoad()
-            TracksIntent.Close -> executeClose()
-            is TracksIntent.Details -> executeDetails(intent.id)
+            TrackDetailsIntent.Load -> executeLoad()
+            TrackDetailsIntent.Close -> executeClose()
         }
     fun consumeSideEffect(
-        sideEffect: TracksSideEffect,
+        sideEffect: TrackDetailsSideEffect,
         navController: NavController,
         context: Context,
     ) {
         when (sideEffect) {
-            TracksSideEffect.Close -> { navController.popBackStack() }
-            is TracksSideEffect.Details -> { navController.navigate(Page.TrackDetail.route) }
+            TrackDetailsSideEffect.Close -> { navController.popBackStack() }
         }
     }
 
     private fun executeClose() = flow {
-        emit(TracksTransform.AddSideEffect(TracksSideEffect.Close))
+        emit(TrackDetailsTransform.AddSideEffect(TrackDetailsSideEffect.Close))
     }
     private fun executeLoad() = flow {
         val res = readAllTracks()
@@ -64,9 +61,6 @@ class TracksViewModel(
             res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
         }
         val tracks = res.getOrNull() ?: listOf()
-        emit(TracksTransform.GoInit(tracks, error))
-    }
-    private fun executeDetails(id: Long)  = flow {
-        emit(TracksTransform.AddSideEffect(TracksSideEffect.Details(id)))
+        emit(TrackDetailsTransform.GoInit(tracks, error))
     }
 }

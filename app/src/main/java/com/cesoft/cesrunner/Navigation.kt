@@ -6,8 +6,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cesoft.cesrunner.ui.home.HomePage
+import com.cesoft.cesrunner.ui.map.MapPage
 import com.cesoft.cesrunner.ui.settings.SettingsPage
 import com.cesoft.cesrunner.ui.tracking.TrackingPage
+import com.cesoft.cesrunner.ui.tracks.TracksPage
 
 
 sealed class Page(val route: String) {
@@ -24,6 +26,8 @@ sealed class Page(val route: String) {
     data object Home: Page("home")
     data object Settings: Page("settings")
     data object Tracking: Page("tracking")
+    data object Map: Page("map")
+    data object Tracks: Page("tracks")
 }
 
 @Composable
@@ -33,5 +37,7 @@ fun PageNavigation() {
         composable(route = Page.Home.route) { HomePage(navController) }
         composable(route = Page.Settings.route) { SettingsPage(navController) }
         composable(route = Page.Tracking.route) { TrackingPage(navController) }
+        composable(route = Page.Map.route) { MapPage(navController) }
+        composable(route = Page.Tracks.route) { TracksPage(navController) }
     }
 }

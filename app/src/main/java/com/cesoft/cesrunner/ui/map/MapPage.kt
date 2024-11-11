@@ -1,4 +1,4 @@
-package com.cesoft.cesrunner.ui.tracks
+package com.cesoft.cesrunner.ui.map
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -12,9 +12,9 @@ import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
-fun TracksPage(
+fun MapPage(
     navController: NavController,
-    viewModel: TracksViewModel = koinViewModel(),
+    viewModel: MapViewModel = koinViewModel(),
 ) {
     Column(modifier = Modifier) {
         Button(onClick = {}) {

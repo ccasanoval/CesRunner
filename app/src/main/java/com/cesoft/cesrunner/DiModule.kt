@@ -23,8 +23,10 @@ import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.HomeViewModel
+import com.cesoft.cesrunner.ui.map.MapViewModel
 import com.cesoft.cesrunner.ui.settings.SettingsViewModel
 import com.cesoft.cesrunner.ui.tracking.TrackingViewModel
+import com.cesoft.cesrunner.ui.tracks.TracksViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -62,4 +64,6 @@ val appModule = module {
     viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { MapViewModel(get(), ) }
+    viewModel { TracksViewModel(get(), ) }
 }

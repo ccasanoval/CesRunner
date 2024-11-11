@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.ui.settings
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,8 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
@@ -40,7 +37,6 @@ import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.NumberPicker
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsIntent
 import com.cesoft.cesrunner.ui.settings.mvi.SettingsState
-import com.cesoft.cesrunner.ui.theme.Green
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin

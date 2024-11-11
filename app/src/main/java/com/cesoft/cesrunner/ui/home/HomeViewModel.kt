@@ -43,14 +43,18 @@ class HomeViewModel(
     }
     private fun executeIntent(intent: HomeIntent) =
         when(intent) {
+            HomeIntent.Close -> executeClose()
             HomeIntent.Load -> executeLoad()
-            //HomeIntent.Refresh -> executeLoad()
             HomeIntent.GoStart -> executeStart()
             HomeIntent.GoSettings -> executeSettings()
-            HomeIntent.GoMap -> executeClose()
-            HomeIntent.GoTracks -> executeClose()
-            HomeIntent.Close -> executeClose()
+            HomeIntent.GoMap -> executeMap()
+            HomeIntent.GoTracks -> executeTracks()
         }
+
+    //TODO: ask if wanna close tracking...?
+    private fun executeClose() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.Close))
+    }
 
     private fun executeLoad() = flow {
         val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
@@ -64,7 +68,6 @@ class HomeViewModel(
             res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
         }
         val trackFlow = res.getOrNull() ?: flow {  }
-        android.util.Log.e(TAG, "executeLoad------------ $currentTrack $e")
         emit(HomeTransform.GoInit(trackFlow, error))
     }
 
@@ -77,8 +80,12 @@ class HomeViewModel(
         emit(HomeTransform.AddSideEffect(HomeSideEffect.GoSettings))
     }
 
-    private fun executeClose() = flow {
-        emit(HomeTransform.AddSideEffect(HomeSideEffect.Close))//TODO: ask if wanna close tracking...?
+    private fun executeMap() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoMap))
+    }
+
+    private fun executeTracks() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoTracks))
     }
 
     fun consumeSideEffect(
@@ -95,10 +102,10 @@ class HomeViewModel(
                 //Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT).show()
             }
             HomeSideEffect.GoTracks -> {
-                Toast.makeText(context, "GoTracks", Toast.LENGTH_SHORT).show()
+                navController.navigate(Page.Tracks.route)
             }
-            HomeSideEffect.GoMaps -> {
-                Toast.makeText(context, "GoMaps", Toast.LENGTH_SHORT).show()
+            HomeSideEffect.GoMap -> {
+                navController.navigate(Page.Map.route)
             }
             HomeSideEffect.Close -> (context as Activity).finish()
         }

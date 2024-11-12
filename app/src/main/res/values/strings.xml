@@ -8,6 +8,8 @@
     <string name="error">Error</string>
     <string name="accept">Aceptar</string>
     <string name="cancel">Cancelar</string>
+    <string name="delete">Borrar</string>
+    <string name="save">Guardar</string>
 
     <string name="permissions">Permisos neceesarios:</string>
     <string name="accept_permissions">Debes aceptar los permisos para que la app pueda funcionar</string>
@@ -35,6 +37,8 @@
     <string name="hours">Horas</string>
     <string name="minutes">Minutos</string>
     <string name="seconds">Segundos</string>
+    <string name="points">Puntos</string>
+    <string name="name">Nombre</string>
 
     <string name="voice_on">Voz activa</string>
     <string name="min_activate_location">Mínimo cambio para obtener una nueva ubicación:</string>

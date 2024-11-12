@@ -11,7 +11,8 @@ import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
+import com.cesoft.cesrunner.domain.usecase.ReadTrackUC
+import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsIntent
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsSideEffect
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsState
@@ -22,9 +23,11 @@ import kotlinx.coroutines.flow.flow
 
 class TrackDetailsViewModel(
     private val savedStateHandle: SavedStateHandle,
-    private val readAllTracks: ReadAllTracksUC,
+    private val readTrack: ReadTrackUC,
+    private val updateTrack: UpdateTrackUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TrackDetailsIntent, State<TrackDetailsState, TrackDetailsSideEffect>> {
+    private var track: TrackDto = TrackDto.Empty
 
     private val reducer =
         Reducer(
@@ -43,6 +46,7 @@ class TrackDetailsViewModel(
         when (intent) {
             TrackDetailsIntent.Load -> executeLoad()
             TrackDetailsIntent.Close -> executeClose()
+            is TrackDetailsIntent.SaveName -> executeSaveName(intent.name)
         }
     fun consumeSideEffect(
         sideEffect: TrackDetailsSideEffect,
@@ -59,14 +63,30 @@ class TrackDetailsViewModel(
     }
     private fun executeLoad() = flow {
         val id = Page.TrackDetail.getId(savedStateHandle)
-        android.util.Log.e("AAAA", "------------------ id = $id")
-//        val res = readAllTracks()
-        var error: AppError? = null
-//        val e = res.exceptionOrNull()
-//        if(res.isFailure && e !is AppError.NotFound) {
-//            res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
-//        }
-//        val tracks = res.getOrNull() ?: listOf()
-        emit(TrackDetailsTransform.GoInit(TrackDto.Empty, error))
+        id?.let {
+            val res = readTrack(id)
+            track = res.getOrNull() ?: TrackDto.Empty
+            var error: AppError? = null
+            val e = res.exceptionOrNull()
+            if(res.isFailure && e !is AppError.NotFound) {
+                res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
+            }
+            emit(TrackDetailsTransform.GoInit(track, error))
+        } ?: run {
+            emit(TrackDetailsTransform.GoInit(TrackDto.Empty, AppError.NotFound))
+        }
+    }
+    private fun executeSaveName(name: String) = flow {
+        //val res = readTrack(id)
+        val newTrack = track.copy(name = name)
+        val res = updateTrack(newTrack)
+        if(res.isSuccess) {
+            track = newTrack
+            emit(TrackDetailsTransform.GoInit(track, null))//TODO: Show message: Saved
+        }
+        else {
+            val e = res.exceptionOrNull()?.let { AppError.DataBaseError(it) } ?: AppError.NotFound
+            emit(TrackDetailsTransform.GoInit(track, e))
+        }
     }
 }

@@ -19,7 +19,10 @@
     <string name="tracking_on">Active route:</string>
     <string name="period">Period</string>
     <string name="min">(min.)</string>
-
+    <string name="points">Points</string>
+    <string name="name">Name</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
     <string name="time_ini">Start</string>

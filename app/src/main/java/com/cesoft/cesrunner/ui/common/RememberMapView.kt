@@ -106,7 +106,7 @@ fun addMarker(
 
 fun createPolyline(mapView: MapView, points: List<GeoPoint>): Polyline {
     val polyline = Polyline(mapView)
-    polyline.color = Green.toArgb()
+    //polyline.color = Green.toArgb()
     //for(p in points) polyline.addPoint(p)
     polyline.setPoints(points)
     polyline.infoWindow = null

@@ -30,6 +30,7 @@ import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.toDistanceStr
+import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.common.ErrorCompo
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
@@ -60,7 +61,6 @@ fun HomePage(
             viewModel.execute(HomeIntent.Close)
         },
     ) { view ->
-        //android.util.Log.e("HomePage", "--------HomePage----- $view")
         when(view) {
             is HomeState.Loading -> {
                 viewModel.execute(HomeIntent.Load)
@@ -78,16 +78,9 @@ private fun Content(
     state: HomeState.Init,
     reduce: (intent: HomeIntent) -> Unit,
 ) {
-    android.util.Log.e("HomePage", "Content---------------- 0000 ")
     var track by remember { mutableStateOf<TrackDto?>(null) }
     LaunchedEffect(state) {
-//        while(true) {
-//            android.util.Log.e("HomePage", "Content----------------")
-//            reduce(HomeIntent.Refresh)
-//            delay(30_000)
-//        }
         state.trackFlow.collect { t ->
-            android.util.Log.e("HomePage", "Content---------------- a $t")
             t?.let { track = it }
         }
     }
@@ -110,18 +103,17 @@ private fun Content(
                     context.startActivity(intent)
                 }
                 Text(
-                    text = stringResource(R.string.tracking_on),
+                    text = stringResource(R.string.tracking_on) + " " + track?.name,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(SepMin)
                 )
+                val trackData =
+                    stringResource(R.string.distance) + " " +
+                    track?.distance?.toDistanceStr() + " / " +
+                    stringResource(R.string.time) + " " +
+                    track?.time?.toTimeStr()
                 Text(
-                    text = track?.name ?:"",
-                    modifier = Modifier.padding(SepMin)
-                )
-                val distanceStr = track?.distance?.toDistanceStr() ?: ""
-                //val speed = state.currentTrack.speedMax//TODO: Current Speed
-                Text(
-                    text = distanceStr,
+                    text = trackData,
                     modifier = Modifier.padding(SepMin)
                 )
             }

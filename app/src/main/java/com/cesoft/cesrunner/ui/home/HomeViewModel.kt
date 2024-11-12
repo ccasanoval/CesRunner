@@ -12,6 +12,7 @@ import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackIdFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadTrackFlowUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.flow
 class HomeViewModel(
     private val trackingServiceFac: TrackingServiceFac,
     private val readCurrentTrack: ReadCurrentTrackUC,
+    private val readCurrentTrackIdFlow: ReadCurrentTrackIdFlowUC,
     private val readTrackFlow: ReadTrackFlowUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
@@ -57,18 +59,20 @@ class HomeViewModel(
     }
 
     private fun executeLoad() = flow {
-        val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
-        if(currentTrack.isCreated) {
-            trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
+        readCurrentTrackIdFlow().getOrNull()?.collect {
+            val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
+            if(currentTrack.isCreated) {
+                trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
+            }
+            val res = readTrackFlow(currentTrack.id)
+            var error: AppError? = null
+            val e = res.exceptionOrNull()
+            if(res.isFailure && e !is AppError.NotFound) {
+                res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
+            }
+            val trackFlow = res.getOrNull() ?: flow {  }
+            emit(HomeTransform.GoInit(trackFlow, error))
         }
-        val res = readTrackFlow(currentTrack.id)
-        var error: AppError? = null
-        val e = res.exceptionOrNull()
-        if(res.isFailure && e !is AppError.NotFound) {
-            res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
-        }
-        val trackFlow = res.getOrNull() ?: flow {  }
-        emit(HomeTransform.GoInit(trackFlow, error))
     }
 
     private fun executeStart() = flow {

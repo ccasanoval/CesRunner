@@ -48,9 +48,9 @@ fun MapCompo(
         val points = trackPoints.map { p -> GeoPoint(p.latitude, p.longitude) }
 
         val iIni = context.getDrawable(android.R.drawable.ic_menu_compass)
-        iIni?.setTint(Green.toArgb())
+        iIni?.setTint(Color.Blue.toArgb())
         val iEnd = context.getDrawable(android.R.drawable.ic_menu_mylocation)
-        iEnd?.setTint(Color.Red.toArgb())
+        iEnd?.setTint(Color.Green.toArgb())
         points.firstOrNull()?.let { addMarker(view, it, iIni) }
         points.lastOrNull()?.let { addMarker(view, it, iEnd) }
 

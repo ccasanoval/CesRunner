@@ -4,13 +4,13 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,8 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
@@ -35,23 +34,20 @@ import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
+import com.cesoft.cesrunner.ui.common.InfoRow
 import com.cesoft.cesrunner.ui.common.LoadingCompo
+import com.cesoft.cesrunner.ui.common.MapCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
-import com.cesoft.cesrunner.ui.common.addMyLocation
-import com.cesoft.cesrunner.ui.common.createPolyline
-import com.cesoft.cesrunner.ui.common.rememberMapView
-import com.cesoft.cesrunner.ui.theme.Green
+import com.cesoft.cesrunner.ui.common.rememberMapCompo
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fontBig
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
-import org.osmdroid.util.GeoPoint
 
+//TODO: Counter to ini: Start the route in 3, 2, 1...
 @Composable
 fun TrackingPage(
     navController: NavController,
@@ -118,23 +114,29 @@ private fun ScreenCompo(
             Text(stringResource(R.string.stop))
         }
 
-        TrackDataFlow(state, reduce)
+        var points by remember { mutableStateOf(listOf<TrackPointDto>()) }
+        var track by remember { mutableStateOf(TrackDto.Empty) }
+        LaunchedEffect(state) {
+            state.trackFlow.collect {
+                it?.let {
+                    track = it
+                    points = it.points
+                }
+            }
+        }
+        //TODO: Make it scrollable like in track details...
+        TrackData(track, Modifier.weight(.4f).zIndex(999f))
+        Spacer(Modifier.size(SepMax))
 
-        Spacer(modifier = Modifier.padding(SepMax*2))
-        HorizontalDivider(thickness = 3.dp, color = Green)
-
-        //TODO: Map---------------------------------
-        MapCompo(state.trackFlow)
-
-        Spacer(modifier = Modifier.padding(SepMax))
+        val mapView = rememberMapCompo(context)
+        MapCompo(context, mapView, points, Modifier.weight(.4f))
     }
 }
-
+/*
 @Composable
-fun MapCompo(track: Flow<TrackDto?>) {
+fun MapCompo(mapView: MapView, track: Flow<TrackDto?>) {
     android.util.Log.e("TrackingPAge", "MapCompo------000000------------ ")
     val context = LocalContext.current
-    val mapView = rememberMapView(context)
     var points by remember { mutableStateOf(listOf<GeoPoint>()) }
     LaunchedEffect(track) {
         track.collect {
@@ -152,11 +154,12 @@ fun MapCompo(track: Flow<TrackDto?>) {
         addMyLocation(context, view)
         if(points.isNotEmpty()) {
             view.controller.setCenter(points.last())
-            createPolyline(mapView, points)
+            val p = createPolyline(mapView, points, Green)
+            view.overlays.add(p)
         }
     }
-}
-
+}*/
+/*
 @Composable
 private fun TrackDataFlow(
     state: TrackingState.Init,
@@ -170,73 +173,52 @@ private fun TrackDataFlow(
         }
     }
     TrackData(track)
-}
-@Composable
-private fun TrackData(
-    track: TrackDto
-) {
-    android.util.Log.e("TrackingPage", "TrackData---------------- points = ${track.points.size} ")
-    Column(modifier = Modifier.fillMaxWidth()) {
-        /*LaunchedEffect(state) {
-            while (true) {
-                //android.util.Log.e("TrackingPage", "TrackingInfo----------------")
-                reduce(TrackingIntent.Refresh)
-                delay(TrackingService.MIN_PERIOD/4)//TODO: DATABASE DATA FLOW !!!
-            }
-        }*/
-        //TODO: Allow changing value..
-        Text(
-            text = track.name,
-            fontWeight = FontWeight.Bold,
-            fontSize = fontBig,
-            modifier = Modifier.padding(vertical = SepMin)
-        )
-        val distance = "${track.distance} m"
-        val timeIni = track.timeIni.toDateStr()
-        val timeEnd = track.timeEnd.toDateStr()
-        val duration = track.timeEnd - track.timeIni
-        val altitudes = track.points.map { it.altitude }
-        val altitudeMax = altitudes.maxOrNull() ?: 0.0
-        val altitudeMin = altitudes.minOrNull() ?: 0.0
-        val altitude = String.format(//"$altitudeMin - $altitudeMax m"
-            Locale.current.platformLocale,
-            "%.0f - %.0f m (dif %.0f)",
-            altitudeMin, altitudeMax, altitudeMax - altitudeMin
-        )
-        val speeds = track.points.map { it.speed }
-        val speedMax = speeds.maxOrNull() ?: 0f
-        val speedMed = speeds.average()
-        val speed = String.format(
-            Locale.current.platformLocale,
-            //"%.0f - %.0f Km/h (%d - %d m/s)",
-            //speedMin*3.6, speedMax*3.6, speedMin, speedMax)
-            "%.0f Km/h (max %.0f)",
-            speedMed*3.6, speedMax*3.6
-        )
-        //val durationStr = if(duration > 60*60) "${duration}"
-        InfoRow(stringResource(R.string.distance), distance)
-        InfoRow(stringResource(R.string.time), duration.toTimeStr())
-        InfoRow(stringResource(R.string.time_ini), timeIni)
-        InfoRow(stringResource(R.string.time_end), timeEnd)
-        InfoRow(stringResource(R.string.speed), speed)
-        InfoRow(stringResource(R.string.altitude), altitude)
-    }
-}
+}*/
 
 @Composable
-private fun InfoRow(label: String, value: String) {
-    Row(modifier = Modifier.padding(top = SepMin)) {
-        Text(
-            text = label,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.3f)
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(0.6f)
-        )
+private fun TrackData(
+    track: TrackDto,
+    modifier: Modifier = Modifier
+) {
+    val distance = "${track.distance} m"
+    val timeIni = track.timeIni.toDateStr()
+    val timeEnd = track.timeEnd.toDateStr()
+    val duration = track.timeEnd - track.timeIni
+    val altitudes = track.points.map { it.altitude }
+    val altitudeMax = altitudes.maxOrNull() ?: 0.0
+    val altitudeMin = altitudes.minOrNull() ?: 0.0
+    val altitude = String.format(//"$altitudeMin - $altitudeMax m"
+        Locale.current.platformLocale,
+        "%.0f - %.0f m (dif %.0f m)",
+        altitudeMin, altitudeMax, altitudeMax - altitudeMin
+    )
+    val speeds = track.points.map { it.speed }
+    val speedMax = speeds.maxOrNull() ?: 0f
+    val speedMed = speeds.average()
+    val speed = String.format(
+        Locale.current.platformLocale,
+        //"%.0f - %.0f Km/h (%d - %d m/s)",
+        //speedMin*3.6, speedMax*3.6, speedMin, speedMax)
+        "%.0f Km/h (max %.0f Km/h)",
+        speedMed*3.6, speedMax*3.6
+    )
+    LazyColumn(modifier = modifier.fillMaxWidth()) {
+        item {
+            Text(
+                text = track.name,
+                fontWeight = FontWeight.Bold,
+                fontSize = fontBig,
+                modifier = Modifier.padding(vertical = SepMin)
+            )
+        }
+        item { InfoRow(stringResource(R.string.distance), distance) }
+        item { InfoRow(stringResource(R.string.time), duration.toTimeStr()) }
+        item { InfoRow(stringResource(R.string.time_ini), timeIni) }
+        item { InfoRow(stringResource(R.string.time_end), timeEnd) }
+        item { InfoRow(stringResource(R.string.speed), speed) }
+        item { InfoRow(stringResource(R.string.altitude), altitude) }
+        item { Spacer(Modifier.padding(vertical = SepMax*5)) }
     }
-    HorizontalDivider()
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -244,29 +226,26 @@ private fun InfoRow(label: String, value: String) {
 @Composable
 private fun TrackData_Preview() {
     val timeIni = System.currentTimeMillis() - 5*60*60*1000 - 35*60*1000 - 45*1000
-    val state = TrackingState.Init(
-        trackFlow = flowOf(
-            TrackDto.Empty.copy(
-                name = "Tracking A",
-                timeIni = timeIni,
-                timeEnd = System.currentTimeMillis(),
-                distance = 690,
-                points = listOf(
-                    TrackPointDto(
-                        id = 69,
-                        latitude = 0.0,
-                        longitude = 0.0,
-                        time = 0,
-                        accuracy = 0f,
-                        provider = "",
-                        altitude = 50.0,
-                        bearing = 0f,
-                        speed = 5f)
-                )
-            )
+    val track = TrackDto.Empty.copy(
+        name = "Tracking A",
+        timeIni = timeIni,
+        timeEnd = System.currentTimeMillis(),
+        distance = 690,
+        points = listOf(
+            TrackPointDto(
+                id = 69,
+                latitude = 0.0,
+                longitude = 0.0,
+                time = 0,
+                accuracy = 0f,
+                provider = "",
+                altitude = 50.0,
+                bearing = 0f,
+                speed = 5f)
         )
     )
+    val state = TrackingState.Init(trackFlow = flowOf(track))
     Surface(modifier = Modifier.fillMaxSize()) {
-        TrackDataFlow(state) { }
+        TrackData(track)
     }
 }

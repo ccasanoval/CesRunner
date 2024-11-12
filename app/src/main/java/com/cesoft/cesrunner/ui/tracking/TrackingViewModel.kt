@@ -64,6 +64,7 @@ class TrackingViewModel(
         }
 
     private fun executeLoad() = flow {
+        android.util.Log.e(TAG, "executeLoad-----------")
         var id = readCurrentTrackId().getOrNull() ?: ID_NULL
         if(id == ID_NULL) {
             val settings = readSettings().getOrNull() ?: SettingsDto.Empty

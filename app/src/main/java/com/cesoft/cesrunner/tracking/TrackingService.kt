@@ -119,9 +119,7 @@ class TrackingService: LifecycleService() {
                             "BEAR: ${loc.bearing}\n" +
                             "SPE:  ${loc.speed}\n" +
                             "MOCK: ${loc.isMock}\n"
-                    //"EXT:  ${it.extras}"
-                    //it.isComplete, it.mslAltitudeMeters
-                    Log.e(TAG, "----------- Service location:\n$data")
+                    if(false)Log.e(TAG, "----------- Service location:\n$data")
 
                     /// Current Tracking
                     readCurrentTrack().getOrNull()?.let { track ->
@@ -154,7 +152,7 @@ class TrackingService: LifecycleService() {
 //                                val altMin = min(track.altitudeMin, loc.altitude.toInt())
 //                                val speedMax = max(track.speedMax, loc.speed.toInt())
 //                                val speedMin = min(track.speedMin, loc.speed.toInt())
-                                Log.e(TAG, "----------- Service location: updateTrack: ${track.distance} / $distance ------------")
+                                //Log.e(TAG, "----------- Service location: updateTrack: ${track.distance} / $distance ------------")
                                 newTrack = track.copy(
                                     id = track.id,
                                     distance = distance.toInt(),
@@ -165,7 +163,7 @@ class TrackingService: LifecycleService() {
 //                                    speedMax = speedMax,
                                 )
                             } ?: run {
-                                Log.e(TAG, "----------- Service location: updateTrack: ${track.distance}  NEW  ------------")
+                                //Log.e(TAG, "----------- Service location: updateTrack: ${track.distance}  NEW  ------------")
                                 newTrack = track.copy(
                                     id = track.id,
                                     timeEnd = time,
@@ -178,12 +176,12 @@ class TrackingService: LifecycleService() {
                             //if(lastLocation?.latitude == newLocation.latitude && lastLocation?.longitude == newLocation.longitude)Log.e(TAG, "****** SAME LOCATION ******")
                             lastLocation = newLocation
                             updateTrack(newTrack)
-                            Log.e(TAG, "----------- Service location: updateTrack: $newTrack ------------")
+                            //Log.e(TAG, "----------- Service location: updateTrack: $newTrack ------------")
                         }
                     }
                 }
                 Log.e(TAG, "----------- Service location: $location ------------")
-                delay(500)
+                delay(100)//TODO: Study this
             }
             ?.launchIn(lifecycleScope)
     }

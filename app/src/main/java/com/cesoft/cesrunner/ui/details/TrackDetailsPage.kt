@@ -20,7 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,10 +36,12 @@ import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
+import com.cesoft.cesrunner.ui.common.InfoRow
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.ToolbarCompo
 import com.cesoft.cesrunner.ui.common.addMyLocation
-import com.cesoft.cesrunner.ui.common.rememberMapView
+import com.cesoft.cesrunner.ui.common.createPolyline
+import com.cesoft.cesrunner.ui.common.rememberMapCompo
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsIntent
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsState
 import com.cesoft.cesrunner.ui.theme.Green
@@ -47,7 +49,6 @@ import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
 import org.koin.androidx.compose.koinViewModel
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.Polyline
 
 
 @Composable
@@ -110,16 +111,14 @@ fun MapCompo(
     modifier: Modifier
 ) {
     val context = LocalContext.current
-    val mapView = rememberMapView(context)
+    val mapView = rememberMapCompo(context)
     var points by remember { mutableStateOf(listOf<GeoPoint>()) }
     points = track.points.map { p -> GeoPoint(p.latitude, p.longitude) }
 
-    val polyline = Polyline(mapView)
-    polyline.color = Green.toArgb()
-    polyline.setPoints(points)
-    polyline.infoWindow = null
-    mapView.overlayManager.add(polyline)
+    val polyline = createPolyline(mapView, points, Color.Black)
+//    mapView.overlayManager.add(polyline)
 
+    //TODO: Actualizar home page con el estado actual de la ruta, o DETENIDO!!
     //TODO: No estamos guardando el ultimo punto, la distancia no es correcta
     android.util.Log.e("TrackingPAge", "MapCompo----------- dis = ${polyline.distance} ")
 
@@ -166,7 +165,6 @@ private fun TrackData(
         "%.0f Km/h (max %.0f)",
         speedMed*3.6, speedMax*3.6
     )
-    android.util.Log.e("TrackingPage", "TrackData---------------- points = ${track.points.size} ")
     LazyColumn(modifier = modifier
         .fillMaxWidth()
         .padding(SepMin)) {
@@ -202,24 +200,8 @@ private fun TrackData(
         item { InfoRow(stringResource(R.string.speed), speed) }
         item { InfoRow(stringResource(R.string.altitude), altitude) }
         item { InfoRow(stringResource(R.string.points), track.points.size.toString()) }
-        item { Spacer(modifier = Modifier.size(SepMax*5)) }
+        item { Spacer(modifier = Modifier.padding(vertical = SepMax*5)) }
     }
-}
-
-@Composable
-private fun InfoRow(label: String, value: String) {
-    Row(modifier = Modifier.padding(top = SepMin)) {
-        Text(
-            text = label,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.3f)
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(0.6f)
-        )
-    }
-    HorizontalDivider()
 }
 
 //--------------------------------------------------------------------------------------------------

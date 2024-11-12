@@ -1,26 +1,79 @@
 package com.cesoft.cesrunner.ui.common
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.viewinterop.AndroidView
+import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.ui.theme.Green
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.compass.CompassOverlay
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
+
+@SuppressLint("UseCompatLoadingForDrawables")
 @Composable
-fun rememberMapView(context : Context): MapView {
-    android.util.Log.e("RememberMapView", "CREATE---------------------")
+fun MapCompo(
+    context : Context,
+    mapView: MapView,
+    trackPoints: List<TrackPointDto>,
+    modifier: Modifier = Modifier
+) {
+    //val mapView = rememberMapCompo(context)
+    AndroidView(
+        factory = { mapView },
+        modifier = modifier
+    ) { view ->
+        view.overlays.removeAll { true }
+
+        val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
+        locationOverlay.enableMyLocation()
+        view.overlays.add(locationOverlay)
+        //view.controller.setCenter(locationOverlay.myLocation)
+
+        val points = trackPoints.map { p -> GeoPoint(p.latitude, p.longitude) }
+
+        val iIni = context.getDrawable(android.R.drawable.ic_menu_compass)
+        iIni?.setTint(Green.toArgb())
+        val iEnd = context.getDrawable(android.R.drawable.ic_menu_mylocation)
+        iEnd?.setTint(Color.Red.toArgb())
+        points.firstOrNull()?.let { addMarker(view, it, iIni) }
+        points.lastOrNull()?.let { addMarker(view, it, iEnd) }
+
+        //val polyline = createPolyline(mapView, points, Green)
+        val polyline = Polyline(mapView)
+        polyline.isGeodesic = true
+        polyline.setPoints(points)
+        view.overlays.add(polyline)
+        points.lastOrNull()?.let { view.controller.setCenter(it) }
+
+        android.util.Log.e("MapCompo", "0000000------------- ${locationOverlay.myLocation}")
+//        val polygon = Polygon()
+//        polygon.setPoints(points)
+//        polygon.fillColor = Color.Red.toArgb()
+//        polygon.title = "test"
+//        polygon.getOutlinePaint().color = polygon.fillPaint.color
+//        view.overlays.add(polygon)
+    }
+}
+
+@Composable
+fun rememberMapCompo(context : Context): MapView {
+    android.util.Log.e("rememberMapCompo", "CREATE---------------------")
     val pack = context.packageName
     val prefs = context.getSharedPreferences(pack+"OSM", Context.MODE_PRIVATE)
     Configuration.getInstance().load(context, prefs)
@@ -34,7 +87,7 @@ fun rememberMapView(context : Context): MapView {
 }
 
 private fun initMap(mapView: MapView) {
-    android.util.Log.e("RememberMapView", "initMap---------------------")
+    android.util.Log.e("rememberMapCompo", "initMap---------------------")
     mapView.apply {
         isHorizontalMapRepetitionEnabled = false
         isVerticalMapRepetitionEnabled = false
@@ -46,7 +99,7 @@ private fun initMap(mapView: MapView) {
                 tileSystem.minLatitude, tileSystem.minLongitude  // bottom-right
             )
         )
-        minZoomLevel = 4.0
+        minZoomLevel = 5.0
         controller.setZoom(20.0)
     }
 }
@@ -55,21 +108,8 @@ fun addMyLocation(context: Context, mapView: MapView) {
     val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
     locationOverlay.enableMyLocation()
     //locationOverlay.enableFollowLocation()--> Doesn't let you move manually
-    //locationOverlay.setPersonAnchor(100f, 100f)
-
-    //val bm = BitmapFactory.decodeResource(context.resources, android.R.drawable.btn_radio)
-    //locationOverlay.setDirectionIcon(bm)
-    //locationOverlay.setPersonIcon(bm)
-    locationOverlay.isOptionsMenuEnabled = true
-    locationOverlay.isDrawAccuracyEnabled = true
-
-//    locationOverlay.runOnFirstFix {
-//        controller.setCenter(locationOverlay.myLocation)
-//        //controller.animateTo(locationOverlay.myLocation)//Only out of main thread..
-//    }
+    //locationOverlay.runOnFirstFix { mapView.setExpectedCenter(locationOverlay.myLocation) }
     mapView.overlays.add(locationOverlay)
-    //mapView.overlayManager.overlays().add(locationOverlay)
-    //overlays.add(CompassOverlay(context, mapView))
     //
     val compassOverlay = CompassOverlay(context, InternalCompassOrientationProvider(context), mapView)
     compassOverlay.enableCompass()
@@ -79,9 +119,9 @@ fun addMyLocation(context: Context, mapView: MapView) {
 fun addMarker(
     mapView : MapView,
     geoPoint: GeoPoint,
+    icon: Drawable?=null,
     title: String?=null,
     snippet : String?=null,
-    icon: Drawable?=null,
     //onClick: (Marker, MapView) -> Boolean
     onClick: (() -> Unit)? = null
 ): Marker {
@@ -104,6 +144,19 @@ fun addMarker(
     return marker
 }
 
+fun createPolyline(
+    mapView: MapView,
+    points: List<GeoPoint>,
+    color: Color?
+): Polyline {
+    val polyline = Polyline(mapView)
+    color?.let { polyline.color = color.toArgb() }
+    polyline.setPoints(points)
+    polyline.infoWindow = null
+    return polyline
+}
+
+/*
 fun createPolyline(mapView: MapView, points: List<GeoPoint>): Polyline {
     val polyline = Polyline(mapView)
     //polyline.color = Green.toArgb()
@@ -112,7 +165,7 @@ fun createPolyline(mapView: MapView, points: List<GeoPoint>): Polyline {
     polyline.infoWindow = null
     mapView.overlayManager.add(polyline)
     return polyline
-}
+}*/
 //
 //fun drawPath(mapView: MapView, points: List<GeoPoint>): Polyline {
 //    val paint: Paint = Paint()

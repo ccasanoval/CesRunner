@@ -11,6 +11,7 @@
     <string name="delete">Borrar</string>
     <string name="save">Guardar</string>
 
+    <string name="saved">Guardado</string>
     <string name="permissions">Permisos neceesarios:</string>
     <string name="accept_permissions">Debes aceptar los permisos para que la app pueda funcionar</string>
     <string name="accept_permissions2">Permitir siempre la ubicación y ejecución en segundo plano</string>
@@ -58,5 +59,8 @@
     <string name="period">Período</string>
     <string name="min">(min.)</string>
 
+    <!-- ERRORS -->
+    <string name="error_not_found">No se encontraron datos</string>
+    <string name="error_db">Error en los datos</string>
 
 </resources>

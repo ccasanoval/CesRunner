@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
+import com.cesoft.cesrunner.MessageType
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -82,7 +83,7 @@ class TrackDetailsViewModel(
         val res = updateTrack(newTrack)
         if(res.isSuccess) {
             track = newTrack
-            emit(TrackDetailsTransform.GoInit(track, null))//TODO: Show message: Saved
+            emit(TrackDetailsTransform.GoInit(track, null, MessageType.Saved))
         }
         else {
             val e = res.exceptionOrNull()?.let { AppError.DataBaseError(it) } ?: AppError.NotFound

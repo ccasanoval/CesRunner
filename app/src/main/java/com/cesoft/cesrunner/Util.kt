@@ -3,6 +3,7 @@ package com.cesoft.cesrunner
 import android.content.Context
 import android.location.Location
 import androidx.compose.ui.text.intl.Locale
+import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import java.time.Instant
 import java.time.LocalDateTime
@@ -75,4 +76,15 @@ fun Int.toDistanceStr(): String {
         if(a == b.toFloat()) String.format(Locale.current.platformLocale,"%d Km", b)
         else String.format(Locale.current.platformLocale,"%.1f Km", a)
     }
+}
+
+enum class MessageType { Saved }
+fun MessageType.toStr(context: Context) = when(this) {
+    MessageType.Saved -> context.getString(R.string.saved)
+}
+
+fun AppError.toStr(context: Context) = when(this) {
+    AppError.NotFound -> context.getString(R.string.error_not_found)
+    is AppError.DataBaseError -> context.getString(R.string.error_db) + ": "+this.message
+    else -> this.message
 }

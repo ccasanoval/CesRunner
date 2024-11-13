@@ -30,6 +30,7 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
@@ -46,6 +47,8 @@ import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
 import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Polyline
 
 //TODO: Counter to ini: Start the route in 3, 2, 1...
 @Composable
@@ -132,54 +135,13 @@ private fun ScreenCompo(
         MapCompo(context, mapView, points, Modifier.weight(.4f))
     }
 }
-/*
-@Composable
-fun MapCompo(mapView: MapView, track: Flow<TrackDto?>) {
-    android.util.Log.e("TrackingPAge", "MapCompo------000000------------ ")
-    val context = LocalContext.current
-    var points by remember { mutableStateOf(listOf<GeoPoint>()) }
-    LaunchedEffect(track) {
-        track.collect {
-            android.util.Log.e("TrackingPAge", "MapCompo------aaaaaaaaaaa 1------------ ${it?.points?.size ?: 0} ")
-            points = it?.points?.map { p -> GeoPoint(p.latitude, p.longitude) } ?: listOf()
-            mapView.refreshDrawableState()
-        }
-    }
-    AndroidView(
-        factory = { mapView },
-        modifier = Modifier
-    ) { view ->
-        //view.controller.zoomTo(20.0)
-        view.overlays.removeAll { true }
-        addMyLocation(context, view)
-        if(points.isNotEmpty()) {
-            view.controller.setCenter(points.last())
-            val p = createPolyline(mapView, points, Green)
-            view.overlays.add(p)
-        }
-    }
-}*/
-/*
-@Composable
-private fun TrackDataFlow(
-    state: TrackingState.Init,
-    reduce: (intent: TrackingIntent) -> Unit
-) {
-    var track by remember { mutableStateOf(TrackDto.Empty) }
-    LaunchedEffect(state) {
-        state.trackFlow.collect {
-            android.util.Log.e("TrackingPage", "TrackDataFlow---------------- points = ${it?.points?.size ?: -1} ")
-            track = it ?: TrackDto.Empty
-        }
-    }
-    TrackData(track)
-}*/
 
 @Composable
 private fun TrackData(
     track: TrackDto,
     modifier: Modifier = Modifier
 ) {
+    android.util.Log.e("TrackingPage", "TrackData--------- dis = ${track.distance} // pnts = ${track.points.size} ")
     val distance = "${track.distance} m"
     val timeIni = track.timeIni.toDateStr()
     val timeEnd = track.timeEnd.toDateStr()
@@ -217,6 +179,7 @@ private fun TrackData(
         item { InfoRow(stringResource(R.string.time_end), timeEnd) }
         item { InfoRow(stringResource(R.string.speed), speed) }
         item { InfoRow(stringResource(R.string.altitude), altitude) }
+        item { InfoRow(stringResource(R.string.points), track.points.size.toString()) }
         item { Spacer(Modifier.padding(vertical = SepMax*5)) }
     }
 }

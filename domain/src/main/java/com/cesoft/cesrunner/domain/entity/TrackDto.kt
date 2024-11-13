@@ -1,5 +1,6 @@
 package com.cesoft.cesrunner.domain.entity
 
+import android.location.Location
 import com.cesoft.cesrunner.domain.Common.ID_NULL
 
 data class TrackDto(
@@ -10,15 +11,30 @@ data class TrackDto(
     val timeIni: Long = 0,
     val timeEnd: Long = 0,
     val distance: Int = 0,
-    /*val altitudeMin: Int = 0,
-    val altitudeMax: Int = 0,
-    val speedMin: Int = 0,
-    val speedMax: Int = 0,*/
     val points: List<TrackPointDto> = listOf()
 ) {
     val isCreated: Boolean
         get() = id != ID_NULL
+
     val time = timeEnd - timeIni
+
+    fun calcDistance(location: LocationDto): Double {
+//        val polyline = Polyline()
+//        polyline.setPoints(track.points.map { GeoPoint(it.latitude, it.longitude) })
+//        val d = polyline.distance
+        val ps = points.map { LocationDto(it.latitude, it.longitude) }.toMutableList()
+        ps.add(location)
+        var di = 0.0
+        if(ps.isNotEmpty()) {
+            var p = ps.first()
+            for (i in ps) {
+                di += p.distanceTo(i)
+                p = i
+            }
+        }
+        return di
+    }
+
     companion object {
         val Empty = TrackDto(
             ID_NULL, "",

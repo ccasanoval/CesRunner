@@ -35,6 +35,7 @@ import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
+import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.common.InfoRow
@@ -131,8 +132,8 @@ fun MapCompo(
     val polyline = createPolyline(mapView, points, Color.Black)
 //    mapView.overlayManager.add(polyline)
 
-    //TODO: Actualizar home page con el estado actual de la ruta, o DETENIDO!!
-    //TODO: No estamos guardando el ultimo punto, la distancia no es correcta
+    //TODO: Delete tracks
+    //TODO: la pagina de tracking va con retraso
     android.util.Log.e("TrackingPAge", "MapCompo----------- dis = ${polyline.distance} ")
 
     AndroidView(
@@ -156,10 +157,10 @@ private fun TrackData(
     modifier: Modifier
 ) {
     val track = state.track
-    val distance = "${track.distance} m"
+    val distance = track.distance.toDistanceStr()
     val timeIni = track.timeIni.toDateStr()
     val timeEnd = track.timeEnd.toDateStr()
-    val duration = track.timeEnd - track.timeIni
+    val duration = (track.timeEnd - track.timeIni).toTimeStr()
     val altitudes = track.points.map { it.altitude }
     val altitudeMax = altitudes.maxOrNull() ?: 0.0
     val altitudeMin = altitudes.minOrNull() ?: 0.0
@@ -207,7 +208,7 @@ private fun TrackData(
             }
         }
         item { InfoRow(stringResource(R.string.distance), distance) }
-        item { InfoRow(stringResource(R.string.time), duration.toTimeStr()) }
+        item { InfoRow(stringResource(R.string.time), duration) }
         item { InfoRow(stringResource(R.string.time_ini), timeIni) }
         item { InfoRow(stringResource(R.string.time_end), timeEnd) }
         item { InfoRow(stringResource(R.string.speed), speed) }

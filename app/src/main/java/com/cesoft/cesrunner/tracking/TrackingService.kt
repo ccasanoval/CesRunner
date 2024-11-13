@@ -23,6 +23,10 @@ import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
+import com.cesoft.cesrunner.equalTo
+import com.cesoft.cesrunner.toDistanceSpeech
+import com.cesoft.cesrunner.toDistanceStr
+import com.cesoft.cesrunner.toLocationDto
 import com.cesoft.cesrunner.toTimeSpeech
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -124,60 +128,28 @@ class TrackingService: LifecycleService() {
                     /// Current Tracking
                     readCurrentTrack().getOrNull()?.let { track ->
                         if(track.id > ID_NULL) {
-                            /// Add Point
-                            val point = loc.toTrackPointDto()
-                            if(lastLocation == null) {
-                                val lastPoint = getLastLocation(track.id).getOrNull()
-                                lastLocation = lastPoint?.toLocationDto()
-                                //Log.e(TAG, "----------- Service location: lastLocation: id = ${track.id} // pt = $lastPoint // loc = $lastLocation // speechKm = $speechKm------------")
-                            }
-                            //TODO: if points current and previous are identical -> Just insert one of x (4) identical.. so db doesn't grows uselessly
-                            addTrackPoint(track.id, point)
-                            //Log.e(TAG, "----------- Service location: addTrackPoint: ${track.id} $point ------------")
-
-                            /// Update Track
-                            val newLocation = LocationDto.fromLocation(location)
-                            var newTrack = track
                             val time = System.currentTimeMillis()
-
-                            lastLocation?.let { last ->
-                                val distance = track.distance + last.distanceTo(newLocation)
-                                if((distance.toInt() / 100)/10f > speechKm) {
-                                    //Log.e(TAG, "----------- Service location:  SPEECH $speechKm ------------")
-                                    speechKm = (distance.toInt() / 100)/10f
-                                    speak("$speechKm $k")
-                                    //TODO: also say the time running!
-                                }
-//                                val altMax = max(track.altitudeMax, loc.altitude.toInt())
-//                                val altMin = min(track.altitudeMin, loc.altitude.toInt())
-//                                val speedMax = max(track.speedMax, loc.speed.toInt())
-//                                val speedMin = min(track.speedMin, loc.speed.toInt())
-                                //Log.e(TAG, "----------- Service location: updateTrack: ${track.distance} / $distance ------------")
-                                newTrack = track.copy(
-                                    id = track.id,
+                            val point = loc.toTrackPointDto()
+                            Log.e(TAG, "----------- Service location: ${track.points.size} $track")
+                            if( ! loc.equalTo(track.points.lastOrNull())) { //DONT STORE THE SAME!!!
+                                /// Add Point
+                                addTrackPoint(track.id, point)
+                                /// Update Track
+                                val distance = track.calcDistance(loc.toLocationDto())
+                                val newTrack = track.copy(
                                     distance = distance.toInt(),
-                                    timeEnd = time,//location.time,
-//                                    altitudeMax = altMax,
-//                                    altitudeMin = altMin,
-//                                    speedMin = speedMin,
-//                                    speedMax = speedMax,
-                                )
-                            } ?: run {
-                                //Log.e(TAG, "----------- Service location: updateTrack: ${track.distance}  NEW  ------------")
-                                newTrack = track.copy(
-                                    id = track.id,
                                     timeEnd = time,
-//                                    altitudeMax = location.altitude.toInt(),
-//                                    altitudeMin = location.altitude.toInt(),
-//                                    speedMin = location.speed.toInt(),
-//                                    speedMax = location.speed.toInt(),
                                 )
+                                updateTrack(newTrack)
+                                /// Speech
+                                val newSpeech = (distance.toInt() / 100)/10f
+                                if(newSpeech > speechKm) {
+                                    speechKm = newSpeech
+                                    speak(distance.toInt().toDistanceSpeech(this))
+                                    speak((time - track.timeIni).toTimeSpeech(this))
+                                }
                             }
-                            //if(lastLocation?.latitude == newLocation.latitude && lastLocation?.longitude == newLocation.longitude)Log.e(TAG, "****** SAME LOCATION ******")
-                            lastLocation = newLocation
-                            updateTrack(newTrack)
-                            //Log.e(TAG, "----------- Service location: updateTrack: $newTrack ------------")
-                        }
+                         }
                     }
                 }
                 Log.e(TAG, "----------- Service location: $location ------------")

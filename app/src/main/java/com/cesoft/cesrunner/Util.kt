@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Location
 import androidx.compose.ui.text.intl.Locale
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import java.time.Instant
 import java.time.LocalDateTime
@@ -53,20 +54,10 @@ fun Long.toTimeSpeech(context: Context): String {
     val seconds = (time - days*d - hours*h - minutes*m)
     if(days > 0) str = "$days $dStr "
     if(hours > 0) str += ", $hours $hStr "
-    str += ", $minutes $mStr, $seconds $sStr"
+    if(minutes > 0) str += ", $minutes $mStr"
+    str += ", $seconds $sStr"
     return str
 }
-
-fun Location.toTrackPointDto() = TrackPointDto(
-    latitude = latitude,
-    longitude = longitude,
-    time = time,
-    accuracy = accuracy,
-    provider = provider ?: "?",
-    altitude = altitude,
-    bearing = bearing,
-    speed = speed
-)
 
 fun Int.toDistanceStr(): String {
     return if(this < 1000) "$this m"
@@ -77,6 +68,31 @@ fun Int.toDistanceStr(): String {
         else String.format(Locale.current.platformLocale,"%.1f Km", a)
     }
 }
+
+fun Int.toDistanceSpeech(context: Context): String {
+    val m = context.getString(R.string.meters)
+    val km = context.getString(R.string.kilometers)
+    return if(this < 1000) "$this $m"
+    else {
+        val a = (this/100)/10f
+        val b = this / 1000
+        if(a == b.toFloat()) String.format(Locale.current.platformLocale,"%d $km", b)
+        else String.format(Locale.current.platformLocale,"%.1f $km", a)
+    }
+}
+
+fun Location.equalTo(pnt: TrackPointDto?) = pnt?.latitude == latitude && pnt.longitude == longitude
+fun Location.toLocationDto() = LocationDto(latitude, longitude)
+fun Location.toTrackPointDto() = TrackPointDto(
+    latitude = latitude,
+    longitude = longitude,
+    time = time,
+    accuracy = accuracy,
+    provider = provider ?: "?",
+    altitude = altitude,
+    bearing = bearing,
+    speed = speed
+)
 
 enum class MessageType { Saved }
 fun MessageType.toStr(context: Context) = when(this) {

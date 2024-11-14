@@ -8,6 +8,7 @@ import com.cesoft.cesrunner.domain.repository.RepositoryContract
 import com.cesoft.cesrunner.domain.usecase.AddTrackPointUC
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
 import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackUC
+import com.cesoft.cesrunner.domain.usecase.DeleteTrackUC
 import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackFlowUC
@@ -48,6 +49,7 @@ val appModule = module {
     single<AddTrackPointUC> { AddTrackPointUC(get()) }
     single<CreateTrackUC> { CreateTrackUC(get()) }
     single<DeleteCurrentTrackUC> { DeleteCurrentTrackUC(get()) }
+    single<DeleteTrackUC> { DeleteTrackUC(get()) }
     single<GetLastLocationUC> { GetLastLocationUC(get()) }
     single<ReadAllTracksUC> { ReadAllTracksUC(get()) }
     single<ReadCurrentTrackFlowUC> { ReadCurrentTrackFlowUC(get()) }
@@ -68,6 +70,6 @@ val appModule = module {
     viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { MapViewModel(get(), ) }
-    viewModel { TracksViewModel(get(), ) }
+    viewModel { TracksViewModel(get(), get(), ) }
     viewModel { TrackDetailsViewModel(get(), get(), get()) }
 }

@@ -154,6 +154,7 @@ class Repository(
     override suspend fun deleteTrack(id: Long): Result<Unit> {
         try {
             db.trackPointDao().deleteByTrackId(id)
+            db.trackDao().deleteById(id)
             return Result.success(Unit)
         }
         catch(e: Throwable) {

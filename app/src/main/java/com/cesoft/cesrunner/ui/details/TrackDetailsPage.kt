@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.ui.details
 
-import android.view.Gravity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,7 +50,7 @@ import com.cesoft.cesrunner.ui.theme.SepMin
 import org.koin.androidx.compose.koinViewModel
 import org.osmdroid.util.GeoPoint
 
-
+//TODO: Export in standards like : GPX, KML
 @Composable
 fun TrackDetailsPage(
     navController: NavController,

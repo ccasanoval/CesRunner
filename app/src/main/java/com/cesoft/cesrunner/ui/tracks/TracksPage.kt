@@ -6,15 +6,27 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
@@ -27,6 +39,7 @@ import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.ToolbarCompo
+import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fontMed
 import com.cesoft.cesrunner.ui.tracks.mvi.TracksIntent
@@ -84,16 +97,14 @@ fun TracksData(
 ) {
     Column(modifier = Modifier) {
         //TODO: Search bar
-//        Text(
-//            text = stringResource(R.string.menu_tracks),
-//            fontWeight = FontWeight.Black,
-//            fontSize = fontBig,
-//            modifier = Modifier.padding(SepMin)
-//        )
-        LazyColumn {
-            for(t in state.tracks) {
+        LazyColumn(modifier = Modifier.padding(SepMin)) {
+            for(track in state.tracks) {
                 item {
-                    Item(t) { reduce(TracksIntent.Details(t.id)) }
+                    Item(
+                        data =  track,
+                        onClick = { reduce(TracksIntent.Details(track.id)) },
+                        onDelete = { reduce(TracksIntent.Delete(track.id)) },
+                    )
                 }
             }
         }
@@ -101,24 +112,41 @@ fun TracksData(
 }
 
 @Composable
-private fun Item(data: TrackDto, onClick: () -> Unit) {
+private fun Item(
+    data: TrackDto,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val askDelete = remember { mutableStateOf(false) }
+    AskDelete(show = askDelete, onDelete = onDelete)
     Column(
         modifier = Modifier
             .padding(SepMin)
             .clickable { onClick() }
     ) {
         HorizontalDivider()
-        Text(
-            text = data.name,
-            fontSize = fontMed,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Row(modifier = Modifier.padding(SepMin)) {
+            Text(
+                text = data.name,
+                fontSize = fontMed,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(.9f)
+            )
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = stringResource(R.string.delete),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { askDelete.value = true }
+            )
+        }
         Text(
             text = data.timeIni.toDateStr(),
-            color = MaterialTheme.colorScheme.secondary
+            fontStyle = FontStyle.Italic,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(start = SepMed)
         )
-        Row {
+        Row(modifier = Modifier.padding(start = SepMed, top = SepMin)) {
             Text(
                 text = stringResource(R.string.distance) + ": " + data.distance.toDistanceStr(),
                 modifier = Modifier.weight(0.4f)
@@ -129,6 +157,50 @@ private fun Item(data: TrackDto, onClick: () -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun AskDelete(
+    show: MutableState<Boolean>,
+    onDelete: () -> Unit
+) {
+    if(!show.value)return
+    AlertDialog(
+        onDismissRequest = { show.value = false },
+        title = {
+            Row {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.delete),
+                )
+                Text(
+                    text = stringResource(R.string.ask_delete_title),
+                    modifier = Modifier.padding(horizontal = SepMed)
+                )
+            }
+        },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(R.string.ask_delete_message),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onDelete()
+                show.value = false
+            }) {
+                Text(stringResource(R.string.delete), color = Color.Red)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { show.value = false }) {
+                Text(stringResource(R.string.cancel), color = Color.Gray)
+            }
+        }
+    )
 }
 
 //--------------------------------------------------------------------------------------------------

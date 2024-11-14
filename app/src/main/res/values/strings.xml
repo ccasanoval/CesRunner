@@ -46,6 +46,9 @@
     <string name="location_off">La ubicación está apagada</string>
     <string name="location_off_msg">La ubicación debe estar activa para poder trazar la ruta</string>
 
+    <string name="ask_delete_title">¿Eliminar?</string>
+    <string name="ask_delete_message">¿Seguro que quieres eliminar?</string>
+
     <!-- MAIN MENU -->
     <string name="menu_settings">Opciones</string>
     <string name="menu_start">¡Comenzar ruta!</string>

@@ -28,6 +28,9 @@ interface TrackDao {
     @Delete
     suspend fun delete(data: LocalTrackDto)
 
+    @Query("DELETE FROM $TrackTableName WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("DELETE FROM $TrackTableName")
     suspend fun deleteAll()
 }

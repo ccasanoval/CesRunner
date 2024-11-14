@@ -9,6 +9,7 @@ import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.usecase.DeleteTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
 import com.cesoft.cesrunner.ui.tracks.mvi.TracksIntent
 import com.cesoft.cesrunner.ui.tracks.mvi.TracksSideEffect
@@ -17,11 +18,14 @@ import com.cesoft.cesrunner.ui.tracks.mvi.TracksTransform
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.last
 
 class TracksViewModel(
     val readAllTracks: ReadAllTracksUC,
+    val deleteTrack: DeleteTrackUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TracksIntent, State<TracksState, TracksSideEffect>> {
+    //private
 
     private val reducer =
         Reducer(
@@ -41,6 +45,7 @@ class TracksViewModel(
             TracksIntent.Load -> executeLoad()
             TracksIntent.Close -> executeClose()
             is TracksIntent.Details -> executeDetails(intent.id)
+            is TracksIntent.Delete -> executeDelete(intent.id)
         }
     fun consumeSideEffect(
         sideEffect: TracksSideEffect,
@@ -68,7 +73,29 @@ class TracksViewModel(
         val tracks = res.getOrNull() ?: listOf()
         emit(TracksTransform.GoInit(tracks, error))
     }
-    private fun executeDetails(id: Long)  = flow {
+    private fun executeDetails(id: Long) = flow {
         emit(TracksTransform.AddSideEffect(TracksSideEffect.Details(id)))
+    }
+    private fun executeDelete(id: Long) = flow {
+        val resDel = deleteTrack(id)
+        if(resDel.isSuccess) {
+            android.util.Log.e(TAG, "executeDelete-----OK")
+            val res = readAllTracks()
+            var error: AppError? = null
+            val e = res.exceptionOrNull()
+            if(res.isFailure && e !is AppError.NotFound) {
+                res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
+            }
+            val tracks = res.getOrNull() ?: listOf()
+            emit(TracksTransform.GoInit(tracks, error))
+        }
+        else {
+            android.util.Log.e(TAG, "executeDelete-----${resDel.exceptionOrNull()}")
+            //emit(state.last())
+        }
+    }
+
+    companion object {
+        private const val TAG = "TracksVM"
     }
 }

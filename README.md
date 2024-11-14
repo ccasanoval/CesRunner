@@ -1,12 +1,10 @@
-![](https://github.com/ccasanoval/CesRunner/blob/master/app/src/main/res/drawable/play_store_512.png)
+![](https://github.com/ccasanoval/CesRunner/blob/master/app/src/main/res/mipmap-xxxhdpi/play_store_512.png)
 # CesRunner
-### Android App for runners:
+### Android App for recording runners rutes:
 - Indicates the distance and time by voice and text as you progress.
-- Also saves the GPS routes you have traced, so you can check them later.
-- Do not use any Google Services
-
-
-
+- Saves the GPS route you have traced, so you can check it later.
+- Do not use any Google Services, for those of you with a clean Lineage OS :)
+- Open Street Map, Jetpack Compose, MVI
 
 
 <!-- https://pandao.github.io/editor.md/en.html -->

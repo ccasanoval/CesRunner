@@ -2,8 +2,11 @@ package com.cesoft.cesrunner.ui.home
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,8 +21,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -117,45 +122,69 @@ private fun Content(
                 Spacer(modifier = Modifier.padding(SepMin))
             }
 
+            val title = if(isTracking) R.string.menu_check else R.string.menu_start
             HomeButton(
-                title = stringResource(if(isTracking) R.string.menu_check else R.string.menu_start),
-                onClick = {
-                    reduce(HomeIntent.GoStart)
-                }
+                title = title,
+                icon = R.mipmap.ic_run,
+                modifier = Modifier.fillMaxWidth(.6f).padding(SepMed),
+                onClick = { reduce(HomeIntent.GoStart) }
             )
-            HomeButton(
-                title = stringResource(R.string.menu_settings),
-                onClick = { reduce(HomeIntent.GoSettings) }
-            )
-            HomeButton(
-                title = stringResource(R.string.menu_tracks),
-                onClick = { reduce(HomeIntent.GoTracks) }
-            )
-            HomeButton(
-                title = stringResource(R.string.menu_maps),
-                onClick = { reduce(HomeIntent.GoMap) }
-            )
-            HomeButton(
-                title = stringResource(R.string.menu_gnss),
-                onClick = { reduce(HomeIntent.GoMap) }
-            )
+            val modifier = Modifier.weight(0.6f).padding(SepMed)
+            Row {
+                HomeButton(
+                    title = R.string.menu_tracks,
+                    icon = R.mipmap.ic_list,
+                    modifier = modifier,
+                    onClick = { reduce(HomeIntent.GoTracks) }
+                )
+                HomeButton(
+                    title = R.string.menu_maps,
+                    icon = R.mipmap.ic_map,
+                    modifier = modifier,
+                    onClick = { reduce(HomeIntent.GoMap) }
+                )
+            }
+            Row {
+                HomeButton(
+                    title = R.string.menu_settings,
+                    icon = R.mipmap.ic_settings,
+                    modifier = modifier,
+                    onClick = { reduce(HomeIntent.GoSettings) }
+                )
+                HomeButton(
+                    title = R.string.menu_gnss,
+                    icon = R.mipmap.ic_sat,
+                    modifier = modifier,
+                    onClick = { reduce(HomeIntent.GoMap) }
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun HomeButton(
-    title: String,
+    @StringRes title: Int,
+    icon: Int,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .padding(SepMed)
-            .fillMaxWidth(.6f)
+        modifier = modifier
     ) {
-        Text(title)
+        Image(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier
+        )
+        Text(
+            text = stringResource(title),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(.9f)
+        )
     }
+
 }
 
 //--------------------------------------------------------------------------------------------------

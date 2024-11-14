@@ -1,4 +1,4 @@
-![](https://github.com/ccasanoval/CesRunner/blob/master/app/src/main/res/mipmap-xxxhdpi/play_store_512.png)
+![](https://github.com/ccasanoval/CesRunner/blob/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)
 # CesRunner
 ### Android App for recording runners rutes:
 - Indicates the distance and time by voice and text as you progress.

@@ -75,7 +75,6 @@ private fun Content(
     state: TrackingState,
     reduce: (intent: TrackingIntent) -> Unit,
 ) {
-    android.util.Log.e("TrackingPage", "Content----------- $state")
     when(state) {
         is TrackingState.Loading -> {
             reduce(TrackingIntent.Load)
@@ -92,7 +91,6 @@ private fun ScreenCompo(
     state: TrackingState.Init,
     reduce: (intent: TrackingIntent) -> Unit,
 ) {
-    //android.util.Log.e("TrackingPage", "ScreenCompo---------------------------")
     val context = LocalContext.current
     val showAlert = remember { mutableStateOf(true) }
     TurnLocationOnDialog(showAlert) {
@@ -105,7 +103,7 @@ private fun ScreenCompo(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize().padding(SepMax)
     ) {
-        //TODO: Alert: seguro que quiere detener la ruta?
+        //TODO: ask if wanna close tracking... => make a close button difficult to click by mistake
         Button(
             onClick = { reduce(TrackingIntent.Stop) },
             modifier = Modifier.fillMaxWidth(.5f),

@@ -18,7 +18,7 @@ class ReadCurrentTrackFlowUC(private val repository: RepositoryContract) {
             return Result.success(
                 flow.transform { id ->
                     repository.readTrackFlow(id).getOrNull()?.let { emit(it) }
-                }.flattenConcat()
+                }.flattenConcat()//.stateIn(WhileSubscribed(5_000L)) ?
             )
         }
         return Result.failure(res.exceptionOrNull() ?: AppError.NotFound)

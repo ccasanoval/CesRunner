@@ -52,7 +52,6 @@ class HomeViewModel(
             HomeIntent.GoTracks -> executeTracks()
         }
 
-    //TODO: ask if wanna close tracking...?
     private fun executeClose() = flow {
         emit(HomeTransform.AddSideEffect(HomeSideEffect.Close))
     }
@@ -69,33 +68,7 @@ class HomeViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = TrackDto.Empty,
         )
-//        val trackIdFlow = readCurrentTrackIdFlow().getOrNull()?.stateIn(
-//            scope = viewModelScope,
-//            started = SharingStarted.WhileSubscribed(5_000),
-//            initialValue = ID_NULL,
-//        )
         emit(HomeTransform.GoInit(flow, null))
-        /*
-        private fun transformedFlow(movieId: Int) = combine(
-            myRepo.getMovie(movieId).filterNotNull(),
-            myRepo.getActors(movieId),
-        ) { movie, actors ->
-            MyUiState(
-                movie = movie,
-                actorList = actors,
-            )
-        }*/
-
-        /*readCurrentTrackIdFlow().getOrNull()?.collect {
-            val res = readTrackFlow(currentTrack.id)
-            var error: AppError? = null
-            val e = res.exceptionOrNull()
-            if(res.isFailure && e !is AppError.NotFound) {
-                res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
-            }
-            val trackFlow = res.getOrNull() ?: flow {  }
-            emit(HomeTransform.GoInit(trackFlow, error))
-        }*/
     }
 
     private fun executeStart() = flow {

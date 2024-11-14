@@ -129,14 +129,7 @@ fun MapCompo(
     val mapView = rememberMapCompo(context)
     var points by remember { mutableStateOf(listOf<GeoPoint>()) }
     points = track.points.map { p -> GeoPoint(p.latitude, p.longitude) }
-
     val polyline = createPolyline(mapView, points, Color.Black)
-//    mapView.overlayManager.add(polyline)
-
-    //TODO: Delete tracks
-    //TODO: la pagina de tracking va con retraso
-    android.util.Log.e("TrackingPAge", "MapCompo----------- dis = ${polyline.distance} ")
-
     AndroidView(
         factory = { mapView },
         modifier = modifier

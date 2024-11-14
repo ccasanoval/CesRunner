@@ -116,7 +116,7 @@ class Repository(
     override suspend fun readTrackFlow(id: Long): Result<Flow<TrackDto?>> {
         try {
             val points = db.trackPointDao().getFlowByTrackId(id)
-            android.util.Log.e(TAG, "readTrackFlow---------- id=$id ")
+            android.util.Log.e(TAG, "readTrackFlow---------- id=$id ${points.hashCode()}")
             return Result.success(
                 points.map {
                     android.util.Log.e(TAG, "readTrackFlow---------- track = "+db.trackDao().getById(id))

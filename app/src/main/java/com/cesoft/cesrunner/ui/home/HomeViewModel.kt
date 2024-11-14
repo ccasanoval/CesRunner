@@ -9,11 +9,9 @@ import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
-import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackIdFlowUC
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
-import com.cesoft.cesrunner.domain.usecase.ReadTrackFlowUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeSideEffect
@@ -21,13 +19,15 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.home.mvi.HomeTransform
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel(
     private val trackingServiceFac: TrackingServiceFac,
     private val readCurrentTrack: ReadCurrentTrackUC,
-    private val readCurrentTrackIdFlow: ReadCurrentTrackIdFlowUC,
-    private val readTrackFlow: ReadTrackFlowUC,
+    private val readCurrentTrackFlow: ReadCurrentTrackFlowUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
@@ -58,11 +58,35 @@ class HomeViewModel(
     }
 
     private fun executeLoad() = flow {
-        readCurrentTrackIdFlow().getOrNull()?.collect {
-            val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
-            if(currentTrack.isCreated) {
-                trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
-            }
+        val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
+        if(currentTrack.isCreated) {
+            trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
+        }
+
+        //https://stackoverflow.com/questions/78277363/collecting-flows-in-the-viewmodel
+        val flow: StateFlow<TrackDto?>? = readCurrentTrackFlow().getOrNull()?.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = TrackDto.Empty,
+        )
+//        val trackIdFlow = readCurrentTrackIdFlow().getOrNull()?.stateIn(
+//            scope = viewModelScope,
+//            started = SharingStarted.WhileSubscribed(5_000),
+//            initialValue = ID_NULL,
+//        )
+        emit(HomeTransform.GoInit(flow, null))
+        /*
+        private fun transformedFlow(movieId: Int) = combine(
+            myRepo.getMovie(movieId).filterNotNull(),
+            myRepo.getActors(movieId),
+        ) { movie, actors ->
+            MyUiState(
+                movie = movie,
+                actorList = actors,
+            )
+        }*/
+
+        /*readCurrentTrackIdFlow().getOrNull()?.collect {
             val res = readTrackFlow(currentTrack.id)
             var error: AppError? = null
             val e = res.exceptionOrNull()
@@ -71,7 +95,7 @@ class HomeViewModel(
             }
             val trackFlow = res.getOrNull() ?: flow {  }
             emit(HomeTransform.GoInit(trackFlow, error))
-        }
+        }*/
     }
 
     private fun executeStart() = flow {

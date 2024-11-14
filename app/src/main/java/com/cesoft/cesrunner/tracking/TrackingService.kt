@@ -41,7 +41,6 @@ class TrackingService: LifecycleService() {
     // (foreground service with notification created) or simply orientation change (no-op).
     //private var configurationChange = false
 
-    private var lastLocation: LocationDto? = null
     private lateinit var notificationManager: NotificationManager
 
     private val readSettings: ReadSettingsUC by inject()
@@ -51,7 +50,6 @@ class TrackingService: LifecycleService() {
     private val stopLocationUpdates: StopLocationUpdatesUC by inject()
     private val addTrackPoint: AddTrackPointUC by inject()
     private val updateTrack: UpdateTrackUC by inject()
-    private val getLastLocation: GetLastLocationUC by inject()
 
     //TODO: Make class apart!
     private lateinit var textToSpeech: TextToSpeech
@@ -109,9 +107,8 @@ class TrackingService: LifecycleService() {
     //https://www.gpxgenerator.com
     private fun start() {
         Log.e(TAG, "start---------------------------------- minInterval = $_minInterval")
-        val k = getString(R.string.kilometers)
-        val minDistance = 0f//.5f// _minDistance.toFloat()
-        requestLocationUpdates(_minInterval, minDistance).getOrNull()
+        var firstSpeech = true
+        requestLocationUpdates(_minInterval, _minDistance).getOrNull()
             ?.onEach { location ->
                 location?.let { loc ->
                     val dateStr = loc.time.toDateStr()
@@ -131,6 +128,14 @@ class TrackingService: LifecycleService() {
                             val time = System.currentTimeMillis()
                             val point = loc.toTrackPointDto()
                             Log.e(TAG, "----------- Service location: ${track.points.size} $track")
+                            if(firstSpeech && track.points.isEmpty()) {
+                                firstSpeech = false
+                                for(i in 3 downTo 1) {
+                                    speak("$i")
+                                    delay(1000)
+                                }
+                                speak(applicationContext.getString(R.string.menu_start))
+                            }
                             if( ! loc.equalTo(track.points.lastOrNull())) { //DONT STORE THE SAME!!!
                                 /// Add Point
                                 addTrackPoint(track.id, point)
@@ -153,7 +158,7 @@ class TrackingService: LifecycleService() {
                     }
                 }
                 Log.e(TAG, "----------- Service location: $location ------------")
-                delay(100)//TODO: Study this
+                delay(200)
             }
             ?.launchIn(lifecycleScope)
     }

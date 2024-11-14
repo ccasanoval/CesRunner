@@ -10,7 +10,7 @@ import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
 import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
-import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackIdFlowUC
+import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackIdUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadLastTrackUC
@@ -50,7 +50,7 @@ val appModule = module {
     single<DeleteCurrentTrackUC> { DeleteCurrentTrackUC(get()) }
     single<GetLastLocationUC> { GetLastLocationUC(get()) }
     single<ReadAllTracksUC> { ReadAllTracksUC(get()) }
-    single<ReadCurrentTrackIdFlowUC> { ReadCurrentTrackIdFlowUC(get()) }
+    single<ReadCurrentTrackFlowUC> { ReadCurrentTrackFlowUC(get()) }
     single<ReadCurrentTrackIdUC> { ReadCurrentTrackIdUC(get()) }
     single<ReadCurrentTrackUC> { ReadCurrentTrackUC(get()) }
     single<ReadLastTrackUC> { ReadLastTrackUC(get()) }

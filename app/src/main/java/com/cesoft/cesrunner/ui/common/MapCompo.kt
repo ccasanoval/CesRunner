@@ -61,7 +61,6 @@ fun MapCompo(
         view.overlays.add(polyline)
         points.lastOrNull()?.let { view.controller.setCenter(it) }
 
-        android.util.Log.e("MapCompo", "0000000------------- ${locationOverlay.myLocation}")
 //        val polygon = Polygon()
 //        polygon.setPoints(points)
 //        polygon.fillColor = Color.Red.toArgb()
@@ -73,7 +72,6 @@ fun MapCompo(
 
 @Composable
 fun rememberMapCompo(context : Context): MapView {
-    android.util.Log.e("rememberMapCompo", "CREATE---------------------")
     val pack = context.packageName
     val prefs = context.getSharedPreferences(pack+"OSM", Context.MODE_PRIVATE)
     Configuration.getInstance().load(context, prefs)
@@ -87,7 +85,6 @@ fun rememberMapCompo(context : Context): MapView {
 }
 
 private fun initMap(mapView: MapView) {
-    android.util.Log.e("rememberMapCompo", "initMap---------------------")
     mapView.apply {
         isHorizontalMapRepetitionEnabled = false
         isVerticalMapRepetitionEnabled = false

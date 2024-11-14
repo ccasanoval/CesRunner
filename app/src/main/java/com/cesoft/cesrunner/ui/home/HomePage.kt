@@ -12,17 +12,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
@@ -37,7 +36,7 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -77,12 +76,9 @@ private fun Content(
     state: HomeState.Init,
     reduce: (intent: HomeIntent) -> Unit,
 ) {
-    var track by remember { mutableStateOf<TrackDto?>(null) }
-    LaunchedEffect(state) {
-        state.trackFlow.collect { t ->
-            t?.let { track = it }
-        }
-    }
+    val track by state.trackFlow!!.collectAsStateWithLifecycle()
+    //val trackId by state.trackIdFlow!!.collectAsStateWithLifecycle()
+    android.util.Log.e("HomePage", "--------------- ${track?.points?.size} // $track")
     Surface {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -167,8 +163,22 @@ private fun HomeButton(
 @Composable
 private fun HomePage_Preview() {
     val state = HomeState.Init(
-        trackFlow = flowOf(TrackDto(id = 69, name = "Tracking A")),
+        //trackFlow = flowOf(TrackDto(id = 69, name = "Tracking A")),
+        //trackIdFlow = MutableStateFlow(0L),
+        trackFlow = MutableStateFlow(TrackDto.Empty),
         error = AppError.NetworkError,
     )
     Content(state) { }
 }
+/*
+@Preview
+@Composable
+private fun HomePage_Preview() {
+    val state = HomeState.Init(
+        //trackFlow = flowOf(TrackDto(id = 69, name = "Tracking A")),
+        trackIdFlow = trackIdFlow,
+        trackFlow = null,
+        error = AppError.NetworkError,
+    )
+    Content(state) { }
+}*/

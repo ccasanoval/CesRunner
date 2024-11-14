@@ -92,6 +92,8 @@ fun Content(
             is TrackDetailsState.Init -> {
                 val context = LocalContext.current
                 LaunchedEffect(state.message) {
+                    //TODO: Snack
+                    //val snackbarHostState = remember { SnackbarHostState() }
                     state.message?.toStr(context)?.let { text ->
                         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
                     }

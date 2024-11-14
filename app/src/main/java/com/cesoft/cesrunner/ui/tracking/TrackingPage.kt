@@ -14,11 +14,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,11 +24,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
-import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
@@ -45,12 +43,10 @@ import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fontBig
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
-import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.Polyline
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 
-//TODO: Counter to ini: Start the route in 3, 2, 1...
 @Composable
 fun TrackingPage(
     navController: NavController,
@@ -117,21 +113,15 @@ private fun ScreenCompo(
             Text(stringResource(R.string.stop))
         }
 
-        var points by remember { mutableStateOf(listOf<TrackPointDto>()) }
-        var track by remember { mutableStateOf(TrackDto.Empty) }
-        LaunchedEffect(state) {
-            state.trackFlow.collect {
-                it?.let {
-                    track = it
-                    points = it.points
-                }
-            }
-        }
-        //TODO: Make it scrollable like in track details...
-        TrackData(track, Modifier.weight(.4f).zIndex(999f))
-        Spacer(Modifier.size(SepMax))
-
+        val trackState by state.trackFlow.collectAsStateWithLifecycle(
+            TrackDto.Empty, LocalLifecycleOwner.current.lifecycle
+        )
+        val track = trackState ?: TrackDto.Empty
+        val points = trackState?.points ?: listOf()
         val mapView = rememberMapCompo(context)
+
+        TrackData(track, Modifier.weight(.4f))
+        Spacer(Modifier.size(SepMax))
         MapCompo(context, mapView, points, Modifier.weight(.4f))
     }
 }
@@ -141,8 +131,9 @@ private fun TrackData(
     track: TrackDto,
     modifier: Modifier = Modifier
 ) {
-    android.util.Log.e("TrackingPage", "TrackData--------- dis = ${track.distance} // pnts = ${track.points.size} ")
-    val distance = "${track.distance} m"
+    val dfs = DecimalFormatSymbols(Locale.current.platformLocale)
+    val df = DecimalFormat("#,###", dfs).format(track.distance)
+    val distance = "$df m"
     val timeIni = track.timeIni.toDateStr()
     val timeEnd = track.timeEnd.toDateStr()
     val duration = track.timeEnd - track.timeIni
@@ -193,7 +184,7 @@ private fun TrackData_Preview() {
         name = "Tracking A",
         timeIni = timeIni,
         timeEnd = System.currentTimeMillis(),
-        distance = 690,
+        distance = 6950,
         points = listOf(
             TrackPointDto(
                 id = 69,
@@ -207,7 +198,6 @@ private fun TrackData_Preview() {
                 speed = 5f)
         )
     )
-    val state = TrackingState.Init(trackFlow = flowOf(track))
     Surface(modifier = Modifier.fillMaxSize()) {
         TrackData(track)
     }

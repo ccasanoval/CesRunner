@@ -5,7 +5,7 @@ import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 internal object HomeTransform {
 
@@ -16,7 +16,7 @@ internal object HomeTransform {
     }
 
     data class GoInit(
-        val trackFlow: Flow<TrackDto?>,
+        val trackFlow: StateFlow<TrackDto?>?,
         val error: AppError?,
     ): ViewTransform<HomeState, HomeSideEffect>() {
         override fun mutate(currentState: HomeState): HomeState {

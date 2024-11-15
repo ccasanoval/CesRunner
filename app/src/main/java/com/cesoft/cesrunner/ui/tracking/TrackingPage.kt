@@ -10,18 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -34,15 +32,17 @@ import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.common.InfoRow
+import com.cesoft.cesrunner.ui.common.InfoRowBig
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.MapCompo
+import com.cesoft.cesrunner.ui.common.SlideToUnlock
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
 import com.cesoft.cesrunner.ui.common.rememberMapCompo
 import com.cesoft.cesrunner.ui.theme.SepMax
-import com.cesoft.cesrunner.ui.theme.SepMin
-import com.cesoft.cesrunner.ui.theme.fontBig
+import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
+import kotlinx.coroutines.flow.flow
 import org.koin.androidx.compose.koinViewModel
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -81,13 +81,13 @@ private fun Content(
             LoadingCompo()
         }
         is TrackingState.Init -> {
-            ScreenCompo(state, reduce)
+            TrackingStateIni(state, reduce)
         }
     }
 }
 
 @Composable
-private fun ScreenCompo(
+private fun TrackingStateIni(
     state: TrackingState.Init,
     reduce: (intent: TrackingIntent) -> Unit,
 ) {
@@ -98,19 +98,36 @@ private fun ScreenCompo(
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         context.startActivity(intent)
     }
+    TrackingCompo(state, reduce)
+}
+
+@Composable
+private fun TrackingCompo(
+    state: TrackingState.Init,
+    reduce: (intent: TrackingIntent) -> Unit,
+) {
+    val context = LocalContext.current
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize().padding(SepMax)
     ) {
-        //TODO: ask if wanna close tracking... => make a close button difficult to click by mistake
-        Button(
-            onClick = { reduce(TrackingIntent.Stop) },
-            modifier = Modifier.fillMaxWidth(.5f),
-        ) {
-            Text(stringResource(R.string.stop))
-        }
+//        Button(
+//            onClick = { reduce(TrackingIntent.Stop) },
+//            modifier = Modifier.fillMaxWidth(.5f),
+//        ) { Text(stringResource(R.string.stop)) }
+        var unlocked by remember { mutableStateOf(false) }
+        SlideToUnlock(
+            isUnlocked = unlocked,
+            modifier = Modifier.padding(SepMed),
+            hintText = stringResource(R.string.slide_stop),
+            onUnlock = {
+                if(!unlocked) reduce(TrackingIntent.Stop)
+                unlocked = true
+            }
+        )
 
+        //TODO: Why in HomePage it doesnt need parameters?
         val trackState by state.trackFlow.collectAsStateWithLifecycle(
             TrackDto.Empty, LocalLifecycleOwner.current.lifecycle
         )
@@ -154,16 +171,16 @@ private fun TrackData(
         speedMed*3.6, speedMax*3.6
     )
     LazyColumn(modifier = modifier.fillMaxWidth()) {
-        item {
-            Text(
-                text = track.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = fontBig,
-                modifier = Modifier.padding(vertical = SepMin)
-            )
-        }
-        item { InfoRow(stringResource(R.string.distance), distance) }
-        item { InfoRow(stringResource(R.string.time), duration.toTimeStr()) }
+//        item {
+//            Text(
+//                text = track.name,
+//                fontWeight = FontWeight.Bold,
+//                fontSize = fontBig,
+//                modifier = Modifier.padding(vertical = SepMin)
+//            )
+//        }
+        item { InfoRowBig(stringResource(R.string.distance), distance) }
+        item { InfoRowBig(stringResource(R.string.time), duration.toTimeStr()) }
         item { InfoRow(stringResource(R.string.time_ini), timeIni) }
         item { InfoRow(stringResource(R.string.time_end), timeEnd) }
         item { InfoRow(stringResource(R.string.speed), speed) }
@@ -174,6 +191,15 @@ private fun TrackData(
 }
 
 //--------------------------------------------------------------------------------------------------
+@Preview
+@Composable
+private fun TrackingCompo_Preview() {
+    val state = TrackingState.Init(flow {}, null)
+    Surface {
+        TrackingCompo(state) { i -> }
+    }
+}
+
 @Preview
 @Composable
 private fun TrackData_Preview() {

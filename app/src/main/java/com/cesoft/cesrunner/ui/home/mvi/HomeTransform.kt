@@ -16,7 +16,7 @@ internal object HomeTransform {
     }
 
     data class GoInit(
-        val trackFlow: StateFlow<TrackDto?>?,
+        val trackFlow: StateFlow<TrackDto?>,
         val error: AppError?,
     ): ViewTransform<HomeState, HomeSideEffect>() {
         override fun mutate(currentState: HomeState): HomeState {

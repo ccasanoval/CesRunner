@@ -42,6 +42,7 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -81,9 +82,8 @@ private fun Content(
     state: HomeState.Init,
     reduce: (intent: HomeIntent) -> Unit,
 ) {
-    val track by state.trackFlow!!.collectAsStateWithLifecycle()
-    //val trackId by state.trackIdFlow!!.collectAsStateWithLifecycle()
-    android.util.Log.e("HomePage", "--------------- ${track?.points?.size} // $track")
+    val track by state.trackFlow.collectAsStateWithLifecycle()
+        //?: remember { mutableStateOf<TrackDto?>(null) }
     Surface {
         Column(
             verticalArrangement = Arrangement.Center,

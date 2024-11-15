@@ -2,6 +2,7 @@ package com.cesoft.cesrunner.ui.home
 
 import android.app.Activity
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -9,6 +10,7 @@ import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
+import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
@@ -19,6 +21,7 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.home.mvi.HomeTransform
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
@@ -63,12 +66,20 @@ class HomeViewModel(
         }
 
         //https://stackoverflow.com/questions/78277363/collecting-flows-in-the-viewmodel
-        val flow: StateFlow<TrackDto?>? = readCurrentTrackFlow().getOrNull()?.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = TrackDto.Empty,
-        )
-        emit(HomeTransform.GoInit(flow, null))
+        val res = readCurrentTrackFlow()
+        res.getOrNull()?.let {
+            val flow: StateFlow<TrackDto?> = it.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = TrackDto.Empty,
+            )
+            emit(HomeTransform.GoInit(flow, null))
+        } ?: run {
+            val e: AppError = res.exceptionOrNull()
+                ?.let { AppError.DataBaseError(it) } ?: run { AppError.NotFound }
+            val flow = MutableStateFlow<TrackDto?>(null)
+            emit(HomeTransform.GoInit(flow, e))
+        }
     }
 
     private fun executeStart() = flow {

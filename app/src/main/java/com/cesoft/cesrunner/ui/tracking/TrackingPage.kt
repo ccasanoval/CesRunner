@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
@@ -42,7 +41,7 @@ import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.compose.koinViewModel
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -127,10 +126,8 @@ private fun TrackingCompo(
             }
         )
 
-        //TODO: Why in HomePage it doesnt need parameters?
-        val trackState by state.trackFlow.collectAsStateWithLifecycle(
-            TrackDto.Empty, LocalLifecycleOwner.current.lifecycle
-        )
+        val trackState by state.trackFlow.collectAsStateWithLifecycle()
+            //TrackDto.Empty, LocalLifecycleOwner.current.lifecycle )
         val track = trackState ?: TrackDto.Empty
         val points = trackState?.points ?: listOf()
         val mapView = rememberMapCompo(context)
@@ -194,9 +191,9 @@ private fun TrackData(
 @Preview
 @Composable
 private fun TrackingCompo_Preview() {
-    val state = TrackingState.Init(flow {}, null)
+    val state = TrackingState.Init(MutableStateFlow(null), null)
     Surface {
-        TrackingCompo(state) { i -> }
+        TrackingCompo(state) { }
     }
 }
 

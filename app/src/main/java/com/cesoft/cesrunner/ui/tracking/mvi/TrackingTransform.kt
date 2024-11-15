@@ -6,6 +6,7 @@ import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 internal object TrackingTransform {
 
@@ -18,9 +19,7 @@ internal object TrackingTransform {
     }
 
     data class GoInit(
-        val data: Flow<TrackDto?>,
-        //val data: TrackDto,
-        //val points: Flow<TrackPointDto>,
+        val data: StateFlow<TrackDto?>,
         val error: AppError? = null,
     ): ViewTransform<TrackingState, TrackingSideEffect>() {
         override fun mutate(currentState: TrackingState): TrackingState {

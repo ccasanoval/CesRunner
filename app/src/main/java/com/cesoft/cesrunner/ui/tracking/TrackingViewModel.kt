@@ -27,7 +27,11 @@ import com.cesoft.cesrunner.ui.tracking.mvi.TrackingState
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingTransform
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 
 @SuppressLint("StaticFieldLeak")
 class TrackingViewModel(
@@ -85,11 +89,17 @@ class TrackingViewModel(
         trackingServiceFac.start(track.minInterval, track.minDistance)
         val res = readTrackFlow(id)
         res.getOrNull()?.let {
-            emit(TrackingTransform.GoInit(it))
+            val flow: StateFlow<TrackDto?> = it.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = TrackDto.Empty,
+            )
+            emit(TrackingTransform.GoInit(flow))
         } ?: run {
             val e: AppError = res.exceptionOrNull()
                 ?.let { AppError.DataBaseError(it) } ?: run { AppError.NotFound }
-            emit(TrackingTransform.GoInit(flow { }, e))
+            val flow = MutableStateFlow<TrackDto?>(null)
+            emit(TrackingTransform.GoInit(flow, e))
         }
     }
 

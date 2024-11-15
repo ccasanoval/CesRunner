@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 sealed class HomeState: LoggableState {
     data object Loading: HomeState()
     data class Init(
-        val trackFlow: StateFlow<TrackDto?>?,
+        val trackFlow: StateFlow<TrackDto?>,
         val error: AppError? = null
     ): HomeState()
 }

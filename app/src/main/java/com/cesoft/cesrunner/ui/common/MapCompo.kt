@@ -31,7 +31,8 @@ fun MapCompo(
     context : Context,
     mapView: MapView,
     trackPoints: List<TrackPointDto>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    zoom: Boolean? = null
 ) {
     //val mapView = rememberMapCompo(context)
     AndroidView(
@@ -60,6 +61,14 @@ fun MapCompo(
         polyline.setPoints(points)
         view.overlays.add(polyline)
         points.lastOrNull()?.let { view.controller.setCenter(it) }
+
+        view.setHasTransientState(true)
+        view.addOnFirstLayoutListener { _,_,_,_,_ ->//v, left, top, right, bottom ->
+            if(zoom == true) {
+                view.zoomToBoundingBox(polyline.bounds, false)
+                view.invalidate()
+            }
+        }
 
 //        val polygon = Polygon()
 //        polygon.setPoints(points)
@@ -97,6 +106,7 @@ private fun initMap(mapView: MapView) {
             )
         )
         minZoomLevel = 5.0
+        maxZoomLevel = 24.0
         controller.setZoom(20.0)
     }
 }

@@ -39,6 +39,7 @@ import com.cesoft.cesrunner.toStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.common.InfoRow
 import com.cesoft.cesrunner.ui.common.LoadingCompo
+import com.cesoft.cesrunner.ui.common.MapCompo
 import com.cesoft.cesrunner.ui.common.ToolbarCompo
 import com.cesoft.cesrunner.ui.common.addMyLocation
 import com.cesoft.cesrunner.ui.common.createPolyline
@@ -51,6 +52,8 @@ import org.koin.androidx.compose.koinViewModel
 import org.osmdroid.util.GeoPoint
 
 //TODO: Export in standards like : GPX, KML
+//TODO: Add start and end markers to map
+//TODO: Enhance map: it gets out of its boundaries ¿?
 @Composable
 fun TrackDetailsPage(
     navController: NavController,
@@ -90,6 +93,7 @@ fun Content(
             }
             is TrackDetailsState.Init -> {
                 val context = LocalContext.current
+                val mapView = rememberMapCompo(context)
                 LaunchedEffect(state.message) {
                     //TODO: Snack
                     //val snackbarHostState = remember { SnackbarHostState() }
@@ -109,7 +113,10 @@ fun Content(
                         modifier = Modifier.weight(0.3f)
                     )
                     MapCompo(
-                        track = state.track,
+                        context = context,
+                        mapView = mapView,
+                        trackPoints = state.track.points,
+                        zoom = true,
                         modifier = Modifier
                             .weight(0.3f)
                             .padding(SepMax)
@@ -119,7 +126,7 @@ fun Content(
         }
     }
 }
-
+/*
 @Composable
 fun MapCompo(
     track: TrackDto,
@@ -142,7 +149,7 @@ fun MapCompo(
             view.invalidate()
         }
     }
-}
+}*/
 
 @Composable
 private fun TrackData(

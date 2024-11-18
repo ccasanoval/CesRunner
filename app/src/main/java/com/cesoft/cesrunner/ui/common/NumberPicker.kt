@@ -101,7 +101,7 @@ fun HorizontalNumberPicker(
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = index.toString(),
+                    text = if(index < min || index > max) " " else index.toString(),
                     style = TextStyle(
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium,

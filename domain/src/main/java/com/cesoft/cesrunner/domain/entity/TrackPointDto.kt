@@ -13,5 +13,9 @@ data class TrackPointDto(
     val bearing: Float,
     val speed: Float,
 ) {
-    fun toLocationDto() = LocationDto(latitude, longitude)
+    //fun toLocationDto() = LocationDto(latitude, longitude)
+    companion object {
+        val Empty = TrackPointDto(ID_NULL, 0.0, 0.0,
+            0, 0f,"",0.0,0f,0f)
+    }
 }

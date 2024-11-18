@@ -20,13 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
@@ -41,18 +39,14 @@ import com.cesoft.cesrunner.ui.common.InfoRow
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.MapCompo
 import com.cesoft.cesrunner.ui.common.ToolbarCompo
-import com.cesoft.cesrunner.ui.common.addMyLocation
-import com.cesoft.cesrunner.ui.common.createPolyline
 import com.cesoft.cesrunner.ui.common.rememberMapCompo
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsIntent
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsState
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
 import org.koin.androidx.compose.koinViewModel
-import org.osmdroid.util.GeoPoint
 
 //TODO: Export in standards like : GPX, KML
-//TODO: Add start and end markers to map
 //TODO: Enhance map: it gets out of its boundaries ¿?
 @Composable
 fun TrackDetailsPage(

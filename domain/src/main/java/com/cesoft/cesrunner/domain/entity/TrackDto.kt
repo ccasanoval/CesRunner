@@ -23,7 +23,7 @@ data class TrackDto(
 //        polyline.setPoints(track.points.map { GeoPoint(it.latitude, it.longitude) })
 //        val d = polyline.distance
         val ps = points.map { LocationDto(it.latitude, it.longitude) }.toMutableList()
-        ps.add(location)
+        location.let { ps.add(location) }
         var di = 0.0
         if(ps.isNotEmpty()) {
             var p = ps.first()
@@ -41,5 +41,17 @@ data class TrackDto(
             0,0,0,0, 0,
             listOf()
         )
+        fun calcDistance(points: List<TrackPointDto>): Double {
+            val ps = points.map { LocationDto(it.latitude, it.longitude) }.toMutableList()
+            var di = 0.0
+            if(ps.isNotEmpty()) {
+                var p = ps.first()
+                for (i in ps) {
+                    di += p.distanceTo(i)
+                    p = i
+                }
+            }
+            return di
+        }
     }
 }

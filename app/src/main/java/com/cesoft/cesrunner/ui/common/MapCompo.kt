@@ -11,16 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
-import com.cesoft.cesrunner.ui.theme.Green
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Polygon
 import org.osmdroid.views.overlay.Polyline
-import org.osmdroid.views.overlay.compass.CompassOverlay
-import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
@@ -34,7 +30,6 @@ fun MapCompo(
     modifier: Modifier = Modifier,
     zoom: Boolean? = null
 ) {
-    //val mapView = rememberMapCompo(context)
     AndroidView(
         factory = { mapView },
         modifier = modifier
@@ -49,13 +44,12 @@ fun MapCompo(
         val points = trackPoints.map { p -> GeoPoint(p.latitude, p.longitude) }
 
         val iIni = context.getDrawable(android.R.drawable.ic_menu_compass)
-        iIni?.setTint(Color.Blue.toArgb())
+        iIni?.setTint(Color.Red.toArgb())
         val iEnd = context.getDrawable(android.R.drawable.ic_menu_mylocation)
         iEnd?.setTint(Color.Green.toArgb())
         points.firstOrNull()?.let { addMarker(view, it, iIni) }
         points.lastOrNull()?.let { addMarker(view, it, iEnd) }
 
-        //val polyline = createPolyline(mapView, points, Green)
         val polyline = Polyline(mapView)
         polyline.isGeodesic = true
         polyline.setPoints(points)
@@ -111,18 +105,6 @@ private fun initMap(mapView: MapView) {
     }
 }
 
-fun addMyLocation(context: Context, mapView: MapView) {
-    val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
-    locationOverlay.enableMyLocation()
-    //locationOverlay.enableFollowLocation()--> Doesn't let you move manually
-    //locationOverlay.runOnFirstFix { mapView.setExpectedCenter(locationOverlay.myLocation) }
-    mapView.overlays.add(locationOverlay)
-    //
-    val compassOverlay = CompassOverlay(context, InternalCompassOrientationProvider(context), mapView)
-    compassOverlay.enableCompass()
-    mapView.overlays.add(compassOverlay)
-}
-
 fun addMarker(
     mapView : MapView,
     geoPoint: GeoPoint,
@@ -151,6 +133,19 @@ fun addMarker(
     return marker
 }
 
+/*
+fun addMyLocation(context: Context, mapView: MapView) {
+    val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
+    locationOverlay.enableMyLocation()
+    //locationOverlay.enableFollowLocation()--> Doesn't let you move manually
+    //locationOverlay.runOnFirstFix { mapView.setExpectedCenter(locationOverlay.myLocation) }
+    mapView.overlays.add(locationOverlay)
+    //
+    val compassOverlay = CompassOverlay(context, InternalCompassOrientationProvider(context), mapView)
+    compassOverlay.enableCompass()
+    mapView.overlays.add(compassOverlay)
+}
+
 fun createPolyline(
     mapView: MapView,
     points: List<GeoPoint>,
@@ -163,7 +158,6 @@ fun createPolyline(
     return polyline
 }
 
-/*
 fun createPolyline(mapView: MapView, points: List<GeoPoint>): Polyline {
     val polyline = Polyline(mapView)
     //polyline.color = Green.toArgb()

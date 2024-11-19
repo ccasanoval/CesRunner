@@ -48,6 +48,7 @@ import org.koin.androidx.compose.koinViewModel
 
 //TODO: Export in standards like : GPX, KML
 //TODO: Enhance map: it gets out of its boundaries ¿?
+//TODO: Use Snack as error message
 @Composable
 fun TrackDetailsPage(
     navController: NavController,
@@ -67,84 +68,66 @@ fun TrackDetailsPage(
             viewModel.execute(TrackDetailsIntent.Close)
         },
     ) { state ->
-        Content(state = state, reduce = viewModel::execute)
+        when (state) {
+            is TrackDetailsState.Loading -> {
+                viewModel.execute(TrackDetailsIntent.Load)
+                LoadingCompo()
+            }
+            is TrackDetailsState.Init -> {
+                Content(state, viewModel::execute)
+            }
+        }
     }
 }
 
 @Composable
 fun Content(
-    state: TrackDetailsState,
+    state: TrackDetailsState.Init,
     reduce: (TrackDetailsIntent) -> Unit,
 ) {
     ToolbarCompo(
         title = stringResource(R.string.menu_track_details),
-        onBack = { reduce(TrackDetailsIntent.Close) }
+        onBack = { reduce(TrackDetailsIntent.Close) },
+        error = state.error
     ) {
-        when (state) {
-            is TrackDetailsState.Loading -> {
-                reduce(TrackDetailsIntent.Load)
-                LoadingCompo()
-            }
-            is TrackDetailsState.Init -> {
-                val context = LocalContext.current
-                val mapView = rememberMapCompo(context)
-                LaunchedEffect(state.message) {
-                    //TODO: Snack
-                    //val snackbarHostState = remember { SnackbarHostState() }
-                    state.message?.toStr(context)?.let { text ->
-                        Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-                    }
-                }
-                LaunchedEffect(state.error) {
-                    state.error?.toStr(context)?.let { text ->
-                        Toast.makeText(context, text, Toast.LENGTH_LONG).show()
-                    }
-                }
-                Column {
-                    TrackData(
-                        state = state,
-                        reduce = reduce,
-                        modifier = Modifier.weight(0.3f)
-                    )
-                    MapCompo(
-                        context = context,
-                        mapView = mapView,
-                        trackPoints = state.track.points,
-                        zoom = true,
-                        location = state.location,
-                        modifier = Modifier
-                            .weight(0.3f)
-                            .padding(SepMax)
-                    )
-                }
-            }
-        }
+        TrackDetailsCompo(state, reduce)
     }
 }
-/*
+
 @Composable
-fun MapCompo(
-    track: TrackDto,
-    modifier: Modifier
+private fun TrackDetailsCompo(
+    state: TrackDetailsState.Init,
+    reduce: (TrackDetailsIntent) -> Unit
 ) {
     val context = LocalContext.current
     val mapView = rememberMapCompo(context)
-    var points by remember { mutableStateOf(listOf<GeoPoint>()) }
-    points = track.points.map { p -> GeoPoint(p.latitude, p.longitude) }
-    val polyline = createPolyline(mapView, points, Color.Black)
-    AndroidView(
-        factory = { mapView },
-        modifier = modifier
-    ) { view ->
-        view.overlays.removeAll { true }
-        addMyLocation(context, view)
-        view.addOnFirstLayoutListener { v, left, top, right, bottom ->
-            mapView.overlayManager.add(polyline)
-            view.zoomToBoundingBox(polyline.bounds, false, 100)
-            view.invalidate()
+    LaunchedEffect(state.message) {
+        //val snackbarHostState = remember { SnackbarHostState() }
+        state.message?.toStr(context)?.let { text ->
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
         }
     }
-}*/
+    LaunchedEffect(state.error) {
+        state.error?.toStr(context)?.let { text ->
+            Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+        }
+    }
+    Column {
+        TrackData(
+            state = state,
+            reduce = reduce,
+            modifier = Modifier.weight(0.3f)
+        )
+        MapCompo(
+            context = context,
+            mapView = mapView,
+            trackPoints = state.track.points,
+            zoom = true,
+            location = state.location,
+            modifier = Modifier.weight(0.3f).padding(SepMax)
+        )
+    }
+}
 
 @Composable
 private fun TrackData(

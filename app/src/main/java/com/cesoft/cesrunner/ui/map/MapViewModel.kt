@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
+import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.ui.map.mvi.MapIntent
@@ -56,7 +57,10 @@ class MapViewModel(
     private fun executeLoad() = flow {
         //val track = TrackDto(points = listOf())
         val location = getLocation()
-        val state = MapState.Init(location = location)
+        val state = MapState.Init(
+            location = location,
+            error = AppError.NotFound
+        )
         emit(MapTransform.Load(state))
     }
 }

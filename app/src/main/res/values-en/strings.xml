@@ -10,6 +10,8 @@
     <string name="open">Open</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
+    <string name="do_import">Import</string>
+    <string name="do_export">Export</string>
     <string name="error">Error</string>
     <string name="accept">Accept</string>
     <string name="cancel">Cancel</string>

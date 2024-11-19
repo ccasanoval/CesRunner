@@ -138,13 +138,13 @@ class GpxReader {
         }
         return findObject(container.objects, "gpx").let {
             return GpxType(
-                metadata = assembleMetadataType(it.nested),
-                creator = findAttributeOrNull(it.attributes, "creator")
-                    ?: throw IllegalArgumentException("Gpx.Creator not found"),
+                //metadata = assembleMetadataType(it.nested),
+                //creator = findAttributeOrNull(it.attributes, "creator")
+                //    ?: throw IllegalArgumentException("Gpx.Creator not found"),
                 wpt = findObjectsOrNull(it.nested, "wpt")?.map { assembleWptType(it) },
-                rte = findObjectsOrNull(it.nested, "rte")?.map { assembleRteType(it) },
-                trk = findObjectsOrNull(it.nested, "trk")?.map { assembleTrkType(it) },
-                extensions = findObjectOrNull(it.nested, "extensions")?.let { assembleExtensionType(it) }
+                //rte = findObjectsOrNull(it.nested, "rte")?.map { assembleRteType(it) },
+                //trk = findObjectsOrNull(it.nested, "trk")?.map { assembleTrkType(it) },
+                //extensions = findObjectOrNull(it.nested, "extensions")?.let { assembleExtensionType(it) }
             )
         }
     }
@@ -169,7 +169,11 @@ class GpxReader {
             lat = findAttribute(obj.attributes, "lat").toDouble(),
             lon = findAttribute(obj.attributes, "lon").toDouble(),
             ele = findObjectOrNull(obj.nested, "ele")?.value?.toDouble(),
-            time = findObjectOrNull(obj.nested, "time")?.value?.let { OffsetDateTime.parse(it, DTF) },
+            time = findObjectOrNull(obj.nested, "time")?.value?.let {
+                OffsetDateTime.parse(
+                    it.replace("Z", "") + "+00:00",
+                    DTF)
+            },
             magvar = findObjectOrNull(obj.nested, "magvar")?.value?.toDouble(),
             geoidheight = findObjectOrNull(obj.nested, "geoidheight")?.value?.toDouble(),
             name = findObjectOrNull(obj.nested, "name")?.value,

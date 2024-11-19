@@ -1,5 +1,7 @@
 package com.cesoft.cesrunner.data.gpx
 
+import android.content.Context
+import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -18,6 +20,46 @@ import java.time.ZoneOffset
 //https://github.com/bvn13/GpxAndroidSdk/tree/master
 //https://mapcreator.io/es/cartography/the-3-primary-types-of-geographic-data-formats/
 class GpxUtil {
+
+    fun import(uri: Uri, context: Context): TrackDto? {
+        var input: InputStream? = null
+        try {
+            input = context.contentResolver.openInputStream(uri)
+            if(input == null) return null
+            val gpx = GpxType.read(input)
+            Log.e(TAG, "points ---------- ${gpx.wpt?.size} ")
+            if(gpx.wpt != null && gpx.wpt.size > 1) {
+                val points = gpx.wpt.map {
+                    TrackPointDto.Empty.copy(
+                        latitude = it.lat,
+                        longitude = it.lon,
+                        altitude = it.ele ?: 0.0,
+                        time = it.time?.toEpochSecond() ?: 0,
+                    )
+                }
+                val track = TrackDto(
+                    name = "?",
+                    points = points,
+                    timeIni = points.first().time,
+                    timeEnd = points.last().time,
+                    distance = TrackDto.calcDistance(points).toInt()
+                )
+                return track
+            }
+            else {
+                Log.e(TAG, "Doesn't exist: ---------- $ ")
+            }
+            return null
+        }
+        catch(e: IOException) {
+            Log.e(TAG, "saveFilePublic:e: $e")
+            return null
+        }
+        finally {
+            input?.close()
+        }
+    }
+
 
     fun import(filename: String): TrackDto? {
         var input: FileInputStream? = null
@@ -46,7 +88,6 @@ class GpxUtil {
                     )
                     return track
                 }
-
             }
             return null
         }

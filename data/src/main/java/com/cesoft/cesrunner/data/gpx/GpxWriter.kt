@@ -94,7 +94,7 @@ fun GpxType.toXmlString(clock: Clock?): String = """
     xmlns:xsi="$XMLNS_XSI"
     xsi:schemaLocation="$SCHEMA_LOCATION">
     <time>${now(clock)}</time>
-    ${this.metadata.toXmlString()}
+    ${this.metadata?.toXmlString()}
     ${this.wpt?.toXmlString() ?: ""}
     ${this.rte?.toXmlString() ?: ""}
     ${this.trk?.toXmlString() ?: ""}

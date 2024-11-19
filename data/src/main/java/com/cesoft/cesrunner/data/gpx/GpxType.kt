@@ -93,7 +93,7 @@ import com.cesoft.cesrunner.data.gpx.GpxConstant.Companion.VERSION
  * [extensions] You can add extend GPX by adding your own elements from another schema here.
  */
 class GpxType(
-    val metadata: MetadataType,
+    val metadata: MetadataType? = null,
     val creator: String = "com.cesoft.cesrunner.data.gpx",
     val wpt: List<WptType>? = null,
     val rte: List<RteType>? = null,

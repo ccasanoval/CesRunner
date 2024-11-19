@@ -14,21 +14,31 @@ class LocationDataSource(
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     init {
         android.util.Log.e(TAG, "INIT:---------- 00000")
-        locationManager.getCurrentLocation(
-            LocationManager.NETWORK_PROVIDER,
-            null,
-            context.applicationContext.mainExecutor
-        ) {
-            android.util.Log.e(TAG, "INIT:NET:---------- $it")
-            _currentLocation = it
+        try {
+            locationManager.getCurrentLocation(
+                LocationManager.NETWORK_PROVIDER,
+                null,
+                context.applicationContext.mainExecutor
+            ) {
+                android.util.Log.e(TAG, "INIT:NET:---------- $it")
+                _currentLocation = it
+            }
         }
-        locationManager.getCurrentLocation(
-            LocationManager.GPS_PROVIDER,
-            null,
-            context.applicationContext.mainExecutor
-        ) {
-            android.util.Log.e(TAG, "INIT:GPS:---------- $it")
-            _currentLocation = it
+        catch (e: Exception) {
+            android.util.Log.e(TAG, "INIT:NET:e:---------- $e")
+        }
+        try {
+            locationManager.getCurrentLocation(
+                LocationManager.GPS_PROVIDER,
+                null,
+                context.applicationContext.mainExecutor
+            ) {
+                android.util.Log.e(TAG, "INIT:GPS:---------- $it")
+                _currentLocation = it
+            }
+        }
+        catch (e: Exception) {
+            android.util.Log.e(TAG, "INIT:GPS:e:---------- $e")
         }
     }
 

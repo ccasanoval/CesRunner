@@ -10,6 +10,8 @@
     <string name="cancel">Cancelar</string>
     <string name="delete">Borrar</string>
     <string name="save">Guardar</string>
+    <string name="do_import">Importar</string>
+    <string name="do_export">Exportar</string>
     <string name="slide_stop">Desliza para detener</string>
 
     <string name="saved">Guardado</string>

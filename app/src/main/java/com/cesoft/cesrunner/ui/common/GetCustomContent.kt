@@ -10,10 +10,10 @@ class GetCustomContents(
     private val isMultiple: Boolean = false
 ): ActivityResultContract<String, List<@JvmSuppressWildcards Uri>>() {
 
-    override fun createIntent(context: Context, mime: String): Intent {
+    override fun createIntent(context: Context, input: String): Intent {
         return Intent(Intent.ACTION_GET_CONTENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
-            type = mime
+            type = input//"application/gpx"
             putExtra(Intent.EXTRA_LOCAL_ONLY, true)
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultiple)
                 .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
@@ -26,7 +26,6 @@ class GetCustomContents(
     }
 
     internal companion object {
-
         //Collect all Uris from files selected
         internal fun Intent.getClipDataUris(): List<Uri> {
             // Use a LinkedHashSet to maintain any ordering that may be present in the ClipData

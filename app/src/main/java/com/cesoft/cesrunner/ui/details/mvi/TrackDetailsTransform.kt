@@ -5,6 +5,7 @@ import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.MessageType
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 
 internal object TrackDetailsTransform {
@@ -18,11 +19,12 @@ internal object TrackDetailsTransform {
 
     data class GoInit(
         val data: TrackDto,
+        val location: LocationDto?,
         val error: AppError? = null,
         val message: MessageType? = null
     ) : ViewTransform<TrackDetailsState, TrackDetailsSideEffect>() {
         override fun mutate(currentState: TrackDetailsState): TrackDetailsState {
-            return TrackDetailsState.Init(data, error, message)
+            return TrackDetailsState.Init(data, location, error, message)
         }
     }
 }

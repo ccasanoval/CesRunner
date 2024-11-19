@@ -9,6 +9,7 @@ import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.data.prefs.PrefDataSource
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.Common.ID_NULL
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
@@ -52,6 +53,10 @@ class Repository(
 
 
     /// TRACKING SERVICE
+    override fun getLastKnownLocation(): LocationDto? {
+        val location = locationDataSource.getLastKnownLocation()
+        return if(location == null) null else LocationDto(location.latitude, location.longitude)
+    }
     override fun requestLocationUpdates(minInterval: Long, minDistance: Float):
             Result<MutableStateFlow<Location?>> {
         try {

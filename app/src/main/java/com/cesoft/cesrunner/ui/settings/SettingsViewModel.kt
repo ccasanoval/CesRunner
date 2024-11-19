@@ -61,7 +61,6 @@ class SettingsViewModel(
         }
     }
     private fun exeSave(settings: SettingsDto) = flow {
-        android.util.Log.e("AAA", "SAVE----------------------- ${settings}")
         saveSettings(settings)
         emit(SettingsTransform.AddSideEffect(SettingsSideEffect.Close))
     }
@@ -72,7 +71,6 @@ class SettingsViewModel(
     ) {
         when(sideEffect) {
             SettingsSideEffect.Close -> {
-                android.util.Log.e("AAA", "------------------- 0")
                 navController.popBackStack()
             }
         }

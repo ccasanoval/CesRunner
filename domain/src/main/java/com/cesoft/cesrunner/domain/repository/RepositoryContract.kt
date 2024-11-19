@@ -1,6 +1,7 @@
 package com.cesoft.cesrunner.domain.repository
 
 import android.location.Location
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
@@ -18,6 +19,7 @@ interface RepositoryContract {
     //suspend fun readCurrentTrackFlow(): Result<Flow<TrackDto?>>
 
     // TRACKING SERVICE
+    fun getLastKnownLocation(): LocationDto?
     fun requestLocationUpdates(minInterval: Long, minDistance: Float):
             Result<MutableStateFlow<Location?>>
     fun stopLocationUpdates(): Result<Unit>

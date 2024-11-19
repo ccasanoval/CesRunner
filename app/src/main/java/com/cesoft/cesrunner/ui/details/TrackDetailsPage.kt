@@ -111,6 +111,7 @@ fun Content(
                         mapView = mapView,
                         trackPoints = state.track.points,
                         zoom = true,
+                        location = state.location,
                         modifier = Modifier
                             .weight(0.3f)
                             .padding(SepMax)

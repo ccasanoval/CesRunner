@@ -64,14 +64,14 @@ fun HomePage(
         onBackPressed = {
             viewModel.execute(HomeIntent.Close)
         },
-    ) { view ->
-        when(view) {
+    ) { state ->
+        when(state) {
             is HomeState.Loading -> {
                 viewModel.execute(HomeIntent.Load)
                 LoadingCompo()
             }
             is HomeState.Init -> {
-                Content(state = view, reduce = viewModel::execute)
+                Content(state = state, reduce = viewModel::execute)
             }
         }
     }

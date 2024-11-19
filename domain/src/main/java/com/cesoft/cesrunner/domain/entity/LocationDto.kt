@@ -16,6 +16,7 @@ class LocationDto(
     fun distanceTo(location: LocationDto) = calculationByDistance(location, this)
     //fun distanceTo(lat: Double, lng: Double) = calculationByDistance(LocationDto(lat,lng), this)
     companion object {
+        val Empty = LocationDto(0.0, 0.0)
         fun fromLocation(location: Location) = LocationDto(location.latitude, location.longitude)
         private fun calculationByDistance(
             org: LocationDto,

@@ -7,23 +7,47 @@ import android.location.LocationListener
 import android.location.LocationManager
 import kotlinx.coroutines.flow.MutableStateFlow
 
+@SuppressLint("MissingPermission")
 class LocationDataSource(
-    private val context: Context
+    context: Context
 ) {
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    init {
+        android.util.Log.e(TAG, "INIT:---------- 00000")
+        locationManager.getCurrentLocation(
+            LocationManager.NETWORK_PROVIDER,
+            null,
+            context.applicationContext.mainExecutor
+        ) {
+            android.util.Log.e(TAG, "INIT:NET:---------- $it")
+            _currentLocation = it
+        }
+        locationManager.getCurrentLocation(
+            LocationManager.GPS_PROVIDER,
+            null,
+            context.applicationContext.mainExecutor
+        ) {
+            android.util.Log.e(TAG, "INIT:GPS:---------- $it")
+            _currentLocation = it
+        }
+    }
 
     // Cached location in the system: doesn't activate GPS chip
-//    @SuppressLint("MissingPermission")
-//    fun getLastKnownLocation(): Location? {
-//        return locationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER)
-//    }
+    @SuppressLint("MissingPermission")
+    fun getLastKnownLocation(): Location? {
+        val net = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+        val gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        if(gps != null) return gps
+        if(net != null) return net
+        return _currentLocation
+    }
 
-    //private var _currentLocation: Location? = null
+    private var _currentLocation: Location? = null
     private val _locationFlow: MutableStateFlow<Location?> = MutableStateFlow(null)
     private val _locationListener: LocationListener = object : LocationListener {
         @SuppressLint("MissingPermission")
         override fun onLocationChanged(location: Location) {
-            //_currentLocation = location
+            _currentLocation = location
             _locationFlow.tryEmit(location)
             android.util.Log.e(TAG, "*** onLocationChanged: $location")
         }

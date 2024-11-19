@@ -11,7 +11,9 @@ import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.MessageType
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadTrackUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.ui.details.mvi.TrackDetailsIntent
@@ -26,6 +28,7 @@ class TrackDetailsViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val readTrack: ReadTrackUC,
     private val updateTrack: UpdateTrackUC,
+    private val getLocation: GetLocationUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TrackDetailsIntent, State<TrackDetailsState, TrackDetailsSideEffect>> {
     private var track: TrackDto = TrackDto.Empty
@@ -63,6 +66,8 @@ class TrackDetailsViewModel(
         emit(TrackDetailsTransform.AddSideEffect(TrackDetailsSideEffect.Close))
     }
     private fun executeLoad() = flow {
+        val location = getLocation()
+android.util.Log.e(TAG, "executeLoad-------------- $location")
         val id = Page.TrackDetail.getId(savedStateHandle)
         id?.let {
             val res = readTrack(id)
@@ -72,22 +77,27 @@ class TrackDetailsViewModel(
             if(res.isFailure && e !is AppError.NotFound) {
                 res.exceptionOrNull()?.let { error = AppError.fromThrowable(it) }
             }
-            emit(TrackDetailsTransform.GoInit(track, error))
+            emit(TrackDetailsTransform.GoInit(track, location, error))
         } ?: run {
-            emit(TrackDetailsTransform.GoInit(TrackDto.Empty, AppError.NotFound))
+            emit(TrackDetailsTransform.GoInit(TrackDto.Empty, location, AppError.NotFound))
         }
     }
     private fun executeSaveName(name: String) = flow {
         //val res = readTrack(id)
+        val location = getLocation()
         val newTrack = track.copy(name = name)
         val res = updateTrack(newTrack)
         if(res.isSuccess) {
             track = newTrack
-            emit(TrackDetailsTransform.GoInit(track, null, MessageType.Saved))
+            emit(TrackDetailsTransform.GoInit(track, location, null, MessageType.Saved))
         }
         else {
             val e = res.exceptionOrNull()?.let { AppError.DataBaseError(it) } ?: AppError.NotFound
-            emit(TrackDetailsTransform.GoInit(track, e))
+            emit(TrackDetailsTransform.GoInit(track, location, e))
         }
+    }
+
+    companion object {
+        private const val TAG = "TrackDetailsVM"
     }
 }

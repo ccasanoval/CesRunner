@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.BoundingBox
@@ -28,7 +29,8 @@ fun MapCompo(
     mapView: MapView,
     trackPoints: List<TrackPointDto>,
     modifier: Modifier = Modifier,
-    zoom: Boolean? = null
+    location: LocationDto? = null,
+    zoom: Boolean? = null,
 ) {
     AndroidView(
         factory = { mapView },
@@ -56,20 +58,18 @@ fun MapCompo(
         view.overlays.add(polyline)
         points.lastOrNull()?.let { view.controller.setCenter(it) }
 
-        view.setHasTransientState(true)
         view.addOnFirstLayoutListener { _,_,_,_,_ ->//v, left, top, right, bottom ->
             if(zoom == true) {
-                view.zoomToBoundingBox(polyline.bounds, false)
-                view.invalidate()
+                if(points.isEmpty()) {
+                    //view.controller.setCenter(locationOverlay.myLocation)
+                    location?.let { view.controller.setCenter(GeoPoint(it.latitude, it.longitude)) }
+                }
+                else {
+                    view.zoomToBoundingBox(polyline.bounds, false)
+                }
+                //view.invalidate()
             }
         }
-
-//        val polygon = Polygon()
-//        polygon.setPoints(points)
-//        polygon.fillColor = Color.Red.toArgb()
-//        polygon.title = "test"
-//        polygon.getOutlinePaint().color = polygon.fillPaint.color
-//        view.overlays.add(polygon)
     }
 }
 

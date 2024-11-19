@@ -15,9 +15,10 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-
+//https://github.com/bvn13/GpxAndroidSdk/tree/master
+//https://mapcreator.io/es/cartography/the-3-primary-types-of-geographic-data-formats/
 class GpxUtil {
-    
+
     fun import(filename: String): TrackDto? {
         var input: FileInputStream? = null
         try {

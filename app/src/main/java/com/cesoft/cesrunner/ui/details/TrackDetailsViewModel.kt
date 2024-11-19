@@ -67,7 +67,6 @@ class TrackDetailsViewModel(
     }
     private fun executeLoad() = flow {
         val location = getLocation()
-android.util.Log.e(TAG, "executeLoad-------------- $location")
         val id = Page.TrackDetail.getId(savedStateHandle)
         id?.let {
             val res = readTrack(id)

@@ -27,7 +27,6 @@ class GpxUtil {
             input = context.contentResolver.openInputStream(uri)
             if(input == null) return null
             val gpx = GpxType.read(input)
-            Log.e(TAG, "points ---------- ${gpx.wpt?.size} ")
             if(gpx.wpt != null && gpx.wpt.size > 1) {
                 val points = gpx.wpt.map {
                     TrackPointDto.Empty.copy(
@@ -46,13 +45,11 @@ class GpxUtil {
                 )
                 return track
             }
-            else {
-                Log.e(TAG, "Doesn't exist: ---------- $ ")
-            }
+            Log.e(TAG, "import: Doesn't exist:")
             return null
         }
         catch(e: IOException) {
-            Log.e(TAG, "saveFilePublic:e: $e")
+            Log.e(TAG, "import:e: $e")
             return null
         }
         finally {

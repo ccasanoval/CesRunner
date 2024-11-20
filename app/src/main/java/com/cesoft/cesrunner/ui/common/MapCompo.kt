@@ -30,7 +30,6 @@ fun MapCompo(
     trackPoints: List<TrackPointDto>,
     modifier: Modifier = Modifier,
     location: LocationDto? = null,
-    zoom: Boolean? = null,
 ) {
     AndroidView(
         factory = { mapView },
@@ -45,10 +44,10 @@ fun MapCompo(
 
         val points = trackPoints.map { p -> GeoPoint(p.latitude, p.longitude) }
 
-        val iIni = context.getDrawable(android.R.drawable.ic_menu_compass)
-        iIni?.setTint(Color.Red.toArgb())
-        val iEnd = context.getDrawable(android.R.drawable.ic_menu_mylocation)
-        iEnd?.setTint(Color.Green.toArgb())
+        val iIni = context.getDrawable(android.R.drawable.star_off)
+        iIni?.setTint(Color.Green.toArgb())
+        val iEnd = context.getDrawable(android.R.drawable.star_on)
+        iEnd?.setTint(Color.Red.toArgb())
         points.firstOrNull()?.let { addMarker(view, it, iIni) }
         points.lastOrNull()?.let { addMarker(view, it, iEnd) }
 
@@ -58,17 +57,15 @@ fun MapCompo(
         view.overlays.add(polyline)
         points.lastOrNull()?.let { view.controller.setCenter(it) }
 
-        view.addOnFirstLayoutListener { _,_,_,_,_ ->//v, left, top, right, bottom ->
-            if(zoom == true) {
-                if(points.isEmpty()) {
-                    //view.controller.setCenter(locationOverlay.myLocation)
-                    location?.let { view.controller.setCenter(GeoPoint(it.latitude, it.longitude)) }
-                }
-                else {
-                    view.zoomToBoundingBox(polyline.bounds, false)
-                }
-                //view.invalidate()
+        view.zoomToBoundingBox(polyline.bounds, false)
+        view.addOnFirstLayoutListener { _, _, _, _, _ ->//v, left, top, right, bottom ->
+            if (points.isEmpty()) {
+                //view.controller.setCenter(locationOverlay.myLocation)
+                location?.let { view.controller.setCenter(GeoPoint(it.latitude, it.longitude)) }
+            } else {
+                view.zoomToBoundingBox(polyline.bounds, false)
             }
+            //view.invalidate()
         }
     }
 }

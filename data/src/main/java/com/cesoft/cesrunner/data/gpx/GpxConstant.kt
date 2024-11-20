@@ -75,6 +75,7 @@ limitations under the License.
 */
 package com.cesoft.cesrunner.data.gpx
 
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 import java.time.format.DateTimeFormatterBuilder
 
@@ -83,7 +84,7 @@ class GpxConstant {
         const val HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         const val HEADER_EXTENDED = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
         const val VERSION = "1.1"
-        val DTF =
+        val DTF: DateTimeFormatter =
             DateTimeFormatterBuilder().append(ISO_LOCAL_DATE_TIME) // use the existing formatter for date time
                 .appendOffset("+HH:MM", "+00:00") // set 'noOffsetText' to desired '+00:00'
                 .toFormatter()

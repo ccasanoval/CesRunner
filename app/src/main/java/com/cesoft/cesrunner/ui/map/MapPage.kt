@@ -73,19 +73,16 @@ private fun Content(
     reduce: (MapIntent) -> Unit
 ) {
     val context = LocalContext.current
+    val mapView = rememberMapCompo(context)
     var track by remember { mutableStateOf(state.track) }
     val scope = rememberCoroutineScope()
     val docPicker = rememberLauncherForActivityResult(
         contract = GetCustomContents(),
         onResult = { uri ->
             scope.launch {
-                android.util.Log.e("MapPage", "-------------------- $uri")
-                ///TODO: Load GPX
                 uri.firstOrNull()?.let {
                     track = GpxUtil().import(it, context) ?: TrackDto.Empty
                 }
-
-                //snackbarHostState.showSnackbar("Uri's: $urisJoined")
             }
         })
     var menuExpanded by remember { mutableStateOf(false) }
@@ -114,13 +111,10 @@ private fun Content(
             }
         }
     ) {
-        val context = LocalContext.current
-        val mapView = rememberMapCompo(context)
         MapCompo(
             context = context,
             mapView = mapView,
             trackPoints = track.points,
-            zoom = true,
             location = state.location,
             modifier = Modifier.fillMaxSize()
         )

@@ -7,8 +7,6 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.ui.map.mvi.MapIntent
 import com.cesoft.cesrunner.ui.map.mvi.MapSideEffect
@@ -55,11 +53,9 @@ class MapViewModel(
         emit(MapTransform.AddSideEffect(MapSideEffect.Close))
     }
     private fun executeLoad() = flow {
-        //val track = TrackDto(points = listOf())
         val location = getLocation()
         val state = MapState.Init(
-            location = location,
-            error = AppError.NotFound
+            location = location
         )
         emit(MapTransform.Load(state))
     }

@@ -10,7 +10,7 @@ import com.cesoft.cesrunner.data.local.entity.TrackTableName
 
 @Dao
 interface TrackDao {
-    @Query("SELECT * FROM $TrackTableName")
+    @Query("SELECT * FROM $TrackTableName ORDER BY id DESC")
     suspend fun getAll(): List<LocalTrackDto>
 
     @Query("SELECT * FROM $TrackTableName WHERE id = :id")

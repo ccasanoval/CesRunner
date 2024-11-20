@@ -11,7 +11,6 @@ import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.MessageType
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadTrackUC

@@ -127,14 +127,13 @@ private fun TrackingCompo(
         )
 
         val trackState by state.trackFlow.collectAsStateWithLifecycle()
-            //TrackDto.Empty, LocalLifecycleOwner.current.lifecycle )
         val track = trackState ?: TrackDto.Empty
         val points = trackState?.points ?: listOf()
         val mapView = rememberMapCompo(context)
 
         TrackData(track, Modifier.weight(.4f))
         Spacer(Modifier.size(SepMax))
-        MapCompo(context, mapView, points, Modifier.weight(.4f))
+        MapCompo(context, mapView, points, Modifier.weight(.55f), doZoom = false)
     }
 }
 

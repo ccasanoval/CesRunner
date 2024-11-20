@@ -3,6 +3,8 @@ package com.cesoft.cesrunner.ui.common
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Drawable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -30,42 +32,46 @@ fun MapCompo(
     trackPoints: List<TrackPointDto>,
     modifier: Modifier = Modifier,
     location: LocationDto? = null,
+    doZoom: Boolean = false
 ) {
-    AndroidView(
-        factory = { mapView },
-        modifier = modifier
-    ) { view ->
-        view.overlays.removeAll { true }
+    //Without Scaffold the osmdroid map draws outside its AndroidView limits
+    Scaffold(modifier = modifier) { innerPadding ->
+        AndroidView(
+            factory = { mapView },
+            modifier = Modifier.padding(innerPadding)
+        ) { view ->
+            view.overlays.removeAll { true }
 
-        val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
-        locationOverlay.enableMyLocation()
-        view.overlays.add(locationOverlay)
-        //view.controller.setCenter(locationOverlay.myLocation)
+            val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
+            locationOverlay.enableMyLocation()
+            view.overlays.add(locationOverlay)
+            //view.controller.setCenter(locationOverlay.myLocation)
 
-        val points = trackPoints.map { p -> GeoPoint(p.latitude, p.longitude) }
+            val points = trackPoints.map { p -> GeoPoint(p.latitude, p.longitude) }
 
-        val iIni = context.getDrawable(android.R.drawable.star_off)
-        iIni?.setTint(Color.Green.toArgb())
-        val iEnd = context.getDrawable(android.R.drawable.star_on)
-        iEnd?.setTint(Color.Red.toArgb())
-        points.firstOrNull()?.let { addMarker(view, it, iIni) }
-        points.lastOrNull()?.let { addMarker(view, it, iEnd) }
+            val iIni = context.getDrawable(android.R.drawable.star_off)
+            iIni?.setTint(Color.Green.toArgb())
+            val iEnd = context.getDrawable(android.R.drawable.star_on)
+            iEnd?.setTint(Color.Red.toArgb())
+            points.firstOrNull()?.let { addMarker(view, it, iIni) }
+            points.lastOrNull()?.let { addMarker(view, it, iEnd) }
 
-        val polyline = Polyline(mapView)
-        polyline.isGeodesic = true
-        polyline.setPoints(points)
-        view.overlays.add(polyline)
-        points.lastOrNull()?.let { view.controller.setCenter(it) }
+            val polyline = Polyline(mapView)
+            polyline.isGeodesic = true
+            polyline.setPoints(points)
+            view.overlays.add(polyline)
+            points.lastOrNull()?.let { view.controller.setCenter(it) }
 
-        view.zoomToBoundingBox(polyline.bounds, false)
-        view.addOnFirstLayoutListener { _, _, _, _, _ ->//v, left, top, right, bottom ->
-            if (points.isEmpty()) {
-                //view.controller.setCenter(locationOverlay.myLocation)
-                location?.let { view.controller.setCenter(GeoPoint(it.latitude, it.longitude)) }
-            } else {
-                view.zoomToBoundingBox(polyline.bounds, false)
+            if(doZoom) view.zoomToBoundingBox(polyline.bounds, false)
+            view.addOnFirstLayoutListener { _, _, _, _, _ ->//v, left, top, right, bottom ->
+                if (points.isEmpty()) {
+                    //view.controller.setCenter(locationOverlay.myLocation)
+                    location?.let { view.controller.setCenter(GeoPoint(it.latitude, it.longitude)) }
+                } else {
+                    view.zoomToBoundingBox(polyline.bounds, false)
+                }
+                //view.invalidate()
             }
-            //view.invalidate()
         }
     }
 }

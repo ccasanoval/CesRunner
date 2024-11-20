@@ -47,8 +47,6 @@ import com.cesoft.cesrunner.ui.theme.SepMin
 import org.koin.androidx.compose.koinViewModel
 
 //TODO: Export in standards like : GPX, KML
-//TODO: Enhance map: it gets out of its boundaries ¿?
-//TODO: Use Snack as error message
 @Composable
 fun TrackDetailsPage(
     navController: NavController,
@@ -116,14 +114,14 @@ private fun TrackDetailsCompo(
         TrackData(
             state = state,
             reduce = reduce,
-            modifier = Modifier.weight(0.3f)
+            modifier = Modifier.weight(.3f)
         )
         MapCompo(
             context = context,
             mapView = mapView,
             trackPoints = state.track.points,
             location = state.location,
-            modifier = Modifier.weight(0.3f).padding(SepMax)
+            modifier = Modifier.weight(.4f)
         )
     }
 }

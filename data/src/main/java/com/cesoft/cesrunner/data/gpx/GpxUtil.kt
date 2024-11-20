@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import java.io.BufferedReader
@@ -57,7 +58,6 @@ class GpxUtil {
         }
     }
 
-
     fun import(filename: String): TrackDto? {
         var input: FileInputStream? = null
         try {
@@ -89,7 +89,7 @@ class GpxUtil {
             return null
         }
         catch(e: IOException) {
-            Log.e(TAG, "saveFilePublic:e: $e")
+            Log.e(TAG, "import:e: $filename $e")
             return null
         }
         finally {
@@ -109,7 +109,7 @@ class GpxUtil {
         return sb.toString()
     }
 
-    fun export(track: TrackDto) {
+    fun export(track: TrackDto): Result<String> {
         val gpxType = GpxType(
             MetadataType(track.name, description = "", authorName = "CesRunner"),
             wpt = track.points.map {
@@ -124,13 +124,22 @@ class GpxUtil {
                 }.toList()
             )
         val data = gpxType.toXmlString()
-        saveFilePublic(data, track.name.trim() + ".gpx")
+        val filename = track.name.removeFileChars() + ".gpx"
+        return saveFilePublic(data, filename)
     }
+
+    private fun String.removeFileChars() = this
+        .replace("|","").replace("*","")
+        .replace("<","").replace(">","")
+        .replace("[","").replace("]","")
+        .replace("\"","").replace("'","")
+        .replace("\\","").replace("/","-")
+        .replace(":",".").replace(" ","_")
 
     private fun saveFilePublic(
         data: String,
         name: String
-    ): String? {
+    ): Result<String> {
         var input: InputStream? = null
         var output: FileOutputStream? = null
         try {
@@ -142,16 +151,16 @@ class GpxUtil {
                 output = FileOutputStream(file)
                 output.write(input.readBytes())
                 output.flush()
-                return file.path
+                return Result.success(file.path)
             }
             else {
                 Log.e(TAG, "saveFilePublic:e: Couldn't create file: ${file.path}")
-                return null
+                return Result.failure(AppError.FileError(file.absolutePath))
             }
         }
         catch(e: IOException) {
             Log.e(TAG, "saveFilePublic:e: $e")
-            return null
+            return Result.failure(AppError.FileError(e.localizedMessage ?: e.message ?: ""))
         }
         finally {
             input?.close()

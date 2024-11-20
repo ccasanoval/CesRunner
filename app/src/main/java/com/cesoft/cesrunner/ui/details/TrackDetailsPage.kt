@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -21,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
@@ -28,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
+import com.cesoft.cesrunner.data.gpx.GpxUtil
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
@@ -83,12 +90,51 @@ fun Content(
     state: TrackDetailsState.Init,
     reduce: (TrackDetailsIntent) -> Unit,
 ) {
+    android.util.Log.e("TrackDetPage", "------------ ${state.message}")
     ToolbarCompo(
         title = stringResource(R.string.menu_track_details),
         onBack = { reduce(TrackDetailsIntent.Close) },
-        error = state.error
+        error = state.error,
+        message = state.message?.toStr(LocalContext.current),
+        actions = { ActionsMenu(state, reduce) }
     ) {
         TrackDetailsCompo(state, reduce)
+    }
+}
+
+@Composable
+private fun ActionsMenu(
+    state: TrackDetailsState.Init,
+    reduce: (TrackDetailsIntent) -> Unit
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    IconButton(onClick = { menuExpanded = !menuExpanded }) {
+        Icon(
+            imageVector = Icons.Filled.Menu,
+            contentDescription = null
+        )
+    }
+    DropdownMenu(
+        expanded = menuExpanded,
+        onDismissRequest = { menuExpanded = false }
+    ) {
+        DropdownMenuItem(
+            leadingIcon = { Icon(painterResource(R.drawable.download), null) },
+            text = { Text(stringResource(R.string.export_gpx)) },
+            onClick = {
+                menuExpanded = false
+                reduce(TrackDetailsIntent.Export)
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Default.Delete, null) },
+            text = { Text(stringResource(R.string.delete)) },
+            onClick = {
+                //TODO: Ask are you sure?
+                menuExpanded = false
+                reduce(TrackDetailsIntent.Delete)
+            },
+        )
     }
 }
 
@@ -99,17 +145,6 @@ private fun TrackDetailsCompo(
 ) {
     val context = LocalContext.current
     val mapView = rememberMapCompo(context)
-    LaunchedEffect(state.message) {
-        //val snackbarHostState = remember { SnackbarHostState() }
-        state.message?.toStr(context)?.let { text ->
-            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-        }
-    }
-    LaunchedEffect(state.error) {
-        state.error?.toStr(context)?.let { text ->
-            Toast.makeText(context, text, Toast.LENGTH_LONG).show()
-        }
-    }
     Column {
         TrackData(
             state = state,
@@ -132,6 +167,7 @@ private fun TrackData(
     reduce: (TrackDetailsIntent) -> Unit,
     modifier: Modifier
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     val track = state.track
     val distance = track.distance.toDistanceStr()
     val timeIni = track.timeIni.toDateStr()
@@ -174,6 +210,7 @@ private fun TrackData(
                     modifier = Modifier.weight(.7f),
                 )
                 IconButton(onClick = {
+                    keyboardController?.hide()
                     reduce(TrackDetailsIntent.SaveName(trackName))
                 }) {
                     Icon(

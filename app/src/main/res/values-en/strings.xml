@@ -10,8 +10,8 @@
     <string name="open">Open</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
-    <string name="do_import">Import</string>
-    <string name="do_export">Export</string>
+    <string name="import_gpx">Import GPX</string>
+    <string name="export_gpx">Export GPX</string>
     <string name="error">Error</string>
     <string name="accept">Accept</string>
     <string name="cancel">Cancel</string>
@@ -24,7 +24,6 @@
     <string name="points">Points</string>
     <string name="name">Name</string>
     <string name="delete">Delete</string>
-    <string name="saved">Saved</string>
     <string name="save">Save</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
@@ -56,4 +55,7 @@
     <string name="error_not_found">Data not found</string>
     <string name="error_db">Error in data</string>
     <string name="slide_stop">Slide to stop</string>
+    <string name="saved_ok">Saved</string>
+    <string name="exported_ok">Track exported</string>
+    <string name="deleted_ok">Track deleted</string>
 </resources>

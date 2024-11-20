@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
@@ -75,14 +76,11 @@ private fun Content(
     val context = LocalContext.current
     val mapView = rememberMapCompo(context)
     var track by remember { mutableStateOf(state.track) }
-    val scope = rememberCoroutineScope()
     val docPicker = rememberLauncherForActivityResult(
         contract = GetCustomContents(),
         onResult = { uri ->
-            scope.launch {
-                uri.firstOrNull()?.let {
-                    track = GpxUtil().import(it, context) ?: TrackDto.Empty
-                }
+            uri.firstOrNull()?.let {
+                track = GpxUtil().import(it, context) ?: TrackDto.Empty
             }
         })
     var menuExpanded by remember { mutableStateOf(false) }
@@ -102,9 +100,11 @@ private fun Content(
                 onDismissRequest = { menuExpanded = false }
             ) {
                 DropdownMenuItem(
-                    leadingIcon = { Icon(Icons.Default.ShoppingCart, null) },
-                    text = { Text(stringResource(R.string.do_import)) },
+                    leadingIcon = { Icon(painterResource(R.drawable.upload), null) },
+                    //leadingIcon = { Icon(Icons.Default.ShoppingCart, null) },
+                    text = { Text(stringResource(R.string.import_gpx)) },
                     onClick = {
+                        menuExpanded = false
                         docPicker.launch("*/*")//application/gpx+xml
                     },
                 )

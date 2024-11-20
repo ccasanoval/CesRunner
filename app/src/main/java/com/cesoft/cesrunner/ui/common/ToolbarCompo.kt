@@ -12,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -34,6 +35,7 @@ fun ToolbarCompo(
     title: String,
     onBack: () -> Unit,
     error: AppError? = null,
+    message: String? = null,
     fab: @Composable () -> Unit = {},
     fabPos: FabPosition = FabPosition.Center,
     actions: @Composable RowScope.() -> Unit = {},
@@ -41,8 +43,14 @@ fun ToolbarCompo(
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(error) {
-        error?.let { snackbarHostState.showSnackbar(message = it.toStr(context) ?: "") }
+    LaunchedEffect(error, message) {
+        val duration = SnackbarDuration.Long
+        error?.let {
+            snackbarHostState.showSnackbar(message = it.toStr(context) ?: "", duration = duration)
+        }
+        message?.let {
+            snackbarHostState.showSnackbar(message = it, duration = duration)
+        }
     }
     Scaffold(
         floatingActionButton = fab,

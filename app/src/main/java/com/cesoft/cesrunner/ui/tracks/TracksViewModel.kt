@@ -21,8 +21,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.last
 
 class TracksViewModel(
-    val readAllTracks: ReadAllTracksUC,
-    val deleteTrack: DeleteTrackUC,
+    private val readAllTracks: ReadAllTracksUC,
+    private val deleteTrack: DeleteTrackUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TracksIntent, State<TracksState, TracksSideEffect>> {
     //private

@@ -94,9 +94,11 @@ fun Location.toTrackPointDto() = TrackPointDto(
     speed = speed
 )
 
-enum class MessageType { Saved }
+enum class MessageType { Saved, Exported, Deleted }
 fun MessageType.toStr(context: Context) = when(this) {
-    MessageType.Saved -> context.getString(R.string.saved)
+    MessageType.Saved -> context.getString(R.string.saved_ok)
+    MessageType.Exported -> context.getString(R.string.exported_ok)
+    MessageType.Deleted -> context.getString(R.string.deleted_ok)
 }
 
 fun AppError.toStr(context: Context) = when(this) {

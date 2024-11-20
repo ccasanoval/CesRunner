@@ -14,6 +14,8 @@ sealed class AppError: Throwable() {
         private fun readResolve(): Any = NotFound
     }
 
+    data class FileError(val filename: String): AppError()
+
     companion object {
         fun fromThrowable(e: Throwable): AppError = when(e) {
             //is NetworkException -> NetworkError

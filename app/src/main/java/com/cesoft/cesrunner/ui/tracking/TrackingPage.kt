@@ -146,9 +146,13 @@ private fun TrackData(
     val dfs = DecimalFormatSymbols(Locale.current.platformLocale)
     val df = DecimalFormat("#,###", dfs).format(track.distance)
     val distance = "$df m"
-    val timeIni = track.timeIni.toDateStr()
-    val timeEnd = track.timeEnd.toDateStr()
+
+//    val timeIni = track.timeIni.toDateStr()
+//    val timeEnd = track.timeEnd.toDateStr()//Sometimes points get refresh before track data!
+    val timeIni = track.points.firstOrNull()?.time
+    val timeEnd = track.points.lastOrNull()?.time
     val duration = track.timeEnd - track.timeIni
+
     val altitudes = track.points.map { it.altitude }
     val altitudeMax = altitudes.maxOrNull() ?: 0.0
     val altitudeMin = altitudes.minOrNull() ?: 0.0
@@ -157,6 +161,7 @@ private fun TrackData(
         "%.0f - %.0f m (dif %.0f m)",
         altitudeMin, altitudeMax, altitudeMax - altitudeMin
     )
+
     val speeds = track.points.map { it.speed }
     val speedMax = speeds.maxOrNull() ?: 0f
     val speedMed = speeds.average()
@@ -167,6 +172,10 @@ private fun TrackData(
         "%.0f Km/h (max %.0f Km/h)",
         speedMed*3.6, speedMax*3.6
     )
+//    android.util.Log.e("TrackingPage", "DATA------points= ${track.points.size} ")
+//    android.util.Log.e("TrackingPage", "DATA------first= ${track.points.firstOrNull()?.time?.toDateStr()} / $timeIni")
+//    android.util.Log.e("TrackingPage", "DATA------last= ${track.points.lastOrNull()?.time?.toDateStr()} / $timeEnd")
+//    android.util.Log.e("TrackingPage", "DATA------dis= ${TrackDto.calcDistance(track.points)} / $distance")
     LazyColumn(modifier = modifier.fillMaxWidth()) {
 //        item {
 //            Text(
@@ -178,8 +187,8 @@ private fun TrackData(
 //        }
         item { InfoRowBig(stringResource(R.string.distance), distance) }
         item { InfoRowBig(stringResource(R.string.time), duration.toTimeStr()) }
-        item { InfoRow(stringResource(R.string.time_ini), timeIni) }
-        item { InfoRow(stringResource(R.string.time_end), timeEnd) }
+        item { InfoRow(stringResource(R.string.time_ini), timeIni?.toDateStr() ?: "") }
+        item { InfoRow(stringResource(R.string.time_end), timeEnd?.toDateStr() ?: "") }
         item { InfoRow(stringResource(R.string.speed), speed) }
         item { InfoRow(stringResource(R.string.altitude), altitude) }
         item { InfoRow(stringResource(R.string.points), track.points.size.toString()) }

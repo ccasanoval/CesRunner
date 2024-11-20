@@ -124,7 +124,6 @@ private fun Track(
         )
     }
     val swipeFraction by remember(dragState.offset) {
-        android.util.Log.e("Slide", "swipeFraction----******------ ${dragState.offset} / $endOfTrackPx = "+calculateSwipeFraction(dragState.offset, endOfTrackPx) )
         derivedStateOf { calculateSwipeFraction(dragState.offset, endOfTrackPx) }
     }
     val backgroundColor by remember(swipeFraction) {

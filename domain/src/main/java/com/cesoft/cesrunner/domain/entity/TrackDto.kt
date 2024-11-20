@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.domain.entity
 
-import android.location.Location
 import com.cesoft.cesrunner.domain.Common.ID_NULL
 
 data class TrackDto(

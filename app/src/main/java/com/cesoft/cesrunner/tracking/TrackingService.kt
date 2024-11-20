@@ -125,9 +125,7 @@ class TrackingService: LifecycleService() {
                     /// Current Tracking
                     readCurrentTrack().getOrNull()?.let { track ->
                         if(track.id > ID_NULL) {
-                            val time = System.currentTimeMillis()
                             val point = loc.toTrackPointDto()
-                            Log.e(TAG, "----------- Service location: ${track.points.size} $track")
                             if(firstSpeech && track.points.isEmpty()) {
                                 firstSpeech = false
                                 for(i in 3 downTo 1) {
@@ -143,15 +141,17 @@ class TrackingService: LifecycleService() {
                                 val distance = track.calcDistance(loc.toLocationDto())
                                 val newTrack = track.copy(
                                     distance = distance.toInt(),
-                                    timeEnd = time,
+                                    timeIni = track.points.firstOrNull()?.time ?: point.time,
+                                    timeEnd = point.time,
                                 )
                                 updateTrack(newTrack)
+                                Log.e(TAG, "----------- Service location: ${newTrack.points.size} $newTrack")
                                 /// Speech
                                 val newSpeech = (distance.toInt() / 100)/10f
                                 if(newSpeech > speechKm) {
                                     speechKm = newSpeech
                                     speak(distance.toInt().toDistanceSpeech(this))
-                                    speak((time - track.timeIni).toTimeSpeech(this))
+                                    speak((point.time - track.timeIni).toTimeSpeech(this))
                                 }
                             }
                          }

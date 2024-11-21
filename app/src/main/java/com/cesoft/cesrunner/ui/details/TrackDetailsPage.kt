@@ -90,7 +90,6 @@ fun Content(
     state: TrackDetailsState.Init,
     reduce: (TrackDetailsIntent) -> Unit,
 ) {
-    android.util.Log.e("TrackDetPage", "------------ ${state.message}")
     ToolbarCompo(
         title = stringResource(R.string.menu_track_details),
         onBack = { reduce(TrackDetailsIntent.Close) },

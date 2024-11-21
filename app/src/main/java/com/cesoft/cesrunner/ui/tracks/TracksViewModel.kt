@@ -17,15 +17,14 @@ import com.cesoft.cesrunner.ui.tracks.mvi.TracksState
 import com.cesoft.cesrunner.ui.tracks.mvi.TracksTransform
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.last
 
 class TracksViewModel(
     private val readAllTracks: ReadAllTracksUC,
     private val deleteTrack: DeleteTrackUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TracksIntent, State<TracksState, TracksSideEffect>> {
-    //private
 
     private val reducer =
         Reducer(
@@ -63,6 +62,7 @@ class TracksViewModel(
     private fun executeClose() = flow {
         emit(TracksTransform.AddSideEffect(TracksSideEffect.Close))
     }
+
     private fun executeLoad() = flow {
         val res = readAllTracks()
         var error: AppError? = null
@@ -73,13 +73,16 @@ class TracksViewModel(
         val tracks = res.getOrNull() ?: listOf()
         emit(TracksTransform.GoInit(tracks, error))
     }
+
     private fun executeDetails(id: Long) = flow {
         emit(TracksTransform.AddSideEffect(TracksSideEffect.Details(id)))
+        delay(10)//Needed for some reason...
+        emit(TracksTransform.GoLoad)//This way next time enters here, it reloads
     }
+
     private fun executeDelete(id: Long) = flow {
         val resDel = deleteTrack(id)
         if(resDel.isSuccess) {
-            android.util.Log.e(TAG, "executeDelete-----OK")
             val res = readAllTracks()
             var error: AppError? = null
             val e = res.exceptionOrNull()
@@ -90,7 +93,7 @@ class TracksViewModel(
             emit(TracksTransform.GoInit(tracks, error))
         }
         else {
-            android.util.Log.e(TAG, "executeDelete-----${resDel.exceptionOrNull()}")
+            android.util.Log.e(TAG, "executeDelete:e: ${resDel.exceptionOrNull()}")
             //emit(state.last())
         }
     }

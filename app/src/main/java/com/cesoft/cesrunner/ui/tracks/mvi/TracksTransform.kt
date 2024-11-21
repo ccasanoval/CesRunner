@@ -18,6 +18,12 @@ internal object TracksTransform {
         }
     }
 
+    data object GoLoad: ViewTransform<TracksState, TracksSideEffect>() {
+        override fun mutate(currentState: TracksState): TracksState {
+            return TracksState.Loading
+        }
+    }
+
     data class GoInit(
         val data: List<TrackDto>,
         val error: AppError? = null,

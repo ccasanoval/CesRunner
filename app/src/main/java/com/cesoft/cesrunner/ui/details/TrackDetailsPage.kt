@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.ui.details
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +33,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
-import com.cesoft.cesrunner.data.gpx.GpxUtil
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
@@ -42,6 +40,7 @@ import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toStr
 import com.cesoft.cesrunner.toTimeStr
+import com.cesoft.cesrunner.ui.common.AskDelete
 import com.cesoft.cesrunner.ui.common.InfoRow
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.MapCompo
@@ -53,7 +52,7 @@ import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMin
 import org.koin.androidx.compose.koinViewModel
 
-//TODO: Export in standards like : GPX, KML
+//TODO: Export in KML
 @Composable
 fun TrackDetailsPage(
     navController: NavController,
@@ -90,12 +89,14 @@ fun Content(
     state: TrackDetailsState.Init,
     reduce: (TrackDetailsIntent) -> Unit,
 ) {
+    val askDelete = remember { mutableStateOf(false) }
+    AskDelete(show = askDelete, onDelete = { reduce(TrackDetailsIntent.Delete) })
     ToolbarCompo(
         title = stringResource(R.string.menu_track_details),
         onBack = { reduce(TrackDetailsIntent.Close) },
         error = state.error,
         message = state.message?.toStr(LocalContext.current),
-        actions = { ActionsMenu(state, reduce) }
+        actions = { ActionsMenu(reduce, askDelete) }
     ) {
         TrackDetailsCompo(state, reduce)
     }
@@ -103,8 +104,8 @@ fun Content(
 
 @Composable
 private fun ActionsMenu(
-    state: TrackDetailsState.Init,
-    reduce: (TrackDetailsIntent) -> Unit
+    reduce: (TrackDetailsIntent) -> Unit,
+    askDelete: MutableState<Boolean>
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     IconButton(onClick = { menuExpanded = !menuExpanded }) {
@@ -129,9 +130,8 @@ private fun ActionsMenu(
             leadingIcon = { Icon(Icons.Default.Delete, null) },
             text = { Text(stringResource(R.string.delete)) },
             onClick = {
-                //TODO: Ask are you sure?
                 menuExpanded = false
-                reduce(TrackDetailsIntent.Delete)
+                askDelete.value = true
             },
         )
     }

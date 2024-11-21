@@ -37,6 +37,7 @@ import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toTimeStr
+import com.cesoft.cesrunner.ui.common.AskDelete
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.ToolbarCompo
 import com.cesoft.cesrunner.ui.theme.SepMed
@@ -96,7 +97,7 @@ fun TracksData(
     reduce: (TracksIntent) -> Unit,
 ) {
     Column(modifier = Modifier) {
-        //TODO: Search bar
+        //TODO: Search bar: by date and name?
         LazyColumn(modifier = Modifier.padding(SepMin)) {
             for(track in state.tracks) {
                 item {
@@ -157,50 +158,6 @@ private fun Item(
             )
         }
     }
-}
-
-@Composable
-private fun AskDelete(
-    show: MutableState<Boolean>,
-    onDelete: () -> Unit
-) {
-    if(!show.value)return
-    AlertDialog(
-        onDismissRequest = { show.value = false },
-        title = {
-            Row {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.delete),
-                )
-                Text(
-                    text = stringResource(R.string.ask_delete_title),
-                    modifier = Modifier.padding(horizontal = SepMed)
-                )
-            }
-        },
-        text = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = stringResource(R.string.ask_delete_message),
-                    textAlign = TextAlign.Center,
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                onDelete()
-                show.value = false
-            }) {
-                Text(stringResource(R.string.delete), color = Color.Red)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { show.value = false }) {
-                Text(stringResource(R.string.cancel), color = Color.Gray)
-            }
-        }
-    )
 }
 
 //--------------------------------------------------------------------------------------------------

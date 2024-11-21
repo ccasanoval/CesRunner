@@ -46,6 +46,7 @@ import org.koin.androidx.compose.koinViewModel
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
+//TODO: Remember the zoom the user set for all the session...
 @Composable
 fun TrackingPage(
     navController: NavController,

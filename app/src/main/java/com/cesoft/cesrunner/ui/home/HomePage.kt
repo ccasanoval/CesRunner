@@ -5,6 +5,7 @@ import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,6 +44,9 @@ import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.compose.koinViewModel
+
+//TODO: Show the GPS availability and current position.... or No location fixed...
+
 
 @Composable
 fun HomePage(
@@ -120,42 +124,38 @@ private fun Content(
                 Spacer(modifier = Modifier.padding(SepMin))
             }
 
+            val modifier = Modifier.fillMaxWidth(.8f).padding(SepMed)
             val title = if(isTracking) R.string.menu_check else R.string.menu_start
             HomeButton(
                 title = title,
                 icon = R.mipmap.ic_run,
-                modifier = Modifier.fillMaxWidth(.8f).padding(SepMed),
+                modifier = modifier,
                 onClick = { reduce(HomeIntent.GoStart) }
             )
-            val modifier = Modifier.weight(0.6f).padding(SepMed)
-            Row {
-                HomeButton(
-                    title = R.string.menu_tracks,
-                    icon = R.mipmap.ic_list,
-                    modifier = modifier,
-                    onClick = { reduce(HomeIntent.GoTracks) }
-                )
-                HomeButton(
-                    title = R.string.menu_maps,
-                    icon = R.mipmap.ic_map,
-                    modifier = modifier,
-                    onClick = { reduce(HomeIntent.GoMap) }
-                )
-            }
-            Row {
-                HomeButton(
-                    title = R.string.menu_settings,
-                    icon = R.mipmap.ic_settings,
-                    modifier = modifier,
-                    onClick = { reduce(HomeIntent.GoSettings) }
-                )
-                HomeButton(
-                    title = R.string.menu_gnss,
-                    icon = R.mipmap.ic_sat,
-                    modifier = modifier,
-                    onClick = { reduce(HomeIntent.GoGnss) }
-                )
-            }
+            HomeButton(
+                title = R.string.menu_tracks,
+                icon = R.mipmap.ic_list,
+                modifier = modifier,
+                onClick = { reduce(HomeIntent.GoTracks) }
+            )
+            HomeButton(
+                title = R.string.menu_maps,
+                icon = R.mipmap.ic_map,
+                modifier = modifier,
+                onClick = { reduce(HomeIntent.GoMap) }
+            )
+            HomeButton(
+                title = R.string.menu_settings,
+                icon = R.mipmap.ic_settings,
+                modifier = modifier,
+                onClick = { reduce(HomeIntent.GoSettings) }
+            )
+//                HomeButton(
+//                    title = R.string.menu_gnss,
+//                    icon = R.mipmap.ic_sat,
+//                    modifier = modifier,
+//                    onClick = { reduce(HomeIntent.GoGnss) }
+//                )
         }
     }
 }
@@ -181,6 +181,7 @@ private fun HomeButton(
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(.9f)
         )
+        Box(modifier = Modifier.padding(SepMed))
     }
 
 }

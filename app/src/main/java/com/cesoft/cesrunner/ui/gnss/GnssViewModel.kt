@@ -55,6 +55,9 @@ class GnssViewModel(
     private fun executeLoad() = flow {
         //TOOD: Get GNSS info
         //https://github.com/barbeau/gpstest
+        //https://barbeau.medium.com/gnss-interrupted-the-hidden-android-setting-you-need-to-know-d812d28a3821
+        //https://developer.android.com/reference/android/location/GnssMeasurementRequest.Builder#setFullTracking(boolean)
+        //https://barbeau.medium.com/crowdsourcing-gnss-capabilities-of-android-devices-d4228645cf25
         emit(GnssTransform.GoInit(GnssState.Init()))
     }
 }

@@ -128,9 +128,9 @@ class TrackingService: LifecycleService() {
                             val point = loc.toTrackPointDto()
                             if(firstSpeech && track.points.isEmpty()) {
                                 firstSpeech = false
-                                for(i in 3 downTo 1) {
+                                for(i in 5 downTo 1) {
                                     speak("$i")
-                                    delay(1000)
+                                    delay(700)
                                 }
                                 speak(applicationContext.getString(R.string.menu_start))
                             }

@@ -42,9 +42,7 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
 import org.koin.androidx.compose.koinViewModel
-
 
 @Composable
 fun HomePage(
@@ -126,7 +124,7 @@ private fun Content(
             HomeButton(
                 title = title,
                 icon = R.mipmap.ic_run,
-                modifier = Modifier.fillMaxWidth(.6f).padding(SepMed),
+                modifier = Modifier.fillMaxWidth(.8f).padding(SepMed),
                 onClick = { reduce(HomeIntent.GoStart) }
             )
             val modifier = Modifier.weight(0.6f).padding(SepMed)
@@ -155,7 +153,7 @@ private fun Content(
                     title = R.string.menu_gnss,
                     icon = R.mipmap.ic_sat,
                     modifier = modifier,
-                    onClick = { reduce(HomeIntent.GoMap) }
+                    onClick = { reduce(HomeIntent.GoGnss) }
                 )
             }
         }

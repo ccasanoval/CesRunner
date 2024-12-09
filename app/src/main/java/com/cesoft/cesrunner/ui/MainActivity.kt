@@ -57,11 +57,9 @@ class MainActivity : ComponentActivity() {
                     while( ! hasPermission.value) {
                         delay(5000)
                         hasPermission.value = hasAllPermissions()
-                        Log.e(TAG, "onCreate:LaunchedEffect--------- $hasPermission")
                     }
                 }
             }
-            Log.e(TAG, "onCreate--------- $hasPermission")
             CesRunnerTheme {
                 Scaffold { padding ->
                     Content(hasPermission, padding)
@@ -118,7 +116,6 @@ class MainActivity : ComponentActivity() {
     ) { result: Map<String, Boolean> ->
         val denied = result.filter { !it.value }.map { it.key }
         if (denied.isEmpty()) askPermissions()
-        //if (checkAllPermissions()) permissionContent()
     }
 
     /// COMPOSABLE -------------------------------------------------------------------------------------
@@ -131,7 +128,6 @@ class MainActivity : ComponentActivity() {
             else {
                 PermissionsAlert {
                     hasPermission.value = askPermissions()
-                    Log.e(TAG, "PermissionsAlert---click--------- $hasPermission")
                 }
             }
         }

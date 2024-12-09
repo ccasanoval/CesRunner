@@ -52,7 +52,7 @@ dependencies {
 
     // Preferences
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.security.crypto)
+    //implementation(libs.androidx.security.crypto)
 
     // DI - Hilt
 //    ksp(libs.hilt.android.ksp)

@@ -5,5 +5,6 @@ sealed class HomeSideEffect {
     data object GoSettings: HomeSideEffect()
     data object GoTracks: HomeSideEffect()
     data object GoMap: HomeSideEffect()
+    data object GoGnss: HomeSideEffect()
     data object Close: HomeSideEffect()
 }

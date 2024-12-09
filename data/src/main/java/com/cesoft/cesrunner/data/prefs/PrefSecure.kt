@@ -1,5 +1,5 @@
 package com.cesoft.cesrunner.data.prefs
-
+/*
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -36,4 +36,4 @@ fun Context.setToken(token: String?) {
     }
 }
 fun Context.getToken() = this.readSecure(tokenField)
-
+*/

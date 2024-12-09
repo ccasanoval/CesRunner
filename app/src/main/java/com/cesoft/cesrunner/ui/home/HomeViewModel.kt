@@ -53,6 +53,7 @@ class HomeViewModel(
             HomeIntent.GoSettings -> executeSettings()
             HomeIntent.GoMap -> executeMap()
             HomeIntent.GoTracks -> executeTracks()
+            HomeIntent.GoGnss -> executeGnss()
         }
 
     private fun executeClose() = flow {
@@ -99,26 +100,22 @@ class HomeViewModel(
         emit(HomeTransform.AddSideEffect(HomeSideEffect.GoTracks))
     }
 
+    private fun executeGnss() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoGnss))
+    }
+
     fun consumeSideEffect(
         sideEffect: HomeSideEffect,
         navController: NavController,
         context: Context,
     ) {
         when(sideEffect) {
-            HomeSideEffect.Start -> {
-                navController.navigate(Page.Tracking.route)
-            }
-            HomeSideEffect.GoSettings -> {
-                navController.navigate(Page.Settings.route)
-                //Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT).show()
-            }
-            HomeSideEffect.GoTracks -> {
-                navController.navigate(Page.Tracks.route)
-            }
-            HomeSideEffect.GoMap -> {
-                navController.navigate(Page.Map.route)
-            }
-            HomeSideEffect.Close -> (context as Activity).finish()
+            HomeSideEffect.Start -> { navController.navigate(Page.Tracking.route) }
+            HomeSideEffect.GoSettings -> { navController.navigate(Page.Settings.route) }
+            HomeSideEffect.GoTracks -> { navController.navigate(Page.Tracks.route) }
+            HomeSideEffect.GoMap -> { navController.navigate(Page.Map.route) }
+            HomeSideEffect.GoGnss -> { navController.navigate(Page.Gnss.route) }
+            HomeSideEffect.Close -> { (context as Activity).finish() }
         }
     }
 

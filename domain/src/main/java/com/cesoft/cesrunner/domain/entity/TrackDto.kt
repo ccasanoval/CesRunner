@@ -1,6 +1,6 @@
 package com.cesoft.cesrunner.domain.entity
 
-import com.cesoft.cesrunner.domain.Common.ID_NULL
+import com.cesoft.cesrunner.domain.ID_NULL
 
 data class TrackDto(
     val id: Long = ID_NULL,

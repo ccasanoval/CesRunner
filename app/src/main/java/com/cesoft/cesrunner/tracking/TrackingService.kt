@@ -11,12 +11,8 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.data.prefs.writeBool
-import com.cesoft.cesrunner.toDateStr
-import com.cesoft.cesrunner.toTrackPointDto
-import com.cesoft.cesrunner.domain.Common.ID_NULL
-import com.cesoft.cesrunner.domain.entity.LocationDto
+import com.cesoft.cesrunner.domain.ID_NULL
 import com.cesoft.cesrunner.domain.usecase.AddTrackPointUC
-import com.cesoft.cesrunner.domain.usecase.GetLastLocationUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadLastTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
@@ -24,17 +20,16 @@ import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.equalTo
+import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toDistanceSpeech
-import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toLocationDto
 import com.cesoft.cesrunner.toTimeSpeech
+import com.cesoft.cesrunner.toTrackPointDto
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-import kotlin.math.max
-import kotlin.math.min
 
 class TrackingService: LifecycleService() {
     //Checks whether the bound activity has really gone away

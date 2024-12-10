@@ -10,7 +10,7 @@ import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.Common.ID_NULL
+import com.cesoft.cesrunner.domain.ID_NULL
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC

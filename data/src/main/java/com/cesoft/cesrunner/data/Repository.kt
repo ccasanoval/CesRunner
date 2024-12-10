@@ -8,7 +8,7 @@ import com.cesoft.cesrunner.data.local.entity.LocalTrackPointDto
 import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.data.prefs.PrefDataSource
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.Common.ID_NULL
+import com.cesoft.cesrunner.domain.ID_NULL
 import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto

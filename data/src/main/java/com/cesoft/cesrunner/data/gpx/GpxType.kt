@@ -130,5 +130,5 @@ class GpxType(
         return result
     }
 
-    companion object { }
+    companion object
 }

@@ -313,7 +313,7 @@ class GpxReader {
                 list.add(it)
             }
             if (container.byte!!.toInt() == '/'.code) {
-                break;
+                break
             }
         }
         container.objects = list
@@ -433,7 +433,7 @@ class GpxReader {
     }
 
     private fun readByte(dis: InputStream, container: Container): Container {
-        val ba = ByteArray(1);
+        val ba = ByteArray(1)
         if (-1 == dis.read(ba, 0, 1)) {
             throw InterruptedException("EOF at ${container.position}\nUnparsed data: " + String(container.buffer))
         } else if (ba.size != 1) {
@@ -456,7 +456,7 @@ class GpxReader {
             fun empty(): Container = empty(0)
             fun empty(position: Long, isShortClosing: Boolean = false) = Container(position, null, ByteArray(0), isShortClosing)
             fun emptyWithAttributes(position: Long, attributes: Map<String, String>, isShortClosing: Boolean = false): Container {
-                val container = Container.empty(position, isShortClosing)
+                val container = empty(position, isShortClosing)
                 container.attributes = attributes
                 return container
             }

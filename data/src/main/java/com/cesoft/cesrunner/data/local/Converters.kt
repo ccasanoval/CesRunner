@@ -1,5 +1,5 @@
 package com.cesoft.cesrunner.data.local
-
+/*
 import androidx.room.TypeConverter
 import java.lang.reflect.Type
 import java.time.Instant
@@ -12,7 +12,7 @@ object Converters {
 
     @TypeConverter
     fun dateToModel(time: Long): LocalDateTime {
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
         val instant = Instant.ofEpochMilli(time)
         val date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
         val dateStr = formatter.format(date)
@@ -23,13 +23,13 @@ object Converters {
     @TypeConverter
     fun hoursToDatabase(date: LocalDateTime): Long {
         val time = date.toInstant(ZoneOffset.UTC).toEpochMilli()
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            val dateStr = formatter.format(date)
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+        val dateStr = formatter.format(date)
             android.util.Log.e("Converters", "hoursToDatabase--- $dateStr ---- $time")
         return time
     }
 
-    /*@TypeConverter
+    @TypeConverter
     fun hoursToModel(data: String): Hours? {
         val gson = Gson()
         val listType: Type = object : TypeToken<Hours?>() {}.type
@@ -40,5 +40,5 @@ object Converters {
     fun hoursToDatabase(hours: Hours?): String? {
         val gson = Gson()
         return gson.toJson(hours)
-    }*/
-}
+    }
+}*/

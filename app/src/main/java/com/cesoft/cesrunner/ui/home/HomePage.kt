@@ -1,13 +1,13 @@
 package com.cesoft.cesrunner.ui.home
 
 import android.content.Intent
+import android.location.Location
 import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +33,7 @@ import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.common.ErrorCompo
@@ -40,13 +41,13 @@ import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.TurnLocationOnDialog
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeState
+import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.androidx.compose.koinViewModel
-
-//TODO: Show the GPS availability and current position.... or No location fixed...
-
 
 @Composable
 fun HomePage(
@@ -84,78 +85,38 @@ private fun Content(
     state: HomeState.Init,
     reduce: (intent: HomeIntent) -> Unit,
 ) {
-    val track by state.trackFlow.collectAsStateWithLifecycle()
-        //?: remember { mutableStateOf<TrackDto?>(null) }
     Surface {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
+            /// Turn on location
+            val context = LocalContext.current
+            val showAlert = remember { mutableStateOf(true) }
+            TurnLocationOnDialog(showAlert) {
+                showAlert.value = false
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                context.startActivity(intent)
+            }
+
+            /// Error
             state.error?.let {
                 ErrorCompo(it)
             }
-            val isTracking = track?.isCreated == true
-            if (isTracking) {
-                val context = LocalContext.current
-                val showAlert = remember { mutableStateOf(true) }
-                TurnLocationOnDialog(showAlert) {
-                    showAlert.value = false
-                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                    context.startActivity(intent)
-                }
-                Text(
-                    text = stringResource(R.string.tracking_on) + " " + track?.name,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(SepMin)
-                )
-                val trackData =
-                    stringResource(R.string.distance) + " " +
-                    track?.distance?.toDistanceStr() + " / " +
-                    stringResource(R.string.time) + " " +
-                    track?.time?.toTimeStr()
-                Text(
-                    text = trackData,
-                    modifier = Modifier.padding(SepMin)
-                )
-            }
-            else {
-                Spacer(modifier = Modifier.padding(SepMin))
-                Spacer(modifier = Modifier.padding(SepMin))
-            }
 
-            val modifier = Modifier.fillMaxWidth(.8f).padding(SepMed)
-            val title = if(isTracking) R.string.menu_check else R.string.menu_start
-            HomeButton(
-                title = title,
-                icon = R.mipmap.ic_run,
-                modifier = modifier,
-                onClick = { reduce(HomeIntent.GoStart) }
-            )
-            HomeButton(
-                title = R.string.menu_tracks,
-                icon = R.mipmap.ic_list,
-                modifier = modifier,
-                onClick = { reduce(HomeIntent.GoTracks) }
-            )
-            HomeButton(
-                title = R.string.menu_maps,
-                icon = R.mipmap.ic_map,
-                modifier = modifier,
-                onClick = { reduce(HomeIntent.GoMap) }
-            )
-            HomeButton(
-                title = R.string.menu_settings,
-                icon = R.mipmap.ic_settings,
-                modifier = modifier,
-                onClick = { reduce(HomeIntent.GoSettings) }
-            )
-//                HomeButton(
-//                    title = R.string.menu_gnss,
-//                    icon = R.mipmap.ic_sat,
-//                    modifier = modifier,
-//                    onClick = { reduce(HomeIntent.GoGnss) }
-//                )
+            /// Current location
+            CurrentLocationCompo(state.locationFlow)
+
+            /// Current tracking
+//            if (isTracking) {
+//                CurrentTrackingCompo(track)
+//            } else {
+//                Spacer(modifier = Modifier.padding(SepMax))
+//            }
+
+            /// Actions
+            ActionsCompo(state, reduce)
         }
     }
 }
@@ -183,7 +144,94 @@ private fun HomeButton(
         )
         Box(modifier = Modifier.padding(SepMed))
     }
+}
 
+@Composable
+private fun ActionsCompo(state: HomeState.Init, reduce: (intent: HomeIntent) -> Unit) {
+    val modifier = Modifier.fillMaxWidth(.8f).padding(SepMed)
+    val track by state.trackFlow.collectAsStateWithLifecycle()
+    val isTracking = track?.isCreated == true
+    val title = if (isTracking) R.string.menu_check else R.string.menu_start
+    HomeButton(
+        title = title,
+        icon = R.mipmap.ic_run,
+        modifier = modifier,
+        onClick = { reduce(HomeIntent.GoStart) }
+    )
+    if(isTracking) CurrentTrackingCompo(track)
+
+    HomeButton(
+        title = R.string.menu_tracks,
+        icon = R.mipmap.ic_list,
+        modifier = modifier,
+        onClick = { reduce(HomeIntent.GoTracks) }
+    )
+    HomeButton(
+        title = R.string.menu_maps,
+        icon = R.mipmap.ic_map,
+        modifier = modifier,
+        onClick = { reduce(HomeIntent.GoMap) }
+    )
+    HomeButton(
+        title = R.string.menu_settings,
+        icon = R.mipmap.ic_settings,
+        modifier = modifier,
+        onClick = { reduce(HomeIntent.GoSettings) }
+    )
+//                HomeButton(
+//                    title = R.string.menu_gnss,
+//                    icon = R.mipmap.ic_sat,
+//                    modifier = modifier,
+//                    onClick = { reduce(HomeIntent.GoGnss) }
+//                )
+}
+
+@Composable
+private fun CurrentTrackingCompo(track: TrackDto?) {
+    Text(
+        text = stringResource(R.string.tracking_on) + " " + track?.name,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(SepMin)
+    )
+    val trackData =
+        stringResource(R.string.distance) + " " +
+                track?.distance?.toDistanceStr() + " / " +
+                stringResource(R.string.time) + " " +
+                track?.time?.toTimeStr()
+    Text(
+        text = trackData,
+        modifier = Modifier.padding(SepMin)
+    )
+}
+
+@Composable
+private fun CurrentLocationCompo(locationFlow: StateFlow<Location?>?) {
+    locationFlow?.let { flow ->
+        val location by flow.collectAsStateWithLifecycle()
+        location?.let {
+            val alt = "%.0f m".format(it.altitude)
+            val spe = "%.0f m/s".format(it.speed)
+            val acc = "%.1f m".format(it.accuracy)
+            val tim = it.time.toDateStr()
+            val lat = "%.5f m".format(it.latitude)
+            val lon = "%.5f m".format(it.longitude)
+            Text(stringResource(R.string.location_current) + " $tim")
+            val sAlt = stringResource(R.string.altitude)
+            val sAcc = stringResource(R.string.accuracy)
+            val sSpe = stringResource(R.string.speed)
+            //val sTim = stringResource(R.string.time)
+            Text("$lat / $lon")
+            Text("$sAlt: $alt")
+            Text("$sSpe: $spe")
+            Text("$sAcc: $acc")
+        }
+    } ?: run {
+        Text(
+            text = stringResource(R.string.location_null),
+            modifier = Modifier.padding(SepMax)
+        )
+    }
+    Spacer(modifier = Modifier.padding(SepMed))
 }
 
 //--------------------------------------------------------------------------------------------------

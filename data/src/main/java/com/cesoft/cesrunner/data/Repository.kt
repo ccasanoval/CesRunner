@@ -17,7 +17,6 @@ import com.cesoft.cesrunner.domain.repository.RepositoryContract
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.reduce
 
 class Repository(
     private val context: Context,
@@ -81,7 +80,6 @@ class Repository(
     override suspend fun createTrack(data: TrackDto): Result<Long> {
         try {
             val id: Long = db.trackDao().create(LocalTrackDto.fromModel(data))
-            android.util.Log.e(TAG, "createTrack ********* ------------  id = $id")
             return if( id > 0) Result.success(id)
             else Result.failure(Throwable())
         }
@@ -121,12 +119,8 @@ class Repository(
     override suspend fun readTrackFlow(id: Long): Result<Flow<TrackDto?>> {
         try {
             val points = db.trackPointDao().getFlowByTrackId(id)
-            android.util.Log.e(TAG, "readTrackFlow---------- id=$id ${points.hashCode()}")
             return Result.success(
-                points.map {
-                    android.util.Log.e(TAG, "readTrackFlow---------- track = "+db.trackDao().getById(id))
-                    db.trackDao().getById(id)?.toModel(it)
-                }
+                points.map { db.trackDao().getById(id)?.toModel(it) }
             )
         }
         catch(e: Throwable) {

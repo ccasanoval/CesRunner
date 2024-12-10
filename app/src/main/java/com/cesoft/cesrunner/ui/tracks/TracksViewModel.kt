@@ -64,7 +64,6 @@ class TracksViewModel(
     }
 
     private fun executeLoad() = flow {
-        android.util.Log.e(TAG, "executeLoad--------------------")
         val res = readAllTracks()
         var error: AppError? = null
         val e = res.exceptionOrNull()
@@ -76,7 +75,6 @@ class TracksViewModel(
     }
 
     private fun executeDetails(id: Long) = flow {
-        android.util.Log.e(TAG, "executeDetails--------------------")
         emit(TracksTransform.AddSideEffect(TracksSideEffect.Details(id)))
         delay(100)//Needed for some reason...
         emit(TracksTransform.GoLoad)//This way next time enters here, it reloads

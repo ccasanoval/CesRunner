@@ -2,7 +2,6 @@ package com.cesoft.cesrunner.ui.home
 
 import android.app.Activity
 import android.content.Context
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -14,6 +13,7 @@ import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
+import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
 import com.cesoft.cesrunner.ui.home.mvi.HomeSideEffect
@@ -21,6 +21,7 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.home.mvi.HomeTransform
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,8 +32,25 @@ class HomeViewModel(
     private val trackingServiceFac: TrackingServiceFac,
     private val readCurrentTrack: ReadCurrentTrackUC,
     private val readCurrentTrackFlow: ReadCurrentTrackFlowUC,
+    private val requestLocationUpdates: RequestLocationUpdatesUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
+
+//    private var location: Location? = null
+//    init {
+//        android.util.Log.e(TAG, "init---a---------- 00000")
+//        val delay = 5*60*1000L
+//        requestLocationUpdates(delay, 0f).getOrNull()
+//            ?.onEach { l ->
+//                location = l
+//                location?.let {
+//                    android.util.Log.e(TAG, "init--a----------- $location")
+//                    reducer.executeIntent(HomeIntent.Load)
+//                }
+//                delay(500)
+//            }
+//            ?.launchIn(viewModelScope)
+//    }
 
     private val reducer = Reducer(
         coroutineScope = viewModelScope,
@@ -55,55 +73,6 @@ class HomeViewModel(
             HomeIntent.GoTracks -> executeTracks()
             HomeIntent.GoGnss -> executeGnss()
         }
-
-    private fun executeClose() = flow {
-        emit(HomeTransform.AddSideEffect(HomeSideEffect.Close))
-    }
-
-    private fun executeLoad() = flow {
-        val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
-        if(currentTrack.isCreated) {
-            trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
-        }
-
-        //https://stackoverflow.com/questions/78277363/collecting-flows-in-the-viewmodel
-        val res = readCurrentTrackFlow()
-        res.getOrNull()?.let {
-            val flow: StateFlow<TrackDto?> = it.stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = TrackDto.Empty,
-            )
-            emit(HomeTransform.GoInit(flow, null))
-        } ?: run {
-            val e: AppError = res.exceptionOrNull()
-                ?.let { AppError.DataBaseError(it) } ?: run { AppError.NotFound }
-            val flow = MutableStateFlow<TrackDto?>(null)
-            emit(HomeTransform.GoInit(flow, e))
-        }
-    }
-
-    private fun executeStart() = flow {
-        emit(HomeTransform.AddSideEffect(HomeSideEffect.Start))
-        emit(HomeTransform.GoLoading)
-    }
-
-    private fun executeSettings() = flow {
-        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoSettings))
-    }
-
-    private fun executeMap() = flow {
-        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoMap))
-    }
-
-    private fun executeTracks() = flow {
-        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoTracks))
-    }
-
-    private fun executeGnss() = flow {
-        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoGnss))
-    }
-
     fun consumeSideEffect(
         sideEffect: HomeSideEffect,
         navController: NavController,
@@ -117,6 +86,73 @@ class HomeViewModel(
             HomeSideEffect.GoGnss -> { navController.navigate(Page.Gnss.route) }
             HomeSideEffect.Close -> { (context as Activity).finish() }
         }
+    }
+
+    private fun executeLoad() = flow {
+        val locationDelay = 1*60*1000L
+        val locationFlow = requestLocationUpdates(locationDelay,0f).getOrNull()
+//        var locationFlow: StateFlow<Location?>? = null
+//        requestLocationUpdates(1*60*1000L, 0f).getOrNull()?.let {
+//            locationFlow = it.stateIn(
+//                scope = viewModelScope,
+//                started = SharingStarted.WhileSubscribed(5_000),
+//                initialValue = null,
+//            )
+//        }
+
+        val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
+        if(currentTrack.isCreated) {
+            trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
+        }
+        //https://stackoverflow.com/questions/78277363/collecting-flows-in-the-viewmodel
+        val res = readCurrentTrackFlow()
+        res.getOrNull()?.let {
+            val flow: StateFlow<TrackDto?> = it.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = TrackDto.Empty,
+            )
+            emit(HomeTransform.GoInit(flow, locationFlow, null))
+        } ?: run {
+            val e: AppError = res.exceptionOrNull()
+                ?.let { AppError.DataBaseError(it) } ?: run { AppError.NotFound }
+            val flow = MutableStateFlow<TrackDto?>(null)
+            emit(HomeTransform.GoInit(flow, locationFlow, e))
+        }
+    }
+
+    private fun executeClose() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.Close))
+    }
+
+    private fun executeStart() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.Start))
+        delay(1000L)
+        emit(HomeTransform.GoLoading)
+    }
+
+    private fun executeSettings() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoSettings))
+        delay(1000L)
+        emit(HomeTransform.GoLoading)
+    }
+
+    private fun executeMap() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoMap))
+        delay(1000L)
+        emit(HomeTransform.GoLoading)
+    }
+
+    private fun executeTracks() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoTracks))
+        delay(1000L)
+        emit(HomeTransform.GoLoading)
+    }
+
+    private fun executeGnss() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoGnss))
+        delay(1000L)
+        emit(HomeTransform.GoLoading)
     }
 
     companion object {

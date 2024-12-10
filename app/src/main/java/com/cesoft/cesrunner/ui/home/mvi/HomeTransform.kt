@@ -1,5 +1,6 @@
 package com.cesoft.cesrunner.ui.home.mvi
 
+import android.location.Location
 import com.adidas.mvi.sideeffects.SideEffects
 import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
@@ -17,10 +18,11 @@ internal object HomeTransform {
 
     data class GoInit(
         val trackFlow: StateFlow<TrackDto?>,
+        val location: StateFlow<Location?>?,
         val error: AppError?,
     ): ViewTransform<HomeState, HomeSideEffect>() {
         override fun mutate(currentState: HomeState): HomeState {
-            return HomeState.Init(trackFlow, error)
+            return HomeState.Init(trackFlow, location, error)
         }
     }
 

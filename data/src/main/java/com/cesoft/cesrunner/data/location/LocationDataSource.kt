@@ -5,6 +5,7 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @SuppressLint("MissingPermission")
@@ -59,7 +60,12 @@ class LocationDataSource(
         override fun onLocationChanged(location: Location) {
             _currentLocation = location
             _locationFlow.tryEmit(location)
-            android.util.Log.e(TAG, "*** onLocationChanged: $location")
+            android.util.Log.e(TAG, "*** onLocationChanged: $location / #subscribers: "+_locationFlow.subscriptionCount)
+            if(_locationFlow.subscriptionCount.value == 0) {
+                //TODO: Delay?
+                android.util.Log.e(TAG, "*** onLocationChanged: Zero subscribers, remove updates")
+                locationManager.removeUpdates(this)
+            }
         }
         override fun onProviderEnabled(provider: String) {
             android.util.Log.e(TAG, "*** locationListener: $provider")

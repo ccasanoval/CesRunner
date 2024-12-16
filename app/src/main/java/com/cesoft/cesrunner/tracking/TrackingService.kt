@@ -113,8 +113,7 @@ class TrackingService: LifecycleService() {
                             "ACC:  ${loc.accuracy}\n" +
                             "ALT:  ${loc.altitude}\n" +
                             "BEAR: ${loc.bearing}\n" +
-                            "SPE:  ${loc.speed}\n" +
-                            "MOCK: ${loc.isMock}\n"
+                            "SPE:  ${loc.speed}\n"
                     if(false)Log.e(TAG, "----------- Service location:\n$data")
 
                     /// Current Tracking

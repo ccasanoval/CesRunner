@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel(
@@ -104,7 +105,6 @@ class HomeViewModel(
         if(currentTrack.isCreated) {
             trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
         }
-        //https://stackoverflow.com/questions/78277363/collecting-flows-in-the-viewmodel
         val res = readCurrentTrackFlow()
         res.getOrNull()?.let {
             val flow: StateFlow<TrackDto?> = it.stateIn(

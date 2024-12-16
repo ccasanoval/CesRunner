@@ -166,8 +166,10 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     private fun PermissionsAlert_Preview() {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            PermissionsAlert { }
+        CesRunnerTheme {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                PermissionsAlert { }
+            }
         }
     }
 

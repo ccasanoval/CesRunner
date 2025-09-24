@@ -1,5 +1,5 @@
 
-ext["compileSdkVer"] = 35
+ext["compileSdkVer"] = 36
 ext["minSdkVer"] = 30
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.

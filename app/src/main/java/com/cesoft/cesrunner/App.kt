@@ -6,6 +6,12 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 
+
+//TODO: Export routes to KML
+
+//TODO: Save in DB Vo2Max and after a run, check if it's a new high and congratulate user!
+
+
 //TO READ: SIDE EFFECTS: https://medium.com/@ramadan123sayed/understanding-and-handling-side-effects-in-jetpack-compose-a-comprehensive-guide-85b219e495f1
 //TO READ: PERF. FLOW: https://bladecoder.medium.com/kotlins-flow-in-viewmodels-it-s-complicated-556b472e281a
 //TO READ: PERF. FLOW: https://stackoverflow.com/questions/78277363/collecting-flows-in-the-viewmodel

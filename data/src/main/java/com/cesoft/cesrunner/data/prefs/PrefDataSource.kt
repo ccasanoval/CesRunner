@@ -20,6 +20,7 @@ class PrefDataSource(
 //        return gson.toJson(zoning)
 //    }
 
+    //----------------------------------------------------------------------------------------------
     suspend fun readSettings(): Result<SettingsDto> {
         val period = context.readInt(PREFS_SETTINGS_PERIOD, SettingsDto.DEFAULT_PERIOD)
         val distance = context.readInt(PREFS_SETTINGS_DISTANCE, SettingsDto.DEFAULT_DISTANCE)
@@ -39,6 +40,15 @@ class PrefDataSource(
         return Result.success(Unit)
     }
 
+    //----------------------------------------------------------------------------------------------
+    suspend fun readVo2Max(default: Double): Double =
+        context.readDouble(PREFS_VO2MAX, default)
+    suspend fun saveVo2Max(value: Double): Result<Unit> {
+        context.writeDouble(PREFS_VO2MAX, value)
+        return Result.success(Unit)
+    }
+
+    //----------------------------------------------------------------------------------------------
     suspend fun readCurrentTrackingId(default: Long): Long {
         return context.readLong(PREFS_CURRENT_TRACK, default)
     }
@@ -73,6 +83,8 @@ class PrefDataSource(
         private const val PREFS_SETTINGS_VOICE = "PREFS_SETTINGS_VOICE"
 
         private const val PREFS_CURRENT_TRACK = "PREFS_CURRENT_TRACK"
+
+        private const val PREFS_VO2MAX = "PREFS_VO2MAX"
 
 //        suspend fun setNavigateFrom(context: Context, fromId: Int) {
 //            context.writeInt(PREFS_NAVIGATE_FROM, fromId)

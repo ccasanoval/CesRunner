@@ -31,6 +31,10 @@ data class LocalTrackDto(
         points = points.map { it.toModel() }
     )
 
+    fun calcVo2Max(): Double {
+        return TrackDto.calcVo2Max(timeEnd, timeIni, distance)
+    }
+
     companion object {
         fun fromModel(data: TrackDto) = LocalTrackDto(
             id = if(data.id > 0) data.id else 0,//Note that room only create new row id if it's == 0

@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface RepositoryContract {
+    // VO2MAX
+    suspend fun readVo2Max(): Double
+    suspend fun saveVo2Max(value: Double): Result<Unit>
+
     // PREFS
     suspend fun readSettings(): Result<SettingsDto>
     suspend fun saveSettings(data: SettingsDto): Result<Unit>

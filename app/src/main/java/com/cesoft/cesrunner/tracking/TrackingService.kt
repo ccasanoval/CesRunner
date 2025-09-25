@@ -16,7 +16,9 @@ import com.cesoft.cesrunner.domain.usecase.AddTrackPointUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadLastTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
+import com.cesoft.cesrunner.domain.usecase.ReadVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
+import com.cesoft.cesrunner.domain.usecase.SaveVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.equalTo
@@ -45,6 +47,8 @@ class TrackingService: LifecycleService() {
     private val stopLocationUpdates: StopLocationUpdatesUC by inject()
     private val addTrackPoint: AddTrackPointUC by inject()
     private val updateTrack: UpdateTrackUC by inject()
+    private val readVo2Max: ReadVo2MaxUC by inject()
+    private val saveVo2Max: SaveVo2MaxUC by inject()
 
     //TODO: Make class apart!
     private lateinit var textToSpeech: TextToSpeech
@@ -107,7 +111,8 @@ class TrackingService: LifecycleService() {
             ?.onEach { location ->
                 location?.let { loc ->
                     val dateStr = loc.time.toDateStr()
-                    val data = "POS: ${loc.latitude}, ${loc.longitude}\n" +
+                    val data =
+                            "POS: ${loc.latitude}, ${loc.longitude}\n" +
                             "TIME: ${dateStr}\n" +
                             "PROV: ${loc.provider}\n" +
                             "ACC:  ${loc.accuracy}\n" +
@@ -160,6 +165,7 @@ class TrackingService: LifecycleService() {
     private fun stop() {
         Log.e(TAG, "stop----------------------------------")
         stopLocationUpdates()
+        StopTrackingVo2MaxWork.create(applicationContext, readLastTrack, readVo2Max, saveVo2Max)
         StopTrackingSpeechWork.create(applicationContext, readLastTrack)
         textToSpeech.shutdown()
         _isRunning = false

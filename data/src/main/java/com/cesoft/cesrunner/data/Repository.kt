@@ -12,6 +12,7 @@ import com.cesoft.cesrunner.domain.ID_NULL
 import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.entity.TrackDto.Companion.VO2MAX
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,32 @@ class Repository(
     private val locationDataSource: LocationDataSource,
     private val db: AppDatabase,
 ): RepositoryContract {
+    /// VO2MAX
+    override suspend fun readVo2Max(): Double {
+        var vo2max = PrefDataSource(context).readVo2Max(0.0)
+        if(vo2max > VO2MAX) vo2max = 0.0
+        if(vo2max == 0.0) {
+            val tracks = db.trackDao().getAll()
+            for(track in tracks) {
+                //val timeMinutes = (track.timeEnd - track.timeIni)/60_000
+                //val vo2max0 = (track.distance / timeMinutes) * 0.2 + 3.5
+                val vo2max0 = track.calcVo2Max()
+                if(vo2max0 > vo2max) vo2max = vo2max0
+            }
+            if(vo2max > 0.0) {
+                PrefDataSource(context).saveVo2Max(vo2max)
+            }
+        }
+        return vo2max
+    }
+    override suspend fun saveVo2Max(value: Double): Result<Unit> {
+        val vo2Max = readVo2Max()
+        if(value > vo2Max)
+            return PrefDataSource(context).saveVo2Max(value)
+        else
+            return Result.failure(AppError.NotFound)
+    }
+
     /// PREFS
     override suspend fun readSettings(): Result<SettingsDto> {
         return PrefDataSource(context).readSettings()

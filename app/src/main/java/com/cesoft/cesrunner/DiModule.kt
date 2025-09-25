@@ -19,6 +19,7 @@ import com.cesoft.cesrunner.domain.usecase.ReadLastTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
 import com.cesoft.cesrunner.domain.usecase.ReadTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadTrackUC
+import com.cesoft.cesrunner.domain.usecase.ReadVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.SaveSettingsUC
@@ -34,7 +35,7 @@ import com.cesoft.cesrunner.ui.tracking.TrackingViewModel
 import com.cesoft.cesrunner.ui.tracks.TracksViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.*
 import org.koin.dsl.module
 
 val appModule = module {
@@ -67,9 +68,10 @@ val appModule = module {
     single<SaveSettingsUC> { SaveSettingsUC(get()) }
     single<StopLocationUpdatesUC> { StopLocationUpdatesUC(get()) }
     single<UpdateTrackUC> { UpdateTrackUC(get()) }
+    single<ReadVo2MaxUC> { ReadVo2MaxUC(get()) }
 
     /// VIEWMODEL
-    viewModel { HomeViewModel(get(), get(), get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { MapViewModel(get(), ) }

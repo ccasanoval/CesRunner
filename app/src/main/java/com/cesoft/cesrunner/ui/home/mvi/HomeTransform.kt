@@ -17,12 +17,13 @@ internal object HomeTransform {
     }
 
     data class GoInit(
+        val vo2Max: Double,
         val trackFlow: StateFlow<TrackDto?>,
-        val location: StateFlow<Location?>?,
+        val locationFlow: StateFlow<Location?>?,
         val error: AppError?,
     ): ViewTransform<HomeState, HomeSideEffect>() {
         override fun mutate(currentState: HomeState): HomeState {
-            return HomeState.Init(trackFlow, location, error)
+            return HomeState.Init(vo2Max, trackFlow, locationFlow, error)
         }
     }
 

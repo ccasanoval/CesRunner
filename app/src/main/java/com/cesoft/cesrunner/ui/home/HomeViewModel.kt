@@ -13,6 +13,7 @@ import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
+import com.cesoft.cesrunner.domain.usecase.ReadVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.home.mvi.HomeIntent
@@ -34,6 +35,7 @@ class HomeViewModel(
     private val readCurrentTrack: ReadCurrentTrackUC,
     private val readCurrentTrackFlow: ReadCurrentTrackFlowUC,
     private val requestLocationUpdates: RequestLocationUpdatesUC,
+    private val readVo2Max: ReadVo2MaxUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
@@ -100,6 +102,7 @@ class HomeViewModel(
 //                initialValue = null,
 //            )
 //        }
+        val vo2Max = readVo2Max()
 
         val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
         if(currentTrack.isCreated) {
@@ -112,12 +115,12 @@ class HomeViewModel(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = TrackDto.Empty,
             )
-            emit(HomeTransform.GoInit(flow, locationFlow, null))
+            emit(HomeTransform.GoInit(vo2Max, flow, locationFlow, null))
         } ?: run {
             val e: AppError = res.exceptionOrNull()
                 ?.let { AppError.DataBaseError(it) } ?: run { AppError.NotFound }
             val flow = MutableStateFlow<TrackDto?>(null)
-            emit(HomeTransform.GoInit(flow, locationFlow, e))
+            emit(HomeTransform.GoInit(vo2Max, flow, locationFlow, e))
         }
     }
 

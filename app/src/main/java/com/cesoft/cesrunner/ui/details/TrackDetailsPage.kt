@@ -189,8 +189,9 @@ private fun TrackData(
         "%.0f Km/h (max %.0f)",
         speedMed*3.6, speedMax*3.6
     )
-    val timeMinutes = (track.timeEnd - track.timeIni)/60_000
-    val vo2max = (track.distance / timeMinutes) * 0.2 + 3.5
+    //val timeMinutes = (track.timeEnd - track.timeIni)/60_000
+    //val vo2max = (track.distance / timeMinutes) * 0.2 + 3.5
+    val vo2max = track.calcVo2Max()
     LazyColumn(modifier = modifier
         .fillMaxWidth()
         .padding(SepMin)) {
@@ -220,7 +221,7 @@ private fun TrackData(
                 }
             }
         }
-        item { InfoRow("VO2 Max", String.format("%.1f mL/kg/min", vo2max)) }
+        item { InfoRow("VO2 Max", stringResource(R.string.vo2max).format(vo2max)) }
         item { InfoRow(stringResource(R.string.distance), distance) }
         item { InfoRow(stringResource(R.string.time), duration) }
         item { InfoRow(stringResource(R.string.time_ini), timeIni) }

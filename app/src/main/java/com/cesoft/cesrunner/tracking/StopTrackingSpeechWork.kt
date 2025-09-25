@@ -52,10 +52,10 @@ class StopTrackingSpeechWork(
     companion object {
         private const val TAG = "TrackingWork"
         lateinit var readLastTrack: ReadLastTrackUC
-        fun create(appContext: Context, v: ReadLastTrackUC) {
-            readLastTrack = v
+        fun create(context: Context, track: ReadLastTrackUC) {
+            readLastTrack = track
             val workReq = OneTimeWorkRequestBuilder<StopTrackingSpeechWork>()
-            WorkManager.getInstance(appContext).enqueue(workReq.build())
+            WorkManager.getInstance(context).enqueue(workReq.build())
         }
     }
 }

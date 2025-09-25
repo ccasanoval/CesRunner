@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +45,7 @@ import com.cesoft.cesrunner.ui.home.mvi.HomeState
 import com.cesoft.cesrunner.ui.theme.SepMax
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
+import com.cesoft.cesrunner.ui.theme.fontMed
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.androidx.compose.koinViewModel
@@ -103,6 +105,9 @@ private fun Content(
             state.error?.let {
                 ErrorCompo(it)
             }
+
+            /// Best Vo2Max
+            BestVo2Max(state.vo2Max)
 
             /// Current location
             CurrentLocationCompo(state.locationFlow)
@@ -204,6 +209,16 @@ private fun CurrentTrackingCompo(track: TrackDto?) {
 }
 
 @Composable
+private fun BestVo2Max(vo2Max: Double) {
+    Text(
+        text = "Vo2Max "+stringResource(R.string.vo2max).format(vo2Max),
+        fontSize = fontMed,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.secondary
+    )
+}
+
+@Composable
 private fun CurrentLocationCompo(locationFlow: StateFlow<Location?>?) {
     locationFlow?.let { flow ->
         val location by flow.collectAsStateWithLifecycle()
@@ -238,6 +253,7 @@ private fun CurrentLocationCompo(locationFlow: StateFlow<Location?>?) {
 @Composable
 private fun HomePage_Preview() {
     val state = HomeState.Init(
+        vo2Max = 39.9,
         //trackFlow = flowOf(TrackDto(id = 69, name = "Tracking A")),
         //trackIdFlow = MutableStateFlow(0L),
         trackFlow = MutableStateFlow(TrackDto.Empty),

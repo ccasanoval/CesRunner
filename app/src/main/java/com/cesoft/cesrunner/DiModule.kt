@@ -23,6 +23,7 @@ import com.cesoft.cesrunner.domain.usecase.ReadVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
 import com.cesoft.cesrunner.domain.usecase.SaveSettingsUC
+import com.cesoft.cesrunner.domain.usecase.SaveVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
@@ -69,6 +70,7 @@ val appModule = module {
     single<StopLocationUpdatesUC> { StopLocationUpdatesUC(get()) }
     single<UpdateTrackUC> { UpdateTrackUC(get()) }
     single<ReadVo2MaxUC> { ReadVo2MaxUC(get()) }
+    single<SaveVo2MaxUC> { SaveVo2MaxUC(get()) }
 
     /// VIEWMODEL
     viewModel { HomeViewModel(get(), get(), get(), get(), get()) }

@@ -8,6 +8,7 @@ sealed class HomeIntent: Intent {
     data object GoStart: HomeIntent()
     data object GoSettings: HomeIntent()
     data object GoMap: HomeIntent()
+    data object GoAIAgent: HomeIntent()
     data object GoGnss: HomeIntent()
     data object GoTracks: HomeIntent()
 }

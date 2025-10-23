@@ -177,6 +177,12 @@ private fun ActionsCompo(state: HomeState.Init, reduce: (intent: HomeIntent) -> 
         onClick = { reduce(HomeIntent.GoMap) }
     )
     HomeButton(
+        title = R.string.menu_ai_agent,
+        icon = R.mipmap.ic_ai_agent,
+        modifier = modifier,
+        onClick = { reduce(HomeIntent.GoAIAgent) }
+    )
+    HomeButton(
         title = R.string.menu_settings,
         icon = R.mipmap.ic_settings,
         modifier = modifier,

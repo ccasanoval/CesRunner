@@ -9,8 +9,8 @@ import org.koin.core.logger.Level
 
 //TODO: Export routes to KML
 
-//TODO: Save in DB Vo2Max and after a run, check if it's a new high and congratulate user!
-
+//TODO: cuando recuperas la fecha, esta no coincide si ha habido cambio de hora de verano...?
+//name="22/01/2025 16:42:06" timeEnd=22/01/2025 18:03:05 pero tendria que poner timeEnd=22/01/2025 17:03:05
 
 //TO READ: SIDE EFFECTS: https://medium.com/@ramadan123sayed/understanding-and-handling-side-effects-in-jetpack-compose-a-comprehensive-guide-85b219e495f1
 //TO READ: PERF. FLOW: https://bladecoder.medium.com/kotlins-flow-in-viewmodels-it-s-complicated-556b472e281a

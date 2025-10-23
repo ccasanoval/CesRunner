@@ -1,30 +1,33 @@
 [versions]
 agp = "8.13.0"
 datastorePreferences = "1.1.7"
+koogAgents = "0.5.1"
 kotlin = "2.2.20"
-ksp = "2.2.20-2.0.3"
+ksp = "2.2.20-2.0.4"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.11.0"
-composeBom = "2025.09.00"
+composeBom = "2025.10.01"
+materialIconsExtended = "1.7.8"
 mvi = "1.9.1"
 mviCompose = "0.3.0"
-navigationCompose = "2.9.4"
+navigationCompose = "2.9.5"
 appcompat = "1.7.1"
 material = "1.13.0"
 osmdroidAndroid = "6.1.20"
-roomRuntime = "2.8.0"
+roomRuntime = "2.8.3"
 koin = "4.1.1"
-koin-annotations = "2.1.0"
+koin-annotations = "2.3.0"
 koin-android = "4.1.1"
 koin-compose = "4.1.1"
 lifecycleService = "2.9.4"
-workRuntimeKtx = "2.10.4"
+workRuntimeKtx = "2.11.0"
 
 [libraries]
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
@@ -46,6 +49,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+koog-agents = { module = "ai.koog:koog-agents", version.ref = "koogAgents" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 mvi = { module = "com.adidas.mvi:mvi", version.ref = "mvi" }
 koinCore = { module = "io.insert-koin:koin-core", version.ref = "koin" }

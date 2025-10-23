@@ -2,24 +2,15 @@ package com.cesoft.cesrunner.domain
 
 sealed class AppError: Throwable() {
     data class UnknownError(override val message: String): AppError()
-    data object NetworkError: AppError() {
-        private fun readResolve(): Any = NetworkError
-    }
-
-    data object NotFound: AppError() {
-        private fun readResolve(): Any = NotFound
-    }
-
-    data class DataBaseError(val e: Throwable): AppError() {
-        private fun readResolve(): Any = NotFound
-    }
-
+    data object NetworkError: AppError() { private fun readResolve(): Any = NetworkError }
+    data object NotFound: AppError() { private fun readResolve(): Any = NotFound }
+    data class DataBaseError(val e: Throwable): AppError()
     data class FileError(val filename: String): AppError()
 
     companion object {
         fun fromThrowable(e: Throwable): AppError = when(e) {
             //is NetworkException -> NetworkError
-            else -> UnknownError(message = e.localizedMessage ?: "?")
+            else -> UnknownError(message = e.localizedMessage ?: e.message ?: "?")
         }
     }
 }

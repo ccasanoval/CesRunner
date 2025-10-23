@@ -27,6 +27,7 @@ import com.cesoft.cesrunner.domain.usecase.SaveVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
+import com.cesoft.cesrunner.ui.aiagent.AIAgentViewModel
 import com.cesoft.cesrunner.ui.details.TrackDetailsViewModel
 import com.cesoft.cesrunner.ui.gnss.GnssViewModel
 import com.cesoft.cesrunner.ui.home.HomeViewModel
@@ -77,7 +78,8 @@ val appModule = module {
     viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { MapViewModel(get(), ) }
-    viewModel { GnssViewModel(get(), ) }
+    viewModel { GnssViewModel(get()) }
+    viewModel { AIAgentViewModel(get(), get()) }
     viewModel { TracksViewModel(get(), get(), ) }
     viewModel { TrackDetailsViewModel(get(), get(), get(), get(), get()) }
 }

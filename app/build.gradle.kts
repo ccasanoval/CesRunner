@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,6 +19,15 @@ android {
         versionCode = 1
         versionName = "0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        android.buildFeatures.buildConfig = true
+        val keystoreFile = project.rootProject.file("local.properties")
+        val properties = Properties()
+        properties.load(keystoreFile.inputStream())
+        var key = properties.getProperty("GEMINI_KEY") ?: ""
+        buildConfigField(type = "String", name = "GEMINI_KEY", value = key)
+        key = properties.getProperty("OPENAI_KEY") ?: ""
+        buildConfigField(type = "String", name = "OPENAI_KEY", value = key)
     }
 
     buildTypes {
@@ -29,14 +40,25 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "11"
+        //compileOptions { jvmTarget = JvmTarget.JVM_24.target }
+        jvmTarget = "21"
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+    packaging {
+        resources {
+            //resources.excludes.add("META-INF/NOTICE.md")
+            //resources.excludes.add("META-INF/LICENSE.md")
+            resources.excludes.add("META-INF/INDEX.LIST")
+            resources.excludes.add("META-INF/DEPENDENCIES")
+            resources.excludes.add("META-INF/io.netty.versions.properties")
+        }
     }
 }
 
@@ -57,6 +79,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Test
     testImplementation(libs.junit)
@@ -81,6 +104,9 @@ dependencies {
     implementation(libs.mvi)
     implementation(libs.mvi.compose)
 
-    /// MAPS - Open Street Maps
+    // MAPS - Open Street Maps
     implementation(libs.osmdroid.android)
+
+    // AI Agents
+    implementation(libs.koog.agents)
 }

@@ -12,14 +12,15 @@
     <string name="import_gpx">Importar GPX</string>
     <string name="export_gpx">Exportar GPX</string>
     <string name="slide_stop">Desliza para detener</string>
+    <string name="request">Consultar</string>
 
     <string name="saved_ok">Guardado</string>
-    <string name="exported_ok">Ruta exportada</string>
-    <string name="deleted_ok">Ruta borrada</string>
+    <string name="exported_ok">Carrera exportada</string>
+    <string name="deleted_ok">Carrera borrada</string>
     <string name="permissions">Permisos neceesarios:</string>
     <string name="accept_permissions">Debes aceptar los permisos para que la app pueda funcionar</string>
     <string name="accept_permissions2">Permitir siempre la ubicación y ejecución en segundo plano</string>
-    <string name="tracking_on">Ruta activa:</string>
+    <string name="tracking_on">Carrera activa:</string>
 
     <string name="time">Tiempo</string>
     <string name="time_ini">Inicio</string>
@@ -39,11 +40,12 @@
     <string name="seconds">Segundos</string>
     <string name="points">Puntos</string>
     <string name="name">Nombre</string>
+    <string name="prompt" translatable="false">Prompt</string>
 
     <string name="voice_on">Voz activa</string>
     <string name="min_activate_location">Mínimo cambio para obtener una nueva ubicación:</string>
     <string name="location_off">La ubicación está apagada</string>
-    <string name="location_off_msg">La ubicación debe estar activa para poder trazar la ruta</string>
+    <string name="location_off_msg">La ubicación debe estar activa para poder trazar la carrera</string>
     <string name="location_null">Sin ubicación</string>
     <string name="location_current">Ubicación</string>
 
@@ -51,12 +53,13 @@
     <string name="ask_delete_message">¿Seguro que quieres eliminar?</string>
 
     <!-- MAIN MENU -->
+    <string name="menu_ai_agent">Agente de IA</string>
     <string name="menu_settings">Opciones</string>
-    <string name="menu_start">¡Comenzar ruta!</string>
-    <string name="menu_check">¡Ver ruta!</string>
+    <string name="menu_start">¡Comenzar carrera!</string>
+    <string name="menu_check">¡Ver carrera!</string>
     <string name="menu_maps">Mapa</string>
-    <string name="menu_tracks">Rutas</string>
-    <string name="menu_track_details">Info de ruta</string>
+    <string name="menu_tracks">Carreras</string>
+    <string name="menu_track_details">Info de carrera</string>
     <string name="menu_gnss" translatable="false">GNSS</string>
 
     <!-- SETTINGS -->

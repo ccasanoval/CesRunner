@@ -33,4 +33,15 @@ interface TrackDao {
 
     @Query("DELETE FROM $TrackTableName")
     suspend fun deleteAll()
+
+    // AI AGENT
+    @Query("SELECT * FROM $TrackTableName " +
+            " WHERE (:name IS NULL OR name LIKE :name)" +
+            " AND (:distance IS NULL OR (distance < :distance +100 AND distance > :distance -100))" +
+            " ORDER BY id"
+    )
+    suspend fun filter(
+        name: String?,
+        distance: Int?,
+    ): List<LocalTrackDto>
 }

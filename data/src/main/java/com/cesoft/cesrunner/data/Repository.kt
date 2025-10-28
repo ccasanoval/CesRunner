@@ -24,6 +24,20 @@ class Repository(
     private val locationDataSource: LocationDataSource,
     private val db: AppDatabase,
 ): RepositoryContract {
+
+    /// AI AGENT
+    override suspend fun filterTracks(name: String?, distance: Int?): Result<List<TrackDto>> {
+        try {
+            android.util.Log.e(TAG, "filterTracks------- name=$name & distance=$distance")
+            val tracks: List<LocalTrackDto>? = db.trackDao().filter(name, distance)
+            return if(tracks.isNullOrEmpty()) Result.failure(AppError.NotFound)
+            else Result.success(tracks.map { it.toModel(listOf()) })
+        }
+        catch(e: Throwable) {
+            return Result.failure(e)
+        }
+    }
+
     /// VO2MAX
     override suspend fun readVo2Max(): Double {
         var vo2max = PrefDataSource(context).readVo2Max(0.0)

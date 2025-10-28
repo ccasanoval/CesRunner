@@ -28,6 +28,14 @@ android {
         buildConfigField(type = "String", name = "GEMINI_KEY", value = key)
         key = properties.getProperty("OPENAI_KEY") ?: ""
         buildConfigField(type = "String", name = "OPENAI_KEY", value = key)
+        key = properties.getProperty("OPENROUTER_KEY") ?: ""
+        buildConfigField(type = "String", name = "OPENROUTER_KEY", value = key)
+        key = properties.getProperty("DEEPSEEK_KEY") ?: ""
+        buildConfigField(type = "String", name = "DEEPSEEK_KEY", value = key)
+        key = properties.getProperty("OLLAMA_KEY") ?: ""
+        buildConfigField(type = "String", name = "OLLAMA_KEY", value = key)
+        key = properties.getProperty("GROQ_KEY") ?: ""
+        buildConfigField(type = "String", name = "GROOQ_KEY", value = key)
     }
 
     buildTypes {

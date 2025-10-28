@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 interface RepositoryContract {
     // AI AGENT
-    //suspend fun readTracksLength(): Result<List<Pair<TrackDto, >>>
+    suspend fun filterTracks(name: String?, distance: Int?): Result<List<TrackDto>>
 
     // VO2MAX
     suspend fun readVo2Max(): Double

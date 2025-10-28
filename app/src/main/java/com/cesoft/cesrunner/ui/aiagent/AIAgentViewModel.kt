@@ -10,8 +10,11 @@ import ai.koog.agents.features.eventHandler.feature.EventHandler
 import ai.koog.agents.features.eventHandler.feature.EventHandlerConfig
 import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
+import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
 import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
+import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
+import ai.koog.prompt.llm.LLMProvider
 import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -21,9 +24,9 @@ import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.BuildConfig
-import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
@@ -38,7 +41,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class AIAgentViewModel(
-    private val readAllTracks: ReadAllTracksUC,
+    //private val readAllTracks: ReadAllTracksUC,
+    private val filterTracks: FilterTracksUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): ViewModel(), MviHost<AIAgentIntent, State<AIAgentState, AIAgentSideEffect>> {
     private val reducer = Reducer(
@@ -72,10 +76,9 @@ class AIAgentViewModel(
         emit(AIAgentTransform.AddSideEffect(AIAgentSideEffect.Close))
     }
 
-    enum class Model { OPENAI, GEMINI }
+    enum class Model { OPENAI, GEMINI, OPENROUTER }
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoLoading)
-        val model = Model.GEMINI
 
         val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
             val eventHandlerConfig: EventHandlerConfig.() -> Unit = {
@@ -111,8 +114,15 @@ class AIAgentViewModel(
             }
 
             val toolRegistry = ToolRegistry {
-                tools(RunsToolSet(readAllTracks))
+                tools(RunsToolSet(filterTracks))
             }
+            //TODO: use local model ?
+            //https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
+            //TODO: flujos
+            //TODO:
+
+            val model = Model.OPENROUTER
+
             val agent = when (model) {
                 Model.GEMINI -> {
                     val apiKey = BuildConfig.GEMINI_KEY
@@ -120,11 +130,11 @@ class AIAgentViewModel(
                         promptExecutor = simpleGoogleAIExecutor(apiKey),
                         systemPrompt = "You are a helpful assistant that answers questions about the runs you have stored in your tools." +
                                 "Each run has been stored by the user, after a geolocation tool has recorded some data as he or she was running in some route." +
-                                "Each run has some fields, like distance, start time, end time, duration, id, and name",
+                                "Each run has some fields, like distance, start time, end time, duration, id, and name" +
+                                "Format the distance field in km when distance is greater than 1000 meters" +
+                                "",
                         llmModel = GoogleModels.Gemini2_5Pro,
-                        installFeatures = {
-                            install(EventHandler, eventHandlerConfig)
-                        },
+                        installFeatures = { install(EventHandler, eventHandlerConfig) },
                         toolRegistry = toolRegistry
                     )
                 }
@@ -137,6 +147,21 @@ class AIAgentViewModel(
                         installFeatures = { install(EventHandler, eventHandlerConfig) },
                         temperature = 0.7,
                         maxIterations = 5,
+                        toolRegistry = toolRegistry
+                    )
+                }
+                //TODO: AIAgentError(message=Cannot read Json element because of unexpected end of the input at path: $
+                Model.OPENROUTER -> {
+                    val apiKey = BuildConfig.OPENROUTER_KEY
+                    AIAgent(
+                        promptExecutor = simpleOpenRouterExecutor(apiKey),
+                        systemPrompt = "You are a helpful assistant that answers questions about the runs you have stored in your tools." +
+                                "Each run has been stored by the user, after a geolocation tool has recorded some data as he or she was running in some route." +
+                                "Each run has some fields, like distance, start time, end time, duration, id, and name" +
+                                "Format the distance field in km when distance is greater than 1000 meters" +
+                                "",
+                        llmModel = OpenRouterModels.Gemini2_5Pro,
+                        installFeatures = { install(EventHandler, eventHandlerConfig) },
                         toolRegistry = toolRegistry
                     )
                 }
@@ -156,8 +181,34 @@ class AIAgentViewModel(
         emit(callbackResult)
     }
 
-    @LLMDescription("Tools for getting runs information")
-    class RunsToolSet(private val readAllTracks: ReadAllTracksUC): ToolSet {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // TOOLS
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    @LLMDescription("Tools for getting run information")
+    class RunsToolSet(
+        //private val readAllTracks: ReadAllTracksUC,
+        private val filterTracks: FilterTracksUC,
+    ): ToolSet {
+        //TODO: Serach by lt/lng ?'
+        ////////////////// FILTER RUN
+        /*@Tool
+        @LLMDescription("Find a run in the database that meet the parameters of the search")
+        suspend fun findRun(
+//            @LLMDescription("Date and time when the run started")
+//            dateIni: String?,
+//            @LLMDescription("Date and time when the run finish")
+//            dateEnd: String?,
+//            @LLMDescription("Duration of the run")
+//            duration: String?,
+            @LLMDescription("Name of the run")
+            name: String?,
+            @LLMDescription("Total distance of the run")
+            distance: Int?,
+        ): TrackDto {
+            val res = filterTracks(name, distance)
+            return TrackDto.Empty
+        }*/
+        ////////////////// LONGEST RUN
         @Tool
         @LLMDescription("Get the longest run in the database, get the run with maximum distance in the database")
         suspend fun getLongestRun(
@@ -165,7 +216,8 @@ class AIAgentViewModel(
             //location: String
             //TODO: return trackDto?
         ): String {
-            val res: Result<List<TrackDto>> = readAllTracks()
+            val res: Result<List<TrackDto>> = filterTracks()//readAllTracks()
+            android.util.Log.e("AAAAAAA", "------------------ ${res.exceptionOrNull()?.message} / ${res.getOrNull()}")
             return if (res.isSuccess) {
                 val tracks = res.getOrNull()
                 if(tracks.isNullOrEmpty()) {

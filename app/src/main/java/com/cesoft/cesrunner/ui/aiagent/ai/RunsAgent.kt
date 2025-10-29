@@ -21,17 +21,22 @@ class RunsAgent {
     constructor(
         model: Model,
         filterTracks: FilterTracksUC,
-        eventHandlerConfig: EventHandlerConfig.() -> Unit
+        onAgentCompleted: (String) -> Unit,
+        onAgentExecutionFailed: (Throwable) -> Unit,
     ) {
         val systemPrompt = "You are a helpful assistant that answers questions about the runs you have stored in your tools." +
                 "Each run has been stored by the user, after a geolocation tool has recorded some data as he or she was running in some route." +
-                "Each run has some fields, like distance, start time, end time, duration, id, and name" +
-                "When answering a question, return all those values of the run to the user" +
-                "Format the distance field in km when distance is greater than 1000 meters" +
+                "Each run has some fields, like distance, start time, end time, duration, id, and name." +
+                "When answering a question, return all those values of the run to the user." +
+                "The fields like distance with decimal dots, must be expressed with the local internationalization format, in spanish it will have a comma instead." +
+                "If the duration is less than an hour, don't show the value for hour, you can hide the 0h value."
+                "Format the distance field in km when distance is greater than 1000 meters." +
                 ""
         val toolRegistry = ToolRegistry {
             tools(RunsToolSet(filterTracks))
         }
+        val eventHandler = RunsEventHandler.getEventHandlerConfig(
+            onAgentCompleted, onAgentExecutionFailed)
         _agent = when (model) {
             Model.GEMINI -> {
                 val apiKey = BuildConfig.GEMINI_KEY
@@ -39,7 +44,7 @@ class RunsAgent {
                     promptExecutor = simpleGoogleAIExecutor(apiKey),
                     systemPrompt = systemPrompt,
                     llmModel = GoogleModels.Gemini2_5Pro,
-                    installFeatures = { install(EventHandler, eventHandlerConfig) },
+                    installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry
                 )
             }
@@ -49,8 +54,8 @@ class RunsAgent {
                     promptExecutor = simpleOpenAIExecutor(apiKey),
                     systemPrompt = systemPrompt,
                     llmModel = OpenAIModels.Chat.GPT4o,
-                    installFeatures = { install(EventHandler, eventHandlerConfig) },
-                    temperature = 0.7,
+                    installFeatures = { install(EventHandler, eventHandler) },
+                    temperature = 0.9,
                     maxIterations = 5,
                     toolRegistry = toolRegistry
                 )
@@ -61,8 +66,9 @@ class RunsAgent {
                     promptExecutor = simpleOpenRouterExecutor(apiKey),
                     systemPrompt = systemPrompt,
                     llmModel = OpenRouterModels.Gemini2_5Pro,
-                    installFeatures = { install(EventHandler, eventHandlerConfig) },
-                    toolRegistry = toolRegistry
+                    installFeatures = { install(EventHandler, eventHandler) },
+                    toolRegistry = toolRegistry,
+                    temperature = 0.9,
                 )
             }
         }

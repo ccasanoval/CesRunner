@@ -1,16 +1,20 @@
 package com.cesoft.cesrunner.ui.aiagent
 
 import ai.koog.agents.core.feature.model.toAgentError
+import ai.koog.prompt.dsl.prompt
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -20,7 +24,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
@@ -56,15 +63,15 @@ fun AIAgentPage(
             )
         },
         onBackPressed = {
-            viewModel.execute(AIAgentIntent.Close)
+            viewModel.execute(AIAgentIntent.Back)
         },
     ) { state: AIAgentState ->
         when(state) {
-            is AIAgentState.Loading -> {
-                android.util.Log.e("AIAgentPage", "AIAgentState.Loading---------------------")
-                //TODO: Mostrar el content pero deshabilitado y con el sppiner...
-                LoadingCompo()
-            }
+//            is AIAgentState.Loading -> {
+//                android.util.Log.e("AIAgentPage", "AIAgentState.Loading---------------------")
+//                //TODO: Mostrar el content pero deshabilitado y con el sppiner...
+//                LoadingCompo()
+//            }
             is AIAgentState.Init -> {
                 android.util.Log.e("AIAgentPage", "AIAgentState.Init---------------------$state")
                 Content(state = state, reduce = viewModel::execute)
@@ -74,12 +81,31 @@ fun AIAgentPage(
 }
 
 @Composable
+fun DisableLoadingCompo(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier
+            .fillMaxSize()
+            .alpha(.75f)
+            .zIndex(100f)
+    ) {
+        Box {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
+}
+
+@Composable
 private fun Content(
     state: AIAgentState.Init,
     reduce: (intent: AIAgentIntent) -> Unit,
 ) {
-    //TODO: Mostrar un icono (i) con posibles prompts
-    //TODO: El resultado explicara la respuesta, y quiza tenga enlace a la carrera (id_track - deep link?)
+    if(state.loading) {
+        DisableLoadingCompo()
+    }
+
+    //TODO: id_track - deep link?
     val prompt = rememberSaveable { mutableStateOf("Which is the longest run?") }
     LaunchedEffect(state.prompt, state.response) {
         if(state.prompt.isNotBlank()) prompt.value = state.prompt
@@ -156,6 +182,19 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
 @Composable
 private fun AIAgentPage_Preview() {
     val state = AIAgentState.Init()
+    Surface(modifier = Modifier.fillMaxWidth()) {
+        Content(state) { }
+    }
+}
+
+@Preview
+@Composable
+private fun AIAgentPage_Loading_Preview() {
+    val state = AIAgentState.Init(
+        prompt = "Prompt test and bla bla bla",
+        response = "Response test and bla bla bla",
+        loading = true
+    )
     Surface(modifier = Modifier.fillMaxWidth()) {
         Content(state) { }
     }

@@ -6,6 +6,7 @@ import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.entity.TrackUiDto
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
@@ -16,9 +17,11 @@ class RunsToolSet(
     private val filterTracks: FilterTracksUC,
 ): ToolSet {
     //TODO: Search by lat/lng ?'
-    //----------------------------- LONGEST/SHORTEST RUN -------------------------------------------
-    @Tool
-    @LLMDescription("Finds a list of runs in the database that meet the parameters of the search")
+
+    //----------------------------- FILTER RUNS -------------------------------------------
+    // SERACHING FOR WITH OPTIONAL PARAMETERS DOESN'T WORK
+    /*@Tool
+    @LLMDescription("Finds a list of runs in the database that meet one or more of the parameters of the search")
     suspend fun searchForRuns(
 //            @LLMDescription("Date and time when the run started")
 //            dateIni: String?,
@@ -26,9 +29,9 @@ class RunsToolSet(
 //            dateEnd: String?,
 //            @LLMDescription("Duration of the run")
 //            duration: String?,
-        @LLMDescription("Name of the run")
+        @LLMDescription("The name of the run, how the run is called")
         name: String?,
-        @LLMDescription("Total distance of the run")
+        @LLMDescription("Total distance of the run in meters")
         distance: Int?,
     ): String {
         val res: Result<List<TrackDto>> = filterTracks(name, distance)
@@ -37,7 +40,27 @@ class RunsToolSet(
             if (tracks.isNullOrEmpty()) {
                 NO_RUN
             } else {
-                data(tracks.first())
+                data(TrackUiDto.toUi(tracks.first()))
+            }
+        } else {
+            DB_ERR + res.exceptionOrNull()?.message
+        }
+    }*/
+
+    //----------------------------- RUN NAME -------------------------------------------
+    @Tool
+    @LLMDescription("Finds a run in the database which name is like the parameter")
+    suspend fun searchForRuns(
+        @LLMDescription("The name of the run, how the run is called")
+        name: String?,
+    ): String {
+        val res: Result<List<TrackDto>> = filterTracks(name)
+        return if (res.isSuccess) {
+            val tracks = res.getOrNull()
+            if (tracks.isNullOrEmpty()) {
+                NO_RUN
+            } else {
+                data(TrackUiDto.toUi(tracks.first()))
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
@@ -68,7 +91,6 @@ class RunsToolSet(
                 else {
                     for (t in tracks) if (t.distance < result.distance) result = t
                 }
-                data(result)
                 "The run is ${result.distance} meters long," +
                         " with id ${result.id}," +
                         " with name ${result.name}," +
@@ -76,6 +98,7 @@ class RunsToolSet(
                         " finished at ${result.timeEnd.toDateStr()}," +
                         " with a duration of ${result.time.toTimeStr()}"
                 //Result.success(tracks)
+                data(TrackUiDto.toUi(result))
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
@@ -86,7 +109,7 @@ class RunsToolSet(
     companion object {
         const val NO_RUN = "There is no run stored"
         const val DB_ERR = "There was an error while searching the database. The error was "
-        private fun data(track: TrackDto): String {
+        private fun data(track: TrackUiDto): String {
             val gson = Gson()
             return gson.toJson(track)
         }

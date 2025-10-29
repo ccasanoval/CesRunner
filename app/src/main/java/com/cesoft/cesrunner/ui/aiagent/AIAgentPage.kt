@@ -170,11 +170,14 @@ private fun PredefinedOptionButton(title: String, onClick: () -> Unit) {
 @Composable
 private fun PredefinedOptions(prompt: MutableState<String>) {
     FlowRow {
-        PredefinedOptionButton("La más corta") {
+        PredefinedOptionButton("La corta") {
             prompt.value = "¿Cuál es la carrera más corta?"
         }
-        PredefinedOptionButton("La más larga") {
+        PredefinedOptionButton("La larga") {
             prompt.value = "¿Cuál es la carrera más larga?"
+        }
+        PredefinedOptionButton("Nombre") {
+            prompt.value = "Encuentra la carrera que se llama "
         }
         PredefinedOptionButton("Dura 5 min") {
             prompt.value = "¿Qué carrera tiene aproximadamente una duración de 5 minutos?"

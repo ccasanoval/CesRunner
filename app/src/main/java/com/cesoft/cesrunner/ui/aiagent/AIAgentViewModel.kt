@@ -60,12 +60,14 @@ class AIAgentViewModel(
     //https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
     //TODO: strategy...
     //TODO: MCP...
-    //TODO:
+    //TODO: Desde UI pude elegir que LLM usar: OpenAI, Gemini, ...
     private fun executePrompt(prompt: String) = flow {
+        val a = filterTracks(name = "canari")
+        android.util.Log.e("AA", "AAA-------------------------------- ${a.getOrNull()?.firstOrNull()?.name}")
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))
         val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
             val agent = RunsAgent(
-                model = RunsAgent.Model.OPEN_ROUTER,
+                model = RunsAgent.Model.GEMINI,
                 filterTracks = filterTracks,
                 onAgentCompleted = { response ->
                     cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = response))

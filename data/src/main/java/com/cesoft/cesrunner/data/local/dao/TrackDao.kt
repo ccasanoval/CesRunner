@@ -36,8 +36,8 @@ interface TrackDao {
 
     // AI AGENT
     @Query("SELECT * FROM $TrackTableName " +
-            " WHERE (:name IS NULL OR name LIKE :name)" +
-            " AND (:distance IS NULL OR (distance < :distance +100 AND distance > :distance -100))" +
+            " WHERE (:name IS NULL OR name LIKE '%' || :name || '%')" +
+            " AND (:distance IS NULL OR (distance < :distance +200 AND distance > :distance -200))" +
             " ORDER BY id"
     )
     suspend fun filter(

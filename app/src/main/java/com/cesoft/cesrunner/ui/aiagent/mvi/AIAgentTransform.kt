@@ -4,7 +4,7 @@ import com.adidas.mvi.sideeffects.SideEffects
 import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 
-internal object AIAgentTransform {
+object AIAgentTransform {
 
     data object GoLoading: ViewTransform<AIAgentState, AIAgentSideEffect>() {
         override fun mutate(currentState: AIAgentState): AIAgentState {

@@ -95,22 +95,28 @@ class AIAgentViewModel(
                     //emit(AIAgentTransform.GoInit(prompt = prompt, response = "", error = error))
                     cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = "", error = error))
                 }
+
                 onToolCallCompleted { res ->
                     android.util.Log.e("AIAgentVM", "onToolCallCompleted------------- $res ")
                 }
                 onToolCallFailed { res ->
                     android.util.Log.e("AIAgentVM", "onToolCallFailed------------- $res ")
                 }
-                /*onAgentClosing { res ->
+
+                onAgentClosing { res ->
                     android.util.Log.e("AIAgentVM", "onAgentClosing------------- ${res.eventType} / ${res.component1()}")
                 }
                 onAgentStarting { res ->
                     android.util.Log.e("AIAgentVM","onAgentStarting------------- ${res.eventType} / ${res.component1()} / ${res.context.agentInput} / ${res.agent.agentConfig.prompt} / ${res.agent.getState()}")
                 }
+
                 onLLMCallCompleted { res ->
                     android.util.Log.e("AIAgentVM", "onLLMCallCompleted------------- ${res.eventType} / ${res.component1()} / ${res.prompt}")
                     for (r in res.responses) android.util.Log.e("AIAgentVM", "onLLMCallCompleted:responses--------- ${r.content} / ${r.role} / ${r.metaInfo.metadata}")
-                }*/
+                }
+                onLLMCallStarting { res ->
+                    android.util.Log.e("AIAgentVM", "onLLMCallStarting------------- ${res.eventType} / ${res.component1()} / ${res.prompt}")
+                }
             }
 
             val toolRegistry = ToolRegistry {
@@ -119,6 +125,7 @@ class AIAgentViewModel(
             //TODO: use local model ?
             //https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
             //TODO: flujos
+            //TODO: CM...
             //TODO:
 
             val model = Model.OPENROUTER
@@ -189,11 +196,11 @@ class AIAgentViewModel(
         //private val readAllTracks: ReadAllTracksUC,
         private val filterTracks: FilterTracksUC,
     ): ToolSet {
-        //TODO: Serach by lt/lng ?'
+        //TODO: Search by lat/lng ?'
         ////////////////// FILTER RUN
-        /*@Tool
-        @LLMDescription("Find a run in the database that meet the parameters of the search")
-        suspend fun findRun(
+/*        @Tool
+        @LLMDescription("Finds a list of runs in the database that meet the parameters of the search")
+        suspend fun searchForRuns(
 //            @LLMDescription("Date and time when the run started")
 //            dateIni: String?,
 //            @LLMDescription("Date and time when the run finish")
@@ -204,34 +211,49 @@ class AIAgentViewModel(
             name: String?,
             @LLMDescription("Total distance of the run")
             distance: Int?,
-        ): TrackDto {
-            val res = filterTracks(name, distance)
-            return TrackDto.Empty
+        ): Result<TrackDto> {
+            val res: Result<List<TrackDto>> = filterTracks(name, distance)
+            return if (res.isSuccess) {
+                val tracks = res.getOrNull()
+                if (tracks.isNullOrEmpty()) {
+                    Result.failure(Exception("There is no run stored"))
+                } else {
+                    Result.success(tracks.first())
+                }
+            } else {
+                val msg = "There was an error while searching the database." +
+                        " The error was " + res.exceptionOrNull()?.message
+                Result.failure(Exception(msg))
+            }
         }*/
-        ////////////////// LONGEST RUN
+        ////////////////// LONGEST/SHORTEST RUN
         @Tool
-        @LLMDescription("Get the longest run in the database, get the run with maximum distance in the database")
+        @LLMDescription("Get the longest or the shortest run in the database")//, get the run with maximum distance in the database
         suspend fun getLongestRun(
-            //@LLMDescription("The city and state/country")
-            //location: String
-            //TODO: return trackDto?
+            @LLMDescription("When true, get the longest run, when false, get the shortest run")
+            theLongest: Boolean = true,
+            //TODO: Try returning Result<TrackDto>
         ): String {
-            val res: Result<List<TrackDto>> = filterTracks()//readAllTracks()
-            android.util.Log.e("AAAAAAA", "------------------ ${res.exceptionOrNull()?.message} / ${res.getOrNull()}")
+            val res: Result<List<TrackDto>> = filterTracks()
             return if (res.isSuccess) {
                 val tracks = res.getOrNull()
                 if(tracks.isNullOrEmpty()) {
                     "There is no run stored"
                 }
                 else {
-                    var longest = TrackDto.Empty
-                    for (t in tracks) if (t.distance > longest.distance) longest = t
-                    "The longest run is ${longest.distance} meters long," +
-                            " with id ${longest.id}," +
-                            " with name ${longest.name}," +
-                            " started at ${longest.timeIni.toDateStr()}," +
-                            " finished at ${longest.timeEnd.toDateStr()}," +
-                            " with a duration of ${longest.time.toTimeStr()}"
+                    var result = tracks.first()
+                    if(theLongest) {
+                        for (t in tracks) if (t.distance > result.distance) result = t
+                    }
+                    else {
+                        for (t in tracks) if (t.distance < result.distance) result = t
+                    }
+                    "The run is ${result.distance} meters long," +
+                            " with id ${result.id}," +
+                            " with name ${result.name}," +
+                            " started at ${result.timeIni.toDateStr()}," +
+                            " finished at ${result.timeEnd.toDateStr()}," +
+                            " with a duration of ${result.time.toTimeStr()}"
                 }
             } else {
                 "There was an error while searching the database." +

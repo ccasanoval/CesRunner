@@ -1,0 +1,71 @@
+package com.cesoft.cesrunner.ui.aiagent.ai
+
+import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.tools.ToolRegistry
+import ai.koog.agents.core.tools.reflect.tools
+import ai.koog.agents.features.eventHandler.feature.EventHandler
+import ai.koog.prompt.executor.clients.google.GoogleModels
+import ai.koog.prompt.executor.clients.openai.OpenAIModels
+import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
+import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
+import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
+import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
+import com.cesoft.cesrunner.BuildConfig
+import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
+
+class Agent {
+    enum class Model { OPENAI, GEMINI, OPEN_ROUTER }
+
+    //private val _model: Model
+    private constructor(model: Model, filterTracks: FilterTracksUC) {
+        //_model = model
+        val systemPrompt = "You are a helpful assistant that answers questions about the runs you have stored in your tools." +
+                "Each run has been stored by the user, after a geolocation tool has recorded some data as he or she was running in some route." +
+                "Each run has some fields, like distance, start time, end time, duration, id, and name" +
+                "Format the distance field in km when distance is greater than 1000 meters" +
+                ""
+        val toolRegistry = ToolRegistry {
+            tools(RunsToolSet(filterTracks))
+        }
+        val agent = when (model) {
+            Model.GEMINI -> {
+                val apiKey = BuildConfig.GEMINI_KEY
+                AIAgent(
+                    promptExecutor = simpleGoogleAIExecutor(apiKey),
+                    systemPrompt = systemPrompt,
+                    llmModel = GoogleModels.Gemini2_5Pro,
+                    installFeatures = { install(EventHandler, eventHandlerConfig) },
+                    toolRegistry = toolRegistry
+                )
+            }
+            Model.OPENAI -> {
+                val apiKey = BuildConfig.OPENAI_KEY
+                AIAgent(
+                    promptExecutor = simpleOpenAIExecutor(apiKey),
+                    systemPrompt = systemPrompt,
+                    llmModel = OpenAIModels.Chat.GPT4o,
+                    installFeatures = { install(EventHandler, eventHandlerConfig) },
+                    temperature = 0.7,
+                    maxIterations = 5,
+                    toolRegistry = toolRegistry
+                )
+            }
+            Model.OPEN_ROUTER -> {
+                val apiKey = BuildConfig.OPENROUTER_KEY
+                AIAgent(
+                    promptExecutor = simpleOpenRouterExecutor(apiKey),
+                    systemPrompt = systemPrompt,
+                    llmModel = OpenRouterModels.Gemini2_5Pro,
+                    installFeatures = { install(EventHandler, eventHandlerConfig) },
+                    toolRegistry = toolRegistry
+                )
+            }
+        }
+    }
+
+    companion object {
+        fun build(model: Model, filterTracks: FilterTracksUC): Agent {
+            return Agent(model, filterTracks)
+        }
+    }
+}

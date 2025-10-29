@@ -2,11 +2,11 @@ package com.cesoft.cesrunner.ui.aiagent.ai
 
 import ai.koog.agents.features.eventHandler.feature.EventHandlerConfig
 
-class EventHandler(
-    val onAgentCompleted: (String) -> Unit,
-    val onAgentExecutionFailed: (Throwable) -> Unit,
-) {
-    val eventHandlerConfig: EventHandlerConfig.() -> Unit = {
+object RunsEventHandler {
+    fun getEventHandlerConfig(
+        onAgentCompleted: (String) -> Unit,
+        onAgentExecutionFailed: (Throwable) -> Unit,
+    ): EventHandlerConfig.() -> Unit = {
         onAgentCompleted { res ->
             android.util.Log.e("AIAgentVM", "onAgentCompleted------------- ${res.result} / ${res.eventType} / ${res.component1()} / ${res.component2()}")
             val response = res.result.toString()

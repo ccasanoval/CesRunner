@@ -1,34 +1,20 @@
 package com.cesoft.cesrunner.ui.aiagent
 
-import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
-import ai.koog.agents.core.tools.annotations.LLMDescription
-import ai.koog.agents.core.tools.annotations.Tool
-import ai.koog.agents.core.tools.reflect.ToolSet
 import ai.koog.agents.core.tools.reflect.tools
-import ai.koog.agents.features.eventHandler.feature.EventHandler
-import ai.koog.agents.features.eventHandler.feature.EventHandlerConfig
-import ai.koog.prompt.executor.clients.google.GoogleModels
-import ai.koog.prompt.executor.clients.openai.OpenAIModels
-import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
-import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
-import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
-import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
-import ai.koog.prompt.llm.LLMProvider
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.BuildConfig
-import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
-import com.cesoft.cesrunner.toDateStr
-import com.cesoft.cesrunner.toTimeStr
+import com.cesoft.cesrunner.ui.aiagent.ai.RunsAgent
+import com.cesoft.cesrunner.ui.aiagent.ai.RunsEventHandler
+import com.cesoft.cesrunner.ui.aiagent.ai.RunsToolSet
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentSideEffect
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentState
@@ -76,118 +62,39 @@ class AIAgentViewModel(
         emit(AIAgentTransform.AddSideEffect(AIAgentSideEffect.Close))
     }
 
+    //TODO: use local model ?
+    //https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
+    //TODO: flujos
+    //TODO: CM...
+    //TODO:
     enum class Model { OPENAI, GEMINI, OPENROUTER }
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoLoading)
 
         val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
-            val eventHandlerConfig: EventHandlerConfig.() -> Unit = {
-                // We assign the agent response to the result
-                onAgentCompleted { res ->
-                    android.util.Log.e("AIAgentVM", "onAgentCompleted------------- ${res.result} / ${res.eventType} / ${res.component1()} / ${res.component2()}")
-                    val response = res.result.toString()
-                    //emit(AIAgentTransform.GoInit(prompt = prompt, response = response))
-                    cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = response))
-                }
-                onAgentExecutionFailed { fail ->
-                    android.util.Log.e("AIAgentVM", "onAgentExecutionFailed------------- ${fail.throwable} / ${fail.eventType} / ${fail.component1()} / ${fail.component2()}")
-                    val error = fail.throwable
-                    //emit(AIAgentTransform.GoInit(prompt = prompt, response = "", error = error))
-                    cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = "", error = error))
-                }
+            val eventHandlerConfig = RunsEventHandler.getEventHandlerConfig(
+                onAgentCompleted = { response -> cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = response))},
+                onAgentExecutionFailed = { error -> cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = "", error = error)) }
+            )
 
-                onToolCallCompleted { res ->
-                    android.util.Log.e("AIAgentVM", "onToolCallCompleted------------- $res ")
-                }
-                onToolCallFailed { res ->
-                    android.util.Log.e("AIAgentVM", "onToolCallFailed------------- $res ")
-                }
-
-                onAgentClosing { res ->
-                    android.util.Log.e("AIAgentVM", "onAgentClosing------------- ${res.eventType} / ${res.component1()}")
-                }
-                onAgentStarting { res ->
-                    android.util.Log.e("AIAgentVM","onAgentStarting------------- ${res.eventType} / ${res.component1()} / ${res.context.agentInput} / ${res.agent.agentConfig.prompt} / ${res.agent.getState()}")
-                }
-
-                onLLMCallCompleted { res ->
-                    android.util.Log.e("AIAgentVM", "onLLMCallCompleted------------- ${res.eventType} / ${res.component1()} / ${res.prompt}")
-                    for (r in res.responses) android.util.Log.e("AIAgentVM", "onLLMCallCompleted:responses--------- ${r.content} / ${r.role} / ${r.metaInfo.metadata}")
-                }
-                onLLMCallStarting { res ->
-                    android.util.Log.e("AIAgentVM", "onLLMCallStarting------------- ${res.eventType} / ${res.component1()} / ${res.prompt}")
-                }
-            }
-
-            val toolRegistry = ToolRegistry {
-                tools(RunsToolSet(filterTracks))
-            }
-            //TODO: use local model ?
-            //https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
-            //TODO: flujos
-            //TODO: CM...
-            //TODO:
-
-            val model = Model.OPENROUTER
-
-            val agent = when (model) {
-                Model.GEMINI -> {
-                    val apiKey = BuildConfig.GEMINI_KEY
-                    AIAgent(
-                        promptExecutor = simpleGoogleAIExecutor(apiKey),
-                        systemPrompt = "You are a helpful assistant that answers questions about the runs you have stored in your tools." +
-                                "Each run has been stored by the user, after a geolocation tool has recorded some data as he or she was running in some route." +
-                                "Each run has some fields, like distance, start time, end time, duration, id, and name" +
-                                "Format the distance field in km when distance is greater than 1000 meters" +
-                                "",
-                        llmModel = GoogleModels.Gemini2_5Pro,
-                        installFeatures = { install(EventHandler, eventHandlerConfig) },
-                        toolRegistry = toolRegistry
-                    )
-                }
-                Model.OPENAI -> {
-                    val apiKey = BuildConfig.OPENAI_KEY
-                    AIAgent(
-                        promptExecutor = simpleOpenAIExecutor(apiKey),
-                        systemPrompt = "You are a helpful assistant. Answer user questions concisely.",
-                        llmModel = OpenAIModels.Chat.GPT4o,
-                        installFeatures = { install(EventHandler, eventHandlerConfig) },
-                        temperature = 0.7,
-                        maxIterations = 5,
-                        toolRegistry = toolRegistry
-                    )
-                }
-                //TODO: AIAgentError(message=Cannot read Json element because of unexpected end of the input at path: $
-                Model.OPENROUTER -> {
-                    val apiKey = BuildConfig.OPENROUTER_KEY
-                    AIAgent(
-                        promptExecutor = simpleOpenRouterExecutor(apiKey),
-                        systemPrompt = "You are a helpful assistant that answers questions about the runs you have stored in your tools." +
-                                "Each run has been stored by the user, after a geolocation tool has recorded some data as he or she was running in some route." +
-                                "Each run has some fields, like distance, start time, end time, duration, id, and name" +
-                                "Format the distance field in km when distance is greater than 1000 meters" +
-                                "",
-                        llmModel = OpenRouterModels.Gemini2_5Pro,
-                        installFeatures = { install(EventHandler, eventHandlerConfig) },
-                        toolRegistry = toolRegistry
-                    )
-                }
-            }
+            val agent = RunsAgent(
+                model = RunsAgent.Model.OPEN_ROUTER,
+                filterTracks = filterTracks,
+                eventHandlerConfig = eventHandlerConfig
+            )
             viewModelScope.launch {
                 try {
                     agent.run(prompt)
                 }
                 catch (e: Throwable) {
-                    android.util.Log.e("AIAgentVM", "viewModelScope.launch:e:-------------------- $e")
-                    //val callbackResult = AIAgentTransform.GoInit(prompt = prompt, response = "", error = AppError.fromThrowable(e))
+                    Log.e("AIAgentVM", "viewModelScope.launch:e:------------------ $e")
                 }
             }
-            //CoroutineScope(Dispatchers.Default).launch {}
         }
-        android.util.Log.e("AIAgentVM", "EMIT-------------------- $callbackResult")
+        Log.e("AIAgentVM", "EMIT-------------------- $callbackResult")
         emit(callbackResult)
     }
-
+/*
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // TOOLS
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -260,6 +167,6 @@ class AIAgentViewModel(
                         " The error was " + res.exceptionOrNull()?.message
             }
         }
-    }
+    }*/
 
  }

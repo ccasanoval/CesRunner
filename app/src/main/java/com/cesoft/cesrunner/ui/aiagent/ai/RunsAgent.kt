@@ -4,6 +4,7 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.core.tools.reflect.tools
 import ai.koog.agents.features.eventHandler.feature.EventHandler
+import ai.koog.agents.features.eventHandler.feature.EventHandlerConfig
 import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
@@ -13,21 +14,25 @@ import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
 import com.cesoft.cesrunner.BuildConfig
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 
-class Agent {
+class RunsAgent {
     enum class Model { OPENAI, GEMINI, OPEN_ROUTER }
 
-    //private val _model: Model
-    private constructor(model: Model, filterTracks: FilterTracksUC) {
-        //_model = model
+    private val _agent: AIAgent<String, String>//TODO: Try output = Result<List<TrackDto>>
+    constructor(
+        model: Model,
+        filterTracks: FilterTracksUC,
+        eventHandlerConfig: EventHandlerConfig.() -> Unit
+    ) {
         val systemPrompt = "You are a helpful assistant that answers questions about the runs you have stored in your tools." +
                 "Each run has been stored by the user, after a geolocation tool has recorded some data as he or she was running in some route." +
                 "Each run has some fields, like distance, start time, end time, duration, id, and name" +
+                "When answering a question, return all those values of the run to the user" +
                 "Format the distance field in km when distance is greater than 1000 meters" +
                 ""
         val toolRegistry = ToolRegistry {
             tools(RunsToolSet(filterTracks))
         }
-        val agent = when (model) {
+        _agent = when (model) {
             Model.GEMINI -> {
                 val apiKey = BuildConfig.GEMINI_KEY
                 AIAgent(
@@ -63,9 +68,11 @@ class Agent {
         }
     }
 
+    suspend fun run(prompt: String) {
+        _agent.run(prompt)
+    }
+
     companion object {
-        fun build(model: Model, filterTracks: FilterTracksUC): Agent {
-            return Agent(model, filterTracks)
-        }
+
     }
 }

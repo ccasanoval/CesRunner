@@ -58,8 +58,8 @@ class AIAgentViewModel(
 
     //TODO: use local model ?
     //https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
-    //TODO: flujos
-    //TODO: CM...
+    //TODO: strategy...
+    //TODO: MCP...
     //TODO:
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))

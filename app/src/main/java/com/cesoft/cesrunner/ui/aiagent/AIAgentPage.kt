@@ -122,8 +122,13 @@ private fun Content(
                 .fillMaxWidth()
                 .padding(SepMed),
         )
-        Button(onClick = {reduce(AIAgentIntent.ExecPrompt(prompt.value))}) {
-            Text(stringResource(R.string.request))
+        Button(
+            modifier = Modifier.padding(start = SepMed),
+            onClick = { reduce(AIAgentIntent.ExecPrompt(prompt = prompt.value)) }
+        ) {
+            Text(
+                text = stringResource(R.string.request)
+            )
         }
         Spacer(Modifier.height(SepMed))
         if(state.error != null) {

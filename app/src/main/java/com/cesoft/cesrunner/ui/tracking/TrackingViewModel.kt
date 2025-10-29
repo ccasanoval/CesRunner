@@ -16,7 +16,6 @@ import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
 import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackIdUC
-import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
 import com.cesoft.cesrunner.domain.usecase.ReadTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
@@ -38,7 +37,6 @@ class TrackingViewModel(
     private val createTrack: CreateTrackUC,
     private val trackingServiceFac: TrackingServiceFac,
     private val readCurrentTrackId: ReadCurrentTrackIdUC,
-    private val readCurrentTrack: ReadCurrentTrackUC,
     private val readTrackFlow: ReadTrackFlowUC,
     private val saveCurrentTracking: SaveCurrentTrackingUC,
     private val deleteCurrentTracking: DeleteCurrentTrackUC,
@@ -70,11 +68,11 @@ class TrackingViewModel(
     private fun executeLoad() = flow {
         var id = readCurrentTrackId().getOrNull() ?: ID_NULL
         if(id == ID_NULL) {
-            val settings = readSettings().getOrNull() ?: SettingsDto.Empty
+            //val settings = readSettings().getOrNull() ?: SettingsDto.Empty
             val time = System.currentTimeMillis()
             val track = TrackDto(
-                minInterval = settings.minInterval,
-                minDistance = settings.minDistance,
+                //minInterval = settings.minInterval,
+                //minDistance = settings.minDistance,
                 timeIni = time,
                 timeEnd = time,
                 name = time.toDateStr(),
@@ -85,8 +83,9 @@ class TrackingViewModel(
                 saveCurrentTracking(id)
             }
         }
-        val track = readCurrentTrack().getOrNull() ?: TrackDto.Empty
-        trackingServiceFac.start(track.minInterval, track.minDistance)
+        //val track = readCurrentTrack().getOrNull() ?: TrackDto.Empty
+        val settings = readSettings().getOrNull() ?: SettingsDto.Empty
+        trackingServiceFac.start(settings.minInterval, settings.minDistance)
         val res = readTrackFlow(id)
         res.getOrNull()?.let {
             val flow: StateFlow<TrackDto?> = it.stateIn(
@@ -114,8 +113,7 @@ class TrackingViewModel(
 
     fun consumeSideEffect(
         sideEffect: TrackingSideEffect,
-        navController: NavController,
-        context: Context,
+        navController: NavController
     ) {
         when(sideEffect) {
             TrackingSideEffect.Close -> {

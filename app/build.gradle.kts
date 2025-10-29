@@ -117,4 +117,6 @@ dependencies {
 
     // AI Agents
     implementation(libs.koog.agents)
+    // JSON
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 }

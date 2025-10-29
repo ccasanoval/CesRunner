@@ -76,9 +76,9 @@ val appModule = module {
     single<FilterTracksUC> { FilterTracksUC(get()) }
 
     /// VIEWMODEL
-    viewModel { HomeViewModel(get(), get(), get(), get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
-    viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { MapViewModel(get(), ) }
     viewModel { GnssViewModel(get()) }
     viewModel { AIAgentViewModel(get(), get()) }

@@ -5,8 +5,8 @@ import com.cesoft.cesrunner.domain.ID_NULL
 data class TrackDto(
     val id: Long = ID_NULL,
     val name: String = "",
-    val minInterval: Int = 0,
-    val minDistance: Int = 0,
+    //val minInterval: Int = 0,
+    //val minDistance: Int = 0,
     val timeIni: Long = 0,
     val timeEnd: Long = 0,
     val distance: Int = 0,
@@ -41,7 +41,8 @@ data class TrackDto(
     companion object {
         val Empty = TrackDto(
             ID_NULL, "",
-            0,0,0,0, 0,
+            0,0,0,
+            //0, 0,
             listOf()
         )
         const val VO2MAX = 150.0

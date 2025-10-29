@@ -52,14 +52,12 @@ fun TrackingPage(
     navController: NavController,
     viewModel: TrackingViewModel = koinViewModel(),
 ) {
-    val context = LocalContext.current
     MviScreen(
         state = viewModel.state,
         onSideEffect = { sideEffect ->
             viewModel.consumeSideEffect(
                 sideEffect = sideEffect,
-                navController = navController,
-                context = context
+                navController = navController
             )
         },
         onBackPressed = {

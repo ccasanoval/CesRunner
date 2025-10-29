@@ -10,9 +10,11 @@ import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackUC
+import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
 import com.cesoft.cesrunner.domain.usecase.ReadVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.RequestLocationUpdatesUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
@@ -36,6 +38,7 @@ class HomeViewModel(
     private val readCurrentTrackFlow: ReadCurrentTrackFlowUC,
     private val requestLocationUpdates: RequestLocationUpdatesUC,
     private val readVo2Max: ReadVo2MaxUC,
+    private val readSettings: ReadSettingsUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
@@ -108,7 +111,11 @@ class HomeViewModel(
 
         val currentTrack = readCurrentTrack().getOrNull() ?: TrackDto.Empty
         if(currentTrack.isCreated) {
-            trackingServiceFac.start(currentTrack.minInterval, currentTrack.minDistance)
+            val settings = readSettings().getOrNull() ?: SettingsDto.Empty
+            trackingServiceFac.start(//currentTrack.minInterval, currentTrack.minDistance)
+                minInterval = settings.minInterval,
+                minDistance = settings.minDistance
+            )
         }
         val res = readCurrentTrackFlow()
         res.getOrNull()?.let {

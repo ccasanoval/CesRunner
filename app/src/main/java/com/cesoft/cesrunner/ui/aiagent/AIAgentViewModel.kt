@@ -61,9 +61,8 @@ class AIAgentViewModel(
     //TODO: strategy...
     //TODO: MCP...
     //TODO: Desde UI pude elegir que LLM usar: OpenAI, Gemini, ...
+    //TODO: Que ruta esta cerca de aqui: Tengo que hacer una herramienta de gps y que TrackUiDto devuelva una lat/lng (la ultima, por ejemplo)
     private fun executePrompt(prompt: String) = flow {
-        val a = filterTracks(name = "canari")
-        android.util.Log.e("AA", "AAA-------------------------------- ${a.getOrNull()?.firstOrNull()?.name}")
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))
         val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
             val agent = RunsAgent(

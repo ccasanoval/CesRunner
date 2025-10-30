@@ -6,13 +6,6 @@ import com.adidas.mvi.transform.ViewTransform
 
 object AIAgentTransform {
 
-    /*
-    data object GoLoading: ViewTransform<AIAgentState, AIAgentSideEffect>() {
-        override fun mutate(currentState: AIAgentState): AIAgentState {
-            return AIAgentState.Loading
-        }
-    }*/
-
     data class GoInit(
         val prompt: String = "",
         val response: String = "",
@@ -20,7 +13,7 @@ object AIAgentTransform {
         val error: Throwable? = null
     ): ViewTransform<AIAgentState, AIAgentSideEffect>() {
         override fun mutate(currentState: AIAgentState): AIAgentState {
-            android.util.Log.e("AIAgentTransform", "GoInit-------------------- $prompt -> $response / $loading / $error")
+            //android.util.Log.e("AIAgentTransform", "GoInit-------------------- $prompt -> $response / $loading / $error")
             return AIAgentState.Init(prompt, response, loading, error)
         }
     }

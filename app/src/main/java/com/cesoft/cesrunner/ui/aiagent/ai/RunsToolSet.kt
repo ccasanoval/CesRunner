@@ -50,17 +50,17 @@ class RunsToolSet(
     //----------------------------- RUN NAME -------------------------------------------
     @Tool
     @LLMDescription("Finds a run in the database which name is like the parameter")
-    suspend fun searchForRuns(
+    suspend fun searchByName(
         @LLMDescription("The name of the run, how the run is called")
         name: String?,
     ): String {
         val res: Result<List<TrackDto>> = filterTracks(name)
         return if (res.isSuccess) {
-            val tracks = res.getOrNull()
+            val tracks = res.getOrNull()?.map { TrackUiDto.toUi(it) }
             if (tracks.isNullOrEmpty()) {
                 NO_RUN
             } else {
-                data(TrackUiDto.toUi(tracks.first()))
+                tracksToString(tracks)
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
@@ -70,18 +70,15 @@ class RunsToolSet(
     //----------------------------- LONGEST/SHORTEST RUN -------------------------------------------
     @Tool
     @LLMDescription("Get the longest or the shortest run in the database")//, get the run with maximum distance in the database
-    suspend fun getLongestRun(
+    suspend fun getLongestOrShorterRun(
         @LLMDescription("When true, get the longest run, when false, get the shortest run")
         theLongest: Boolean = true,
-    //): Result<List<TrackDto>> {
     ): String {
-        // This return tipe depends on the definition of agetn: val _agent: AIAgent<String, String> or AIAgent<String, Result<List<TrackDto>>>
         val res: Result<List<TrackDto>> = filterTracks()
         return if (res.isSuccess) {
             val tracks = res.getOrNull()
             if(tracks.isNullOrEmpty()) {
-                "There is no run stored"
-                //Result.failure(Exception("There is no run stored"))
+                NO_RUN
             }
             else {
                 var result = tracks.first()
@@ -91,27 +88,73 @@ class RunsToolSet(
                 else {
                     for (t in tracks) if (t.distance < result.distance) result = t
                 }
-                "The run is ${result.distance} meters long," +
-                        " with id ${result.id}," +
-                        " with name ${result.name}," +
-                        " started at ${result.timeIni.toDateStr()}," +
-                        " finished at ${result.timeEnd.toDateStr()}," +
-                        " with a duration of ${result.time.toTimeStr()}"
-                //Result.success(tracks)
-                data(TrackUiDto.toUi(result))
+                trackToString(TrackUiDto.toUi(result))
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
-            //Result.failure(res.exceptionOrNull() ?: AppError.NotFound)
+        }
+    }
+
+    //----------------------------- LONGEST/SHORTEST RUN -------------------------------------------
+    @Tool
+    @LLMDescription("Get the biggest or the lowest vo2max run in the database")
+    suspend fun getBiggerLowestVo2MaxRun(
+        @LLMDescription("When true, get the biggest vo2max run, when false, get the lower vo2max run")
+        theBiggest: Boolean = true,
+    ): String {
+        val res: Result<List<TrackDto>> = filterTracks()
+        return if (res.isSuccess) {
+            val tracks = res.getOrNull()?.map { TrackUiDto.toUi(it) }
+            if(tracks.isNullOrEmpty()) {
+                NO_RUN
+            }
+            else {
+                var result = tracks.first()
+                if(theBiggest) {
+                    for (t in tracks) if (t.vo2Max > result.vo2Max) result = t
+                }
+                else {
+                    for (t in tracks) if (t.vo2Max < result.vo2Max) result = t
+                }
+                trackToString(result)
+            }
+        } else {
+            DB_ERR + res.exceptionOrNull()?.message
+        }
+    }
+
+    //TODO: Fix Tools + DeepLink to run details + Agent Strategy ? + Agent MCP ?
+
+    //NOTE: Si coges todos los registros y dejas que el LLM haga la busqueda, añades flexibilidad, pero quiza satura los tokens del LLM ¿?
+    //NOTE: Error from OpenRouterLLMClient API: 402 Payment Required
+    //NOTE: Con GEMINI funciona
+    @Tool
+    @LLMDescription("Get all the runs in the database")
+    suspend fun getRuns(): String {
+        val res: Result<List<TrackDto>> = filterTracks()//TODO: getAll()
+        return if (res.isSuccess) {
+            val tracks = res.getOrNull()
+            if(tracks.isNullOrEmpty()) {
+                NO_RUN
+            }
+            else {
+                tracksToString(tracks.map { TrackUiDto.toUi(it) })
+            }
+        } else {
+            DB_ERR + res.exceptionOrNull()?.message
         }
     }
 
     companion object {
         const val NO_RUN = "There is no run stored"
         const val DB_ERR = "There was an error while searching the database. The error was "
-        private fun data(track: TrackUiDto): String {
+        private fun trackToString(track: TrackUiDto): String {
             val gson = Gson()
             return gson.toJson(track)
+        }
+        private fun tracksToString(tracks: List<TrackUiDto>): String {
+            val gson = Gson()
+            return gson.toJson(tracks)
         }
     }
 }

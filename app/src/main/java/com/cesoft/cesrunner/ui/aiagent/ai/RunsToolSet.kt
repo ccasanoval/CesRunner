@@ -6,7 +6,6 @@ import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
-import com.cesoft.cesrunner.domain.entity.TrackUiDto
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toTimeStr
@@ -56,7 +55,7 @@ class RunsToolSet(
     ): String {
         val res: Result<List<TrackDto>> = filterTracks(name)
         return if (res.isSuccess) {
-            val tracks = res.getOrNull()?.map { TrackUiDto.toUi(it) }
+            val tracks = res.getOrNull()?.map { RunEntity.toUi(it) }
             if (tracks.isNullOrEmpty()) {
                 NO_RUN
             } else {
@@ -88,7 +87,7 @@ class RunsToolSet(
                 else {
                     for (t in tracks) if (t.distance < result.distance) result = t
                 }
-                trackToString(TrackUiDto.toUi(result))
+                trackToString(RunEntity.toUi(result))
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
@@ -104,7 +103,7 @@ class RunsToolSet(
     ): String {
         val res: Result<List<TrackDto>> = filterTracks()
         return if (res.isSuccess) {
-            val tracks = res.getOrNull()?.map { TrackUiDto.toUi(it) }
+            val tracks = res.getOrNull()?.map { RunEntity.toUi(it) }
             if(tracks.isNullOrEmpty()) {
                 NO_RUN
             }
@@ -138,7 +137,7 @@ class RunsToolSet(
                 NO_RUN
             }
             else {
-                tracksToString(tracks.map { TrackUiDto.toUi(it) })
+                tracksToString(tracks.map { RunEntity.toUi(it) })
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
@@ -148,11 +147,11 @@ class RunsToolSet(
     companion object {
         const val NO_RUN = "There is no run stored"
         const val DB_ERR = "There was an error while searching the database. The error was "
-        private fun trackToString(track: TrackUiDto): String {
+        private fun trackToString(track: RunEntity): String {
             val gson = Gson()
             return gson.toJson(track)
         }
-        private fun tracksToString(tracks: List<TrackUiDto>): String {
+        private fun tracksToString(tracks: List<RunEntity>): String {
             val gson = Gson()
             return gson.toJson(tracks)
         }

@@ -1,5 +1,5 @@
 package com.cesoft.cesrunner.domain.entity
-
+/*
 import com.cesoft.cesrunner.domain.ID_NULL
 import java.time.Instant
 import java.time.LocalDateTime
@@ -14,7 +14,7 @@ data class TrackUiDto(
     val timeEnd: String,
     val distance: Int,
     //
-    val time: Long,
+    val time: String,
     val vo2Max: Int,
 ) {
     companion object {
@@ -25,14 +25,19 @@ data class TrackUiDto(
             else DateTimeFormatter.ofPattern("dd/MM/yyyy")
             return date.format(formatter)
         }
+        fun Long.toHoursMinutes(): String {
+            val h = toString()
+            val m = ((this - toInt())*60).toString().padStart(2, '0')
+            return "${h}h ${m}m"
+        }
         fun toUi(track: TrackDto) = TrackUiDto(
             id = track.id,
             name = track.name,
             timeIni = track.timeIni.toDate() ?: "?",
             timeEnd = track.timeEnd.toDate() ?: "?",
             distance = track.distance,
-            time = track.timeEnd - track.timeIni,
+            time = (track.timeEnd - track.timeIni).toHoursMinutes(),
             vo2Max = track.calcVo2Max().toInt()
         )
     }
-}
+}*/

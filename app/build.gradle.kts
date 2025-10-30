@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     //
     alias(libs.plugins.ksp)
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -119,4 +120,5 @@ dependencies {
     implementation(libs.koog.agents)
     // JSON
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }

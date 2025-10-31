@@ -86,38 +86,6 @@ class AIAgentViewModel(
         return listOf()
     }
 
-    private fun jsonToUi(json: String): String {
-        val gson = GsonBuilder()
-            .setStrictness(Strictness.LENIENT)
-            .create()
-        try {
-            val myType = object : TypeToken<List<RunEntity>>() {}.type
-            val os = gson.fromJson<List<RunEntity>>(json, myType)
-            val bs = StringBuilder()
-            for(o in os) {//TODO: I18N
-                bs.append("------------------------ \n")
-                bs.append("${o.id} - ${o.name} \n")
-                bs.append("Fecha: ${o.timeIni}  VO2Max: ${o.vo2Max} \n")
-                bs.append("Tiempo: ${o.time}    Distancia: ${o.distance} m \n")//To Km if > 1000m
-            }
-            return bs.toString()
-        } catch (e: Exception) {
-            android.util.Log.e("AIAgentVM", "executePrompt:ok:---LIST----e: $e")
-            try {
-                val o = gson.fromJson(json, RunEntity::class.java)
-                val bs = StringBuilder()
-                bs.append("------------------------------------------------ \n")//TODO: Pass the object to the view
-                bs.append("(ID ${o.id}) - ${o.name} \n")
-                bs.append("Fecha: ${o.timeIni}  VO2Max: ${o.vo2Max} \n")
-                bs.append("Tiempo: ${o.time}    Distancia: ${o.distance} m \n")//To Km if > 1000m
-                return bs.toString()
-            } catch (e: Exception) {
-                android.util.Log.e("AIAgentVM", "executePrompt:ok:---OBJ----e: $e")
-            }
-        }
-        return ""
-    }
-
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))
         val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
@@ -132,8 +100,6 @@ class AIAgentViewModel(
                         val json = response.substring(i+4, response.length-3)
                         android.util.Log.e("AIAgentVM", "executePrompt:ok:LLM------- $llm")
                         android.util.Log.e("AIAgentVM", "executePrompt:ok:JSON------- $json")
-                        val msg = jsonToUi(json)
-                        android.util.Log.e("AIAgentVM", "executePrompt:ok:MSG------- $msg")
                         val data = jsonToRunEntity(json)
                         cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = llm, responseData = data))
                     }

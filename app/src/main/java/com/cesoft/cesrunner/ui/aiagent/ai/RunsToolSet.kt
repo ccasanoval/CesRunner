@@ -8,13 +8,13 @@ import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.google.gson.Gson
 
 //TODO: Search by lat/lng ?'
-//TODO: DeepLink to run details (Needs structured output)  + Agent Strategy ? + Agent MCP ?
+//TODO: Agent MCP ?
 
 @LLMDescription("Tools for finding runs")
 class RunsToolSet(
     private val filterTracks: FilterTracksUC,
 ): ToolSet {
-/*
+
     //----------------------------- RUN NAME -------------------------------------------
     @Tool
     @LLMDescription("Finds a run in the database which name is like the parameter")
@@ -56,18 +56,18 @@ class RunsToolSet(
                 else {
                     for (t in tracks) if (t.distance < result.distance) result = t
                 }
-                trackToString(RunEntity.toUi(result))
+                tracksToString(listOf(RunEntity.toUi(result)))
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
         }
     }
 
-    //----------------------------- LONGEST/SHORTEST RUN -------------------------------------------
+    //----------------------------- HIGHEST/LOWER VO2MAX RUN -------------------------------------------
     @Tool
-    @LLMDescription("Get the biggest or the lowest vo2max run in the database")
+    @LLMDescription("Get the highest or the lower vo2max run in the database")
     suspend fun getBiggerLowestVo2MaxRun(
-        @LLMDescription("When true, get the biggest vo2max run, when false, get the lower vo2max run")
+        @LLMDescription("When true, get the biggest vo2max run, when false, get the smaller vo2max run")
         theBiggest: Boolean = true,
     ): String {
         val res: Result<List<TrackDto>> = filterTracks()
@@ -84,17 +84,13 @@ class RunsToolSet(
                 else {
                     for (t in tracks) if (t.vo2Max < result.vo2Max) result = t
                 }
-                trackToString(result)
+                tracksToString(listOf(result))
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
         }
     }
-*/
 
-    //NOTE: Si coges todos los registros y dejas que el LLM haga la busqueda, añades flexibilidad, pero quiza satura los tokens del LLM ¿?
-    //NOTE: Error from OpenRouterLLMClient API: 402 Payment Required
-    //NOTE: Con GEMINI funciona
     @Tool
     @LLMDescription("Get all the runs in the database")
     suspend fun getRuns(): String {
@@ -119,10 +115,10 @@ class RunsToolSet(
     companion object {
         const val NO_RUN = "There is no run stored"
         const val DB_ERR = "There was an error while searching the database. The error was "
-        private fun trackToString(track: RunEntity): String {
+        /*private fun trackToString(track: RunEntity): String {
             val gson = Gson()
             return gson.toJson(track)
-        }
+        }*/
         private fun tracksToString(tracks: List<RunEntity>): String {
             val gson = Gson()
             return gson.toJson(tracks)

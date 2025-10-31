@@ -1,14 +1,6 @@
 package com.cesoft.cesrunner.ui.aiagent.ai
 
 import ai.koog.agents.core.agent.AIAgent
-import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
-import ai.koog.agents.core.dsl.builder.forwardTo
-import ai.koog.agents.core.dsl.builder.strategy
-import ai.koog.agents.core.dsl.extension.nodeExecuteTool
-import ai.koog.agents.core.dsl.extension.nodeLLMRequest
-import ai.koog.agents.core.dsl.extension.nodeLLMSendToolResult
-import ai.koog.agents.core.dsl.extension.onAssistantMessage
-import ai.koog.agents.core.dsl.extension.onToolCall
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.core.tools.reflect.tools
 import ai.koog.agents.features.eventHandler.feature.EventHandler
@@ -22,7 +14,6 @@ import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
 import ai.koog.prompt.llm.OllamaModels
-import ai.koog.prompt.message.Message
 import com.cesoft.cesrunner.BuildConfig
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -36,49 +27,15 @@ class RunsAgent {
     private val systemPrompt: String =
         " You are a helpful assistant that answers questions about the runs accessed by the tools." +
                 " Each run has the fields: id (identifier), name, timeIni (start time), timeEnd (end time), distance (in meters), time (duration of the run) and vo2Max." +
+                /*
+                " Each run has the fields: id (identifier), name, timeIni (start time), timeEnd (end time), distance (in meters), time (duration of the run) and vo2Max." +
                 " You must return all the fields of the run." +
                 " The fields with decimal dot, must be expressed in the same language of the question, in spanish it will have a comma, but in english it's a dot." +
                 " Format the distance field in km when distance is greater than 1000 meters." +
                 " If the duration is less than an hour, do not show the value for hour, ie you can remove the 0h part." +
-                ""
-    private val strategyDto: AIAgentGraphStrategy<String, Result<List<RunEntity>>> = strategy("Run finder") {
-        val nodeCallLLM by nodeLLMRequest("mllRequest")
-        val nodeExecuteTool by nodeExecuteTool("executeTool")
-        val nodeSendToolResult by nodeLLMSendToolResult("sendToolResult")
-        val nodeTransOutput by node<String, Result<List<RunEntity>>>("transformOutput") {
-            android.util.Log.e("RunsAgent", "nodeTransOutput------ $it")
-            Result.failure(Throwable(it))
-        }
+                ""*/
+                "The tools you have return a json with a list of runs. You have to filter the runs to get the ones that fulfills the request, please after your text response, show the runs as json you have selected as the answer"
 
-        edge(nodeStart forwardTo nodeCallLLM)
-
-        edge(nodeCallLLM forwardTo nodeTransOutput onAssistantMessage { true })
-        edge(nodeTransOutput forwardTo nodeFinish)
-
-        edge(nodeCallLLM forwardTo nodeExecuteTool onToolCall { true } )
-        edge(nodeExecuteTool forwardTo nodeSendToolResult)
-
-        edge(nodeSendToolResult forwardTo nodeTransOutput onAssistantMessage { true })
-        edge(nodeTransOutput forwardTo nodeFinish)
-
-        edge(nodeSendToolResult forwardTo nodeExecuteTool onToolCall { true })
-    }
-    private val strategyStr: AIAgentGraphStrategy<String, String> = strategy("Run finder") {
-        val nodeCallLLM by nodeLLMRequest("mllRequest")
-        val nodeExecuteTool by nodeExecuteTool("executeTool")
-        val nodeSendToolResult by nodeLLMSendToolResult("sendToolResult")
-
-        edge(nodeStart forwardTo nodeCallLLM)
-
-        edge(nodeCallLLM forwardTo nodeFinish onAssistantMessage { true })
-
-        edge(nodeCallLLM forwardTo nodeExecuteTool onToolCall { true } )
-        edge(nodeExecuteTool forwardTo nodeSendToolResult)
-
-        edge(nodeSendToolResult forwardTo nodeFinish onAssistantMessage { true })
-
-        edge(nodeSendToolResult forwardTo nodeExecuteTool onToolCall { true })
-    }
 
     constructor(
         model: Model,

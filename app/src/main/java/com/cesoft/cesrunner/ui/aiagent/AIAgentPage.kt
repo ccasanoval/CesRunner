@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -105,12 +107,11 @@ private fun Content(
         DisableLoadingCompo()
     }
 
-    //TODO: id_track - deep link?
     val prompt = rememberSaveable { mutableStateOf("Which is the longest run?") }
     LaunchedEffect(state.prompt, state.response) {
         if(state.prompt.isNotBlank()) prompt.value = state.prompt
     }
-    Column {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         PredefinedOptions(prompt)
         OutlinedTextField(
             value = prompt.value,
@@ -126,9 +127,7 @@ private fun Content(
             modifier = Modifier.padding(start = SepMed),
             onClick = { reduce(AIAgentIntent.ExecPrompt(prompt = prompt.value)) }
         ) {
-            Text(
-                text = stringResource(R.string.request)
-            )
+            Text(text = stringResource(R.string.request))
         }
         Spacer(Modifier.height(SepMed))
         if(state.error != null) {
@@ -144,13 +143,28 @@ private fun Content(
             )
         }
         else {
-            Text(
-                text = state.response,
-                modifier = Modifier
-                    .weight(.4f)
-                    .fillMaxWidth()
-                    .padding(SepMed),
-            )
+            LazyColumn(Modifier.weight(.4f)) {
+                item {
+                    Text(
+                        text = state.response,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(SepMed),
+                    )
+                }
+                for(o in state.responseData) {
+                    item { HorizontalDivider() }
+                    item {
+                        Text("Id: ${o.id}")//TODO: Add deep link
+                        Text(stringResource(R.string.name)+" ${o.name}")
+                        Text(stringResource(R.string.distance)+" ${o.distance} m")//TODO: To km if > 1000m
+                        Text(stringResource(R.string.time)+" ${o.time}")
+                        Text(stringResource(R.string.time_ini)+" ${o.timeIni}")
+                        Text(stringResource(R.string.vo2max, o.vo2Max))
+                    }
+                }
+
+            }
         }
     }
 }

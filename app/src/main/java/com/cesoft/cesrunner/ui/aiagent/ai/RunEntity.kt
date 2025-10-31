@@ -9,6 +9,8 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 //https://docs.koog.ai/structured-output/
 @Serializable
@@ -28,7 +30,7 @@ data class RunEntity(
     @property:LLMDescription("Duration of the run, equal to timeEnd minus timeIni")
     val time: String,
     @property:LLMDescription("Vo2Max of the run, or the maximum rate of oxygen consumption attainable during physical exertion during the run, an indicator of cardiovascular fitness")
-    val vo2Max: Int,
+    val vo2Max: Double,
 //    @property:LLMDescription("Coordinates of the location")
 //    val latLon: LatLon
 ) {
@@ -41,9 +43,11 @@ data class RunEntity(
             return date.format(formatter)
         }
         fun Long.toHoursMinutes(): String {
-            val h = toString()
-            val m = ((this - toInt())*60).toString().padStart(2, '0')
-            return "${h}h ${m}m"
+            val duration = toDuration(DurationUnit.MILLISECONDS)
+            val h = duration.inWholeHours
+            val m = duration.inWholeMinutes
+            if(h > 0) return "${h}h ${m}m"
+            else return "${m}m"
         }
         fun toUi(track: TrackDto) = RunEntity(
             id = track.id,
@@ -52,7 +56,7 @@ data class RunEntity(
             timeEnd = track.timeEnd.toDate() ?: "?",
             distance = track.distance,
             time = (track.timeEnd - track.timeIni).toHoursMinutes(),
-            vo2Max = track.calcVo2Max().toInt()
+            vo2Max = track.calcVo2Max()
         )
     }
 //    @Serializable

@@ -1,51 +1,20 @@
 package com.cesoft.cesrunner.ui.aiagent.ai
 
-import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
-import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
-import com.cesoft.cesrunner.toDateStr
-import com.cesoft.cesrunner.toTimeStr
 import com.google.gson.Gson
 
-@LLMDescription("Tools for getting run information")
+//TODO: Search by lat/lng ?'
+//TODO: DeepLink to run details (Needs structured output)  + Agent Strategy ? + Agent MCP ?
+
+@LLMDescription("Tools for finding runs")
 class RunsToolSet(
     private val filterTracks: FilterTracksUC,
 ): ToolSet {
-    //TODO: Search by lat/lng ?'
-
-    //----------------------------- FILTER RUNS -------------------------------------------
-    // SERACHING FOR WITH OPTIONAL PARAMETERS DOESN'T WORK
-    /*@Tool
-    @LLMDescription("Finds a list of runs in the database that meet one or more of the parameters of the search")
-    suspend fun searchForRuns(
-//            @LLMDescription("Date and time when the run started")
-//            dateIni: String?,
-//            @LLMDescription("Date and time when the run finish")
-//            dateEnd: String?,
-//            @LLMDescription("Duration of the run")
-//            duration: String?,
-        @LLMDescription("The name of the run, how the run is called")
-        name: String?,
-        @LLMDescription("Total distance of the run in meters")
-        distance: Int?,
-    ): String {
-        val res: Result<List<TrackDto>> = filterTracks(name, distance)
-        return if (res.isSuccess) {
-            val tracks = res.getOrNull()
-            if (tracks.isNullOrEmpty()) {
-                NO_RUN
-            } else {
-                data(TrackUiDto.toUi(tracks.first()))
-            }
-        } else {
-            DB_ERR + res.exceptionOrNull()?.message
-        }
-    }*/
-
+/*
     //----------------------------- RUN NAME -------------------------------------------
     @Tool
     @LLMDescription("Finds a run in the database which name is like the parameter")
@@ -121,8 +90,7 @@ class RunsToolSet(
             DB_ERR + res.exceptionOrNull()?.message
         }
     }
-
-    //TODO: Fix Tools + DeepLink to run details + Agent Strategy ? + Agent MCP ?
+*/
 
     //NOTE: Si coges todos los registros y dejas que el LLM haga la busqueda, añades flexibilidad, pero quiza satura los tokens del LLM ¿?
     //NOTE: Error from OpenRouterLLMClient API: 402 Payment Required
@@ -130,17 +98,21 @@ class RunsToolSet(
     @Tool
     @LLMDescription("Get all the runs in the database")
     suspend fun getRuns(): String {
+    //suspend fun getRuns(): Result<List<RunEntity>> {
         val res: Result<List<TrackDto>> = filterTracks()//TODO: getAll()
         return if (res.isSuccess) {
             val tracks = res.getOrNull()
             if(tracks.isNullOrEmpty()) {
                 NO_RUN
+                //Result.failure(Throwable(NO_RUN))
             }
             else {
                 tracksToString(tracks.map { RunEntity.toUi(it) })
+                //Result.success(tracks.map { RunEntity.toUi(it) })
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
+            //Result.failure(Throwable(DB_ERR + res.exceptionOrNull()?.message))
         }
     }
 

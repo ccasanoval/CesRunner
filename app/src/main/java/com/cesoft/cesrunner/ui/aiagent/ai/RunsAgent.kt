@@ -6,20 +6,27 @@ import ai.koog.agents.core.tools.reflect.tools
 import ai.koog.agents.features.eventHandler.feature.EventHandler
 import ai.koog.agents.features.tracing.feature.Tracing
 import ai.koog.agents.features.tracing.writer.TraceFeatureMessageLogWriter
+import ai.koog.prompt.executor.clients.deepseek.DeepSeekClientSettings
+import ai.koog.prompt.executor.clients.deepseek.DeepSeekLLMClient
+import ai.koog.prompt.executor.clients.deepseek.DeepSeekModels
 import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
+import ai.koog.prompt.executor.llms.MultiLLMPromptExecutor
 import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
+import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.OllamaModels
 import com.cesoft.cesrunner.BuildConfig
+import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class RunsAgent {
-    enum class Model { GEMINI, OPENAI, OPEN_ROUTER, OLLAMA }
+    enum class Model { GEMINI, OPENAI, OPEN_ROUTER, OLLAMA, DEEPSEEK }
 
     private val _agent: AIAgent<String, String>
 
@@ -31,29 +38,16 @@ class RunsAgent {
     constructor(
         model: Model,
         filterTracks: FilterTracksUC,
+        getLocation: GetLocationUC,
+        getNearTracks: GetNearTracksUC,
         onAgentCompleted: (String) -> Unit,
         onAgentExecutionFailed: (Throwable) -> Unit,
     ) {
         val toolRegistry = ToolRegistry {
-            tools(RunsToolSet(filterTracks))
+            tools(RunsToolSet(filterTracks, getLocation, getNearTracks))
         }
         val eventHandler = RunsEventHandler.getEventHandlerConfig(
             onAgentCompleted, onAgentExecutionFailed)
-
-        /*_agent = AIAgent<String, String>(
-        //_agent = AIAgent<String, Result<List<RunEntity>>>(
-            promptExecutor = simpleGoogleAIExecutor(BuildConfig.GEMINI_KEY),
-            systemPrompt = systemPrompt,
-            llmModel = GoogleModels.Gemini2_0FlashLite,
-            installFeatures = {
-                install(EventHandler, eventHandler)
-                //install(Tracing) { addMessageProcessor(TraceFeatureMessageLogWriter(KotlinLogging.logger {})) }
-            },
-            toolRegistry = toolRegistry,
-            strategy = strategyStr,
-            temperature = 0.9,
-            //maxIterations = 5,
-        )*/
 
         _agent = when (model) {
             Model.GEMINI -> {
@@ -68,11 +62,29 @@ class RunsAgent {
                     //maxIterations = 5,
                 )
             }
+            //NOTE: DEEPSEEK = 402 Payment Required
+            Model.DEEPSEEK -> {
+                AIAgent(
+                    promptExecutor = MultiLLMPromptExecutor(
+                        DeepSeekLLMClient(
+                            apiKey = BuildConfig.DEEPSEEK_KEY,
+                            settings = DeepSeekClientSettings()
+                        )
+                    ),
+                    systemPrompt = systemPrompt,
+                    llmModel = DeepSeekModels.DeepSeekReasoner,
+                    installFeatures = { install(EventHandler, eventHandler) },
+                    toolRegistry = toolRegistry,
+                    strategy = strategyStr,
+                    temperature = 0.9,
+                    //maxIterations = 5,
+                )
+            }
             Model.OPENAI -> {
                 AIAgent(
                     promptExecutor = simpleOpenAIExecutor(BuildConfig.OPENAI_KEY),
                     systemPrompt = systemPrompt,
-                    llmModel = OpenAIModels.Chat.GPT4_1,
+                    llmModel = OpenAIModels.Chat.GPT5Nano,
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategyStr,
@@ -84,7 +96,7 @@ class RunsAgent {
                 AIAgent(
                     promptExecutor = simpleOpenRouterExecutor(BuildConfig.OPENROUTER_KEY),
                     systemPrompt = systemPrompt,
-                    llmModel = OpenRouterModels.Gemini2_5FlashLite,
+                    llmModel = OpenRouterModels.Claude3Haiku, //.Gemini2_5FlashLite,
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategyStr,

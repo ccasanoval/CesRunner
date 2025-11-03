@@ -199,8 +199,14 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
         PredefinedOptionButton("Vo2Min") {
             prompt.value = "¿Qué carrera tiene el menor vo2Max?"
         }
-        PredefinedOptionButton("Complex") {
-            prompt.value = "¿Qué carrera con nombre Canarias es la más corta?"
+        PredefinedOptionButton("Complex A") {
+            prompt.value = "Ordena las carreras por mayor Vo2Max y dame las tres primeras, gracias."
+        }
+        PredefinedOptionButton("Complex B") {
+            prompt.value = "Dame las carreras que se llaman Canarias o similar"
+        }
+        PredefinedOptionButton("Geo") {
+            prompt.value = "¿Qué carrera está cerca de aquí?"
         }
     }
 }

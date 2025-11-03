@@ -9,7 +9,9 @@ import aws.smithy.kotlin.runtime.util.length
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
+import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
 import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity
 import com.cesoft.cesrunner.ui.aiagent.ai.RunsAgent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
@@ -27,6 +29,18 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+//TODO: AGENTE DE ACCION (fuera de busquedas)
+//   En pagina principal: User dice: "Empieza una nueva carrera en 10 segundos"
+//     Y el agente cerrara la carrera actual si la hay, esperara 10 segundos y lanzara una nueva carrera...
+//   En pagina principal: User dice: "Muestra las carreras que tienen mayor vo2max"
+//     Y el agente abrira la pagina de listado de carreras con las carreras resultado
+//   En pagina principal: User dice: "Muestra las carreras que tienen mayor vo2max en mapa"
+//     Y el agente abrira la pagina de mapa con las carreras resultado
+//   En pagina principal: User dice: "Cambia la distancia minima a 2 metros"
+//     Y el agente abrira la pagina de opciones y pondra la opcion distancia a 2 metros y guardara
+//(reconocimiento de voz)
+//https://medium.com/@volodymyrpastukh99/implementing-voice-controller-in-android-application-by-using-google-speech-to-text-api-615dff546587
+// PAso 1: reconocer voz y abrir ventanas en respuesta: "Abre ventana de listado de carreras" + "Abre mapa" + "Abre configuracion" + "Abre nueva carrera"
 
 // TODO: Local LLM:
 // https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
@@ -35,6 +49,8 @@ import kotlin.coroutines.suspendCoroutine
 //TODO: Que ruta esta cerca de aqui: Tengo que hacer una herramienta de gps y que TrackUiDto devuelva una lat/lng (la ultima, por ejemplo)
 class AIAgentViewModel(
     private val filterTracks: FilterTracksUC,
+    private val getLocation: GetLocationUC,
+    private val getNearTracks: GetNearTracksUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): ViewModel(), MviHost<AIAgentIntent, State<AIAgentState, AIAgentSideEffect>> {
     private val reducer = Reducer(
@@ -73,8 +89,8 @@ class AIAgentViewModel(
             .setStrictness(Strictness.LENIENT)
             .create()
         try {
-            val myType = object : TypeToken<List<RunEntity>>() {}.type
-            return gson.fromJson<List<RunEntity>>(json, myType)
+            val typeOfT = object : TypeToken<List<RunEntity>>() {}.type
+            return gson.fromJson(json, typeOfT)
         } catch (e: Exception) {
             android.util.Log.e("AIAgentVM", "executePrompt:ok:---LIST----e: $e")
             try {
@@ -86,22 +102,35 @@ class AIAgentViewModel(
         return listOf()
     }
 
+    //TODO: https://docs.koog.ai/model-context-protocol/
+    //TODO: https://blog.kotlin-academy.com/non-graph-strategies-and-when-to-use-them-in-ai-agents-eb0cee6dba73
+
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))
         val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
             val agent = RunsAgent(
-                model = RunsAgent.Model.GEMINI,
+                model = RunsAgent.Model.GEMINI,//TODO: Gemini seems the only one working, delete the rest
                 filterTracks = filterTracks,
+                getLocation = getLocation,
+                getNearTracks = getNearTracks,
                 onAgentCompleted = { response ->
                     android.util.Log.e("AIAgentVM", "executePrompt:ok:------- $response")
                     val i = response.indexOf("json")
                     if(i >= 3) {
-                        val llm = response.substring(0, i-4)
-                        val json = response.substring(i+4, response.length-3)
-                        android.util.Log.e("AIAgentVM", "executePrompt:ok:LLM------- $llm")
-                        android.util.Log.e("AIAgentVM", "executePrompt:ok:JSON------- $json")
-                        val data = jsonToRunEntity(json)
-                        cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = llm, responseData = data))
+                        try {
+                            android.util.Log.e("AIAgentVM", "executePrompt:ok:i------- $i")
+                            val llm = response.substring(0, i-3)
+                            android.util.Log.e("AIAgentVM", "executePrompt:ok:LLM------- $llm")
+                            val json = response.substring(i + 4, response.length - 3)
+                            android.util.Log.e("AIAgentVM", "executePrompt:ok:JSON------- $json")
+                            val data = jsonToRunEntity(json)
+                            val value = AIAgentTransform.GoInit(prompt = prompt, response = llm, responseData = data)
+                            cont.resume(value)
+                        }
+                        catch (e: Exception) {
+                            val value = AIAgentTransform.GoInit(prompt = prompt, response = response)
+                            cont.resume(value)
+                        }
                     }
                     else {
                         cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = response))

@@ -4,16 +4,36 @@ import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
 import com.google.gson.Gson
 
-//TODO: Search by lat/lng ?'
+
 //TODO: Agent MCP ?
 
 @LLMDescription("Tools for finding runs")
 class RunsToolSet(
     private val filterTracks: FilterTracksUC,
+    private val getLocation: GetLocationUC,
+    private val getNearTracks: GetNearTracksUC,
 ): ToolSet {
+
+    //----------------------------- RUN LOCATION -------------------------------------------
+    @Tool
+    @LLMDescription("Finds a run in the database that is near to current location")
+    suspend fun searchNear(): String {
+        getLocation()?.let { l ->
+            val res = getNearTracks(l.latitude, l.longitude)
+            if(res.isSuccess) {
+                res.getOrNull()?.let { track ->
+                    return tracksToString(listOf(RunEntity.toUi(track)))
+                }
+            }
+            DB_ERR + res.exceptionOrNull()?.message
+        }
+        return NO_LOCATION
+    }
 
     //----------------------------- RUN NAME -------------------------------------------
     @Tool
@@ -114,6 +134,7 @@ class RunsToolSet(
 
     companion object {
         const val NO_RUN = "There is no run stored"
+        const val NO_LOCATION = "Could not fount current geo location"
         const val DB_ERR = "There was an error while searching the database. The error was "
         /*private fun trackToString(track: RunEntity): String {
             val gson = Gson()

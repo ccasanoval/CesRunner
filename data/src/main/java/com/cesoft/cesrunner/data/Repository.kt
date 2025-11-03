@@ -215,6 +215,32 @@ class Repository(
         }
     }
 
+    override suspend fun getNearTracks(lat: Double, lng: Double): Result<TrackDto> {
+        val location = Location("point A")
+        location.latitude = lat
+        location.longitude = lng
+
+        var trackId = -1L
+        var distance = 1_000_000f
+        val locationsX = db.trackPointDao().getAllLocations()
+        for(l in locationsX) {
+            val locationX = Location("point B")
+            locationX.latitude = l.latitude
+            locationX.longitude = l.longitude
+            val d = location.distanceTo(locationX)
+            if(d < distance) {
+                trackId = l.idTrack
+                distance = d
+            }
+        }
+        if(trackId > -1) {
+            db.trackDao().getById(trackId)?.let { track ->
+                return Result.success(track.toModel(listOf()))
+            }
+        }
+        return Result.failure(AppError.NotFound)
+    }
+
     companion object {
         private const val TAG = "Repo"
     }

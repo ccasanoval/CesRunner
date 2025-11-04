@@ -44,30 +44,29 @@ class Repository(
         }
     }
 
-    override suspend fun getNearTracks(lat: Double, lng: Double): Result<TrackDto> {
+    override suspend fun getNearTracks(lat: Double, lng: Double): Result<List<TrackDto>> {
         val location = Location("point A")
         location.latitude = lat
         location.longitude = lng
-
-        var trackId = -1L
-        var distance = 1_000_000f
+        val tracks = mutableListOf<LocalTrackDto>()
+        val tracksId = mutableListOf<Long>()
         val locationsX = db.trackPointDao().getAllLocations()
         for(l in locationsX) {
+            if(tracksId.contains(l.idTrack)) continue
             val locationX = Location("point B")
             locationX.latitude = l.latitude
             locationX.longitude = l.longitude
             val d = location.distanceTo(locationX)
-            if(d < distance) {
-                trackId = l.idTrack
-                distance = d
+            if(d < 100) {
+                tracksId.add(l.idTrack)
             }
         }
-        if(trackId > -1) {
+        for(trackId in tracksId) {
             db.trackDao().getById(trackId)?.let { track ->
-                return Result.success(track.toModel(listOf()))
+                tracks.add(track)
             }
         }
-        return Result.failure(AppError.NotFound)
+        return Result.success(tracks.map { it.toModel(listOf()) })
     }
 
     /// VO2MAX

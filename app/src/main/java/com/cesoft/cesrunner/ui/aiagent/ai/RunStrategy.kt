@@ -25,3 +25,16 @@ val strategyStr: AIAgentGraphStrategy<String, String> = strategy("Run finder") {
 
     edge(nodeSendToolResult forwardTo nodeExecuteTool onToolCall { true })
 }
+
+//val strategyFun = functionalStrategy<String, String> { input ->
+//    var responses = requestLLMMultiple(input)
+//    while (responses.containsToolCalls()) {
+//        val tools = extractToolCalls(responses)
+//        if (latestTokenUsage() > 100500) {
+//            compressHistory()
+//        }
+//        val results = executeMultipleTools(tools)
+//        responses = sendMultipleToolResults(results)
+//    }
+//    responses.single().asAssistantMessage().content
+//}

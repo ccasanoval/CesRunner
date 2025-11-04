@@ -41,5 +41,5 @@ interface RepositoryContract {
     suspend fun readAllTracks(): Result<List<TrackDto>>
     suspend fun deleteTrack(id: Long): Result<Unit>
     suspend fun getLastLocation(id: Long): Result<TrackPointDto>
-    suspend fun getNearTracks(lat: Double, lng: Double): Result<TrackDto>
+    suspend fun getNearTracks(lat: Double, lng: Double): Result<List<TrackDto>>
 }

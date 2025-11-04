@@ -209,7 +209,7 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
             prompt.value = "¿Qué carrera está cerca de aquí?"
         }
         PredefinedOptionButton("Geo2") {
-            prompt.value = "En que ubicación estamos y que carrera tiene una ubicación cerca de la ubicación actual?"
+            prompt.value = "Primero, ¿en que ubicación estamos? Segundo, ¿que carrera con nombre canarias está cerca de la ubicación actual?"
         }
     }
 }

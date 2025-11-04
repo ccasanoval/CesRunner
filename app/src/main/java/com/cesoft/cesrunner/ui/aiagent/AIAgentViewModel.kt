@@ -5,21 +5,18 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import aws.smithy.kotlin.runtime.util.length
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
-import com.cesoft.cesrunner.domain.usecase.ai.GetTrackLocationUC
 import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity
 import com.cesoft.cesrunner.ui.aiagent.ai.RunsAgent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentSideEffect
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentState
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentTransform
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
 import com.google.gson.reflect.TypeToken
@@ -52,7 +49,6 @@ class AIAgentViewModel(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,
     private val getNearTracks: GetNearTracksUC,
-    private val getTrackLocation: GetTrackLocationUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): ViewModel(), MviHost<AIAgentIntent, State<AIAgentState, AIAgentSideEffect>> {
     private val reducer = Reducer(
@@ -116,7 +112,6 @@ class AIAgentViewModel(
                 filterTracks = filterTracks,
                 getLocation = getLocation,
                 getNearTracks = getNearTracks,
-                getTrackLocation = getTrackLocation,
                 onAgentCompleted = { response ->
                     android.util.Log.e("AIAgentVM", "executePrompt:ok:------- $response")
                     val i = response.indexOf("json")

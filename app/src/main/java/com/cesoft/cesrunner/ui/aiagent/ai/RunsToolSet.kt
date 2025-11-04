@@ -3,50 +3,43 @@ package com.cesoft.cesrunner.ui.aiagent.ai
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
-import android.location.Location
-import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
-import com.cesoft.cesrunner.domain.usecase.ai.GetTrackLocationUC
 import com.google.gson.Gson
-
-
-//TODO: Agent MCP ?
 
 @LLMDescription("Tools for finding runs")
 class RunsToolSet(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,
     private val getNearTracks: GetNearTracksUC,
-    private val getTrackLocation: GetTrackLocationUC,
 ): ToolSet {
 
     //----------------------------- RUN LOCATION -------------------------------------------
-    //TODO: No funciona, hacer una que devuelva la localizacion actual, y que la de listado devuelva uno de los putntos...
-    /*@Tool
-    @LLMDescription("Finds a run that is near to current location, this function obtains current gps location and compares with all the runs locations")
+    @Tool
+    @LLMDescription("Finds the runs that are near to the current user location")
     suspend fun searchByLocationNear(): String {
         getLocation()?.let { l ->
-            android.util.Log.e("RunToolsSet", "searchByLocationNear---------- $l")
+            android.util.Log.e("RunToolsSet", "searchByLocationNear----------******************************************************* $l")
             val res = getNearTracks(l.latitude, l.longitude)
             if(res.isSuccess) {
                 android.util.Log.e("RunToolsSet", "searchByLocationNear---------- success")
-                res.getOrNull()?.let { track ->
-                    android.util.Log.e("RunToolsSet", "searchByLocationNear---------- $track")
-                    return tracksToString(listOf(RunEntity.toUi(track)))
+                res.getOrNull()?.let { tracks ->
+                    android.util.Log.e("RunToolsSet", "searchByLocationNear---------- ${tracks.size}")
+                    return tracksToString(tracks.map { RunEntity.toUi(it) })
                 }
             }
             DB_ERR + res.exceptionOrNull()?.message
         }
         return NO_LOCATION
-    }*/
-    @Tool
+    }
+
+    /*@Tool
     @LLMDescription("Returns current location, the latitude and longitude where the user is")
     suspend fun getCurrentLocation(): String {
         getLocation()?.let { l ->
-            android.util.Log.e("RunToolsSet", "getCurrentLocation---------- $l")
+            android.util.Log.e("RunToolsSet", "getCurrentLocation----------******************************************************** $l")
             val ll = RunEntity.Location(l.latitude, l.longitude)
             val gson = Gson()
             return gson.toJson(ll)
@@ -66,7 +59,7 @@ class RunsToolSet(
         else {
             return "The locations are close each other"
         }
-    }
+    }*/
 
     //----------------------------- RUN NAME -------------------------------------------
     @Tool
@@ -157,7 +150,7 @@ class RunsToolSet(
             }
             else {
                 val tracks = tracks.map {
-                    val l = getTrackLocation(it.id)
+                    //val l = getTrackLocation(it.id)
                     RunEntity.toUi(it)
                 }
                 tracksToString(tracks)

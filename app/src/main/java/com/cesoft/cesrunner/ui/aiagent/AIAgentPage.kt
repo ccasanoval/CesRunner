@@ -137,7 +137,7 @@ private fun Content(
                 text = state.error.message ?: "Error ?",
                 color = Color.Red,
                 modifier = Modifier
-                    .weight(.4f)
+                    .weight(.3f)
                     .fillMaxWidth()
                     .padding(SepMed),
             )
@@ -156,10 +156,10 @@ private fun Content(
                     item { HorizontalDivider() }
                     item {
                         Text("Id: ${o.id}")//TODO: Add deep link
-                        Text(stringResource(R.string.name)+" ${o.name}")
-                        Text(stringResource(R.string.distance)+" ${o.distance} m")//TODO: To km if > 1000m
-                        Text(stringResource(R.string.time)+" ${o.time}")
-                        Text(stringResource(R.string.time_ini)+" ${o.timeIni}")
+                        Text(stringResource(R.string.name)+": ${o.name}")
+                        Text(stringResource(R.string.distance)+": ${o.distance} m")//TODO: To km if > 1000m
+                        Text(stringResource(R.string.time)+": ${o.time} . Lat/Lng: ${o.location.latitude} / ${o.location.longitude}")
+                        Text(stringResource(R.string.time_ini)+": ${o.timeIni}")
                         Text(stringResource(R.string.vo2max, o.vo2Max))
                     }
                 }
@@ -207,6 +207,9 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
         }
         PredefinedOptionButton("Geo") {
             prompt.value = "¿Qué carrera está cerca de aquí?"
+        }
+        PredefinedOptionButton("Geo2") {
+            prompt.value = "En que ubicación estamos y que carrera tiene una ubicación cerca de la ubicación actual?"
         }
     }
 }

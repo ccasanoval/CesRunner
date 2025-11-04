@@ -28,6 +28,7 @@ import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetTrackLocationUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.aiagent.AIAgentViewModel
 import com.cesoft.cesrunner.ui.details.TrackDetailsViewModel
@@ -76,6 +77,7 @@ val appModule = module {
     single<SaveVo2MaxUC> { SaveVo2MaxUC(get()) }
     single<FilterTracksUC> { FilterTracksUC(get()) }
     single<GetNearTracksUC> { GetNearTracksUC(get()) }
+    single<GetTrackLocationUC> { GetTrackLocationUC(get()) }
 
     /// VIEWMODEL
     viewModel { HomeViewModel(get(), get(), get(), get(), get(), get()) }
@@ -83,7 +85,7 @@ val appModule = module {
     viewModel { TrackingViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { MapViewModel(get(), ) }
     viewModel { GnssViewModel(get()) }
-    viewModel { AIAgentViewModel(get(), get(), get()) }
+    viewModel { AIAgentViewModel(get(), get(), get(), get()) }
     viewModel { TracksViewModel(get(), get(), ) }
     viewModel { TrackDetailsViewModel(get(), get(), get(), get(), get()) }
 }

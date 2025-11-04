@@ -23,6 +23,7 @@ import com.cesoft.cesrunner.BuildConfig
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetTrackLocationUC
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class RunsAgent {
@@ -32,19 +33,25 @@ class RunsAgent {
 
     private val systemPrompt: String =
         " You are a helpful assistant that answers questions about the runs accessed by the tools." +
-                " Each run has the fields: id (identifier integer), name (as string), timeIni (start time as date), timeEnd (end time as date), distance (in meters), time (duration in hours and minutes) and vo2Max." +
-                " The tools you have return a json with a list of runs. You have to filter the runs to get the ones that fulfills the request, please after your text response, show the runs as json you have selected as the answer."
+                " Each run has the fields: id (identifier integer), name (as string)," +
+                " timeIni (start time as date), timeEnd (end time as date), distance (in meters)," +
+                " time (duration in hours and minutes), vo2Max, and " +
+                " latLng (and object containing the latitude and longitude of the run location)." +
+                " The tools you have return a json with a list of runs." +
+                " You have to filter the runs to get the ones that fulfills the request." +
+                " After your text response, show the runs as json selected as the answer."
 
     constructor(
         model: Model,
         filterTracks: FilterTracksUC,
         getLocation: GetLocationUC,
         getNearTracks: GetNearTracksUC,
+        getTrackLocation: GetTrackLocationUC,
         onAgentCompleted: (String) -> Unit,
         onAgentExecutionFailed: (Throwable) -> Unit,
     ) {
         val toolRegistry = ToolRegistry {
-            tools(RunsToolSet(filterTracks, getLocation, getNearTracks))
+            tools(RunsToolSet(filterTracks, getLocation, getNearTracks, getTrackLocation))
         }
         val eventHandler = RunsEventHandler.getEventHandlerConfig(
             onAgentCompleted, onAgentExecutionFailed)

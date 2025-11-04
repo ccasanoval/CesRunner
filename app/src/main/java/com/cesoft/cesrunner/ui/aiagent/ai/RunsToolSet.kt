@@ -3,10 +3,13 @@ package com.cesoft.cesrunner.ui.aiagent.ai
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
+import android.location.Location
+import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetTrackLocationUC
 import com.google.gson.Gson
 
 
@@ -17,27 +20,57 @@ class RunsToolSet(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,
     private val getNearTracks: GetNearTracksUC,
+    private val getTrackLocation: GetTrackLocationUC,
 ): ToolSet {
 
     //----------------------------- RUN LOCATION -------------------------------------------
-    @Tool
-    @LLMDescription("Finds a run in the database that is near to current location")
-    suspend fun searchNear(): String {
+    //TODO: No funciona, hacer una que devuelva la localizacion actual, y que la de listado devuelva uno de los putntos...
+    /*@Tool
+    @LLMDescription("Finds a run that is near to current location, this function obtains current gps location and compares with all the runs locations")
+    suspend fun searchByLocationNear(): String {
         getLocation()?.let { l ->
+            android.util.Log.e("RunToolsSet", "searchByLocationNear---------- $l")
             val res = getNearTracks(l.latitude, l.longitude)
             if(res.isSuccess) {
+                android.util.Log.e("RunToolsSet", "searchByLocationNear---------- success")
                 res.getOrNull()?.let { track ->
+                    android.util.Log.e("RunToolsSet", "searchByLocationNear---------- $track")
                     return tracksToString(listOf(RunEntity.toUi(track)))
                 }
             }
             DB_ERR + res.exceptionOrNull()?.message
         }
         return NO_LOCATION
+    }*/
+    @Tool
+    @LLMDescription("Returns current location, the latitude and longitude where the user is")
+    suspend fun getCurrentLocation(): String {
+        getLocation()?.let { l ->
+            android.util.Log.e("RunToolsSet", "getCurrentLocation---------- $l")
+            val ll = RunEntity.Location(l.latitude, l.longitude)
+            val gson = Gson()
+            return gson.toJson(ll)
+            //return "${l.latitude}, ${l.longitude}"
+        }
+        return NO_LOCATION
+    }
+
+    @Tool
+    @LLMDescription("Check if two locations are near each other or not")
+    suspend fun isNear(locationA: RunEntity.Location, locationB: RunEntity.Location): String {
+        val lA = LocationDto(locationA.latitude, locationA.longitude)
+        val lB = LocationDto(locationB.latitude, locationB.longitude)
+        if(lA.distanceTo(lB) > 100) {
+            return "The locations are far from each other"
+        }
+        else {
+            return "The locations are close each other"
+        }
     }
 
     //----------------------------- RUN NAME -------------------------------------------
     @Tool
-    @LLMDescription("Finds a run in the database which name is like the parameter")
+    @LLMDescription("Finds a run which name is like the parameter")
     suspend fun searchByName(
         @LLMDescription("The name of the run, how the run is called")
         name: String?,
@@ -57,7 +90,7 @@ class RunsToolSet(
 
     //----------------------------- LONGEST/SHORTEST RUN -------------------------------------------
     @Tool
-    @LLMDescription("Get the longest or the shortest run in the database")//, get the run with maximum distance in the database
+    @LLMDescription("Get the longest or the shortest run")//, get the run with maximum distance in the database
     suspend fun getLongestOrShorterRun(
         @LLMDescription("When true, get the longest run, when false, get the shortest run")
         theLongest: Boolean = true,
@@ -85,7 +118,7 @@ class RunsToolSet(
 
     //----------------------------- HIGHEST/LOWER VO2MAX RUN -------------------------------------------
     @Tool
-    @LLMDescription("Get the highest or the lower vo2max run in the database")
+    @LLMDescription("Get the highest or the lower vo2max run")
     suspend fun getBiggerLowestVo2MaxRun(
         @LLMDescription("When true, get the biggest vo2max run, when false, get the smaller vo2max run")
         theBiggest: Boolean = true,
@@ -112,7 +145,7 @@ class RunsToolSet(
     }
 
     @Tool
-    @LLMDescription("Get all the runs in the database")
+    @LLMDescription("Get all the runs and all their data to compare fields")
     suspend fun getRuns(): String {
     //suspend fun getRuns(): Result<List<RunEntity>> {
         val res: Result<List<TrackDto>> = filterTracks()//TODO: getAll()
@@ -123,7 +156,11 @@ class RunsToolSet(
                 //Result.failure(Throwable(NO_RUN))
             }
             else {
-                tracksToString(tracks.map { RunEntity.toUi(it) })
+                val tracks = tracks.map {
+                    val l = getTrackLocation(it.id)
+                    RunEntity.toUi(it)
+                }
+                tracksToString(tracks)
                 //Result.success(tracks.map { RunEntity.toUi(it) })
             }
         } else {

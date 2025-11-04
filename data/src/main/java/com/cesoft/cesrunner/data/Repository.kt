@@ -31,11 +31,43 @@ class Repository(
             android.util.Log.e(TAG, "filterTracks------- name=$name & distance=$distance")
             val tracks: List<LocalTrackDto>? = db.trackDao().filter(name, distance)
             return if(tracks.isNullOrEmpty()) Result.failure(AppError.NotFound)
-            else Result.success(tracks.map { it.toModel(listOf()) })
+            else {
+                val value = tracks.map {
+                    val points = db.trackPointDao().getByTrackId(it.id)
+                    it.toModel(points)
+                }
+                Result.success(value)
+            }
         }
         catch(e: Throwable) {
             return Result.failure(e)
         }
+    }
+
+    override suspend fun getNearTracks(lat: Double, lng: Double): Result<TrackDto> {
+        val location = Location("point A")
+        location.latitude = lat
+        location.longitude = lng
+
+        var trackId = -1L
+        var distance = 1_000_000f
+        val locationsX = db.trackPointDao().getAllLocations()
+        for(l in locationsX) {
+            val locationX = Location("point B")
+            locationX.latitude = l.latitude
+            locationX.longitude = l.longitude
+            val d = location.distanceTo(locationX)
+            if(d < distance) {
+                trackId = l.idTrack
+                distance = d
+            }
+        }
+        if(trackId > -1) {
+            db.trackDao().getById(trackId)?.let { track ->
+                return Result.success(track.toModel(listOf()))
+            }
+        }
+        return Result.failure(AppError.NotFound)
     }
 
     /// VO2MAX
@@ -58,10 +90,10 @@ class Repository(
     }
     override suspend fun saveVo2Max(value: Double): Result<Unit> {
         val vo2Max = readVo2Max()
-        if(value > vo2Max)
-            return PrefDataSource(context).saveVo2Max(value)
+        return if(value > vo2Max)
+            PrefDataSource(context).saveVo2Max(value)
         else
-            return Result.failure(AppError.NotFound)
+            Result.failure(AppError.NotFound)
     }
 
     /// PREFS
@@ -213,32 +245,6 @@ class Repository(
         catch(e: Throwable) {
             return Result.failure(e)
         }
-    }
-
-    override suspend fun getNearTracks(lat: Double, lng: Double): Result<TrackDto> {
-        val location = Location("point A")
-        location.latitude = lat
-        location.longitude = lng
-
-        var trackId = -1L
-        var distance = 1_000_000f
-        val locationsX = db.trackPointDao().getAllLocations()
-        for(l in locationsX) {
-            val locationX = Location("point B")
-            locationX.latitude = l.latitude
-            locationX.longitude = l.longitude
-            val d = location.distanceTo(locationX)
-            if(d < distance) {
-                trackId = l.idTrack
-                distance = d
-            }
-        }
-        if(trackId > -1) {
-            db.trackDao().getById(trackId)?.let { track ->
-                return Result.success(track.toModel(listOf()))
-            }
-        }
-        return Result.failure(AppError.NotFound)
     }
 
     companion object {

@@ -12,6 +12,7 @@ import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetTrackLocationUC
 import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity
 import com.cesoft.cesrunner.ui.aiagent.ai.RunsAgent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
@@ -51,6 +52,7 @@ class AIAgentViewModel(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,
     private val getNearTracks: GetNearTracksUC,
+    private val getTrackLocation: GetTrackLocationUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): ViewModel(), MviHost<AIAgentIntent, State<AIAgentState, AIAgentSideEffect>> {
     private val reducer = Reducer(
@@ -104,15 +106,17 @@ class AIAgentViewModel(
 
     //TODO: https://docs.koog.ai/model-context-protocol/
     //TODO: https://blog.kotlin-academy.com/non-graph-strategies-and-when-to-use-them-in-ai-agents-eb0cee6dba73
+    //TODO: Si encuentras un LLM no limitado que no funcione con Koog, hacer interfaz http para acceder igual...
 
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))
         val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
             val agent = RunsAgent(
-                model = RunsAgent.Model.GEMINI,//TODO: Gemini seems the only one working, delete the rest
+                model = RunsAgent.Model.GEMINI,//TODO: Gemini seems the only one working, delete the rest?
                 filterTracks = filterTracks,
                 getLocation = getLocation,
                 getNearTracks = getNearTracks,
+                getTrackLocation = getTrackLocation,
                 onAgentCompleted = { response ->
                     android.util.Log.e("AIAgentVM", "executePrompt:ok:------- $response")
                     val i = response.indexOf("json")

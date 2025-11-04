@@ -2,7 +2,8 @@ package com.cesoft.cesrunner.ui.aiagent.ai
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import com.cesoft.cesrunner.domain.entity.TrackDto
-//import com.cesoft.cesrunner.domain.entity.TrackUiDto
+import com.cesoft.cesrunner.domain.entity.TrackPointDto
+import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity.Location.Companion.toLocation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
@@ -31,8 +32,8 @@ data class RunEntity(
     val time: String,
     @property:LLMDescription("Vo2Max of the run, or the maximum rate of oxygen consumption attainable during physical exertion during the run, an indicator of cardiovascular fitness")
     val vo2Max: Double,
-//    @property:LLMDescription("Coordinates of the location")
-//    val latLon: LatLon
+    @property:LLMDescription("Coordinates of the location")
+    val location: Location
 ) {
     companion object {
         fun Long.toDate(showTime: Boolean = true): String? {
@@ -56,15 +57,21 @@ data class RunEntity(
             timeEnd = track.timeEnd.toDate() ?: "?",
             distance = track.distance,
             time = (track.timeEnd - track.timeIni).toHoursMinutes(),
-            vo2Max = track.calcVo2Max()
+            vo2Max = track.calcVo2Max(),
+            location = track.points.firstOrNull()?.toLocation() ?: Location.Empty
         )
     }
-//    @Serializable
-//    @SerialName("LatLon")
-//    data class LatLon(
-//        @property:LLMDescription("Latitude of the run")
-//        val lat: Double,
-//        @property:LLMDescription("Longitude of the run")
-//        val lon: Double
-//    )
+    @Serializable
+    @SerialName("Location")
+    data class Location(
+        @property:LLMDescription("Latitude of the run")
+        val latitude: Double,
+        @property:LLMDescription("Longitude of the run")
+        val longitude: Double
+    ) {
+        companion object {
+            fun TrackPointDto.toLocation() = Location(latitude, longitude)
+            val Empty = Location(0.0, 0.0)
+        }
+    }
 }

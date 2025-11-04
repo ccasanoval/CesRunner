@@ -7,4 +7,7 @@ sealed class AIAgentIntent: Intent {
     data class ExecPrompt(
         val prompt: String
     ): AIAgentIntent()
+    data class GoToTrack(
+        val idTrack: Long
+    ): AIAgentIntent()
 }

@@ -1,8 +1,8 @@
 package com.cesoft.cesrunner.ui.aiagent
 
 import ai.koog.agents.core.feature.model.toAgentError
-import ai.koog.prompt.dsl.prompt
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -30,8 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,10 +41,8 @@ import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentSideEffect
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentState
-import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
-import kotlinx.serialization.descriptors.SerialDescriptor
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -54,14 +50,12 @@ fun AIAgentPage(
     navController: NavController,
     viewModel: AIAgentViewModel = koinViewModel(),
 ) {
-    val context = LocalContext.current
     MviScreen(
         state = viewModel.state,
         onSideEffect = { sideEffect: AIAgentSideEffect ->
             viewModel.consumeSideEffect(
                 sideEffect = sideEffect,
-                navController = navController,
-                context = context
+                navController = navController
             )
         },
         onBackPressed = {
@@ -69,13 +63,7 @@ fun AIAgentPage(
         },
     ) { state: AIAgentState ->
         when(state) {
-//            is AIAgentState.Loading -> {
-//                android.util.Log.e("AIAgentPage", "AIAgentState.Loading---------------------")
-//                //TODO: Mostrar el content pero deshabilitado y con el sppiner...
-//                LoadingCompo()
-//            }
             is AIAgentState.Init -> {
-                android.util.Log.e("AIAgentPage", "AIAgentState.Init---------------------$state")
                 Content(state = state, reduce = viewModel::execute)
             }
         }
@@ -155,7 +143,12 @@ private fun Content(
                 for(o in state.responseData) {
                     item { HorizontalDivider() }
                     item {
-                        Text("Id: ${o.id}")//TODO: Add deep link
+                        Text(
+                            text = "Id: ${o.id}",
+                            modifier = Modifier.clickable {
+                                reduce(AIAgentIntent.GoToTrack(idTrack = o.id))
+                            }
+                        )
                         Text(stringResource(R.string.name)+": ${o.name}")
                         Text(stringResource(R.string.distance)+": ${o.distance} m")//TODO: To km if > 1000m
                         Text(stringResource(R.string.time)+": ${o.time} . Lat/Lng: ${o.location.latitude} / ${o.location.longitude}")

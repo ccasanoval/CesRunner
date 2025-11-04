@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
+import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
@@ -44,7 +45,6 @@ import kotlin.coroutines.suspendCoroutine
 // https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
 //TODO: MCP...
 //TODO: Desde UI pude elegir que LLM usar: OpenAI, Gemini, ...
-//TODO: Que ruta esta cerca de aqui: Tengo que hacer una herramienta de gps y que TrackUiDto devuelva una lat/lng (la ultima, por ejemplo)
 class AIAgentViewModel(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,
@@ -66,15 +66,20 @@ class AIAgentViewModel(
         when(intent) {
             AIAgentIntent.Back -> executeBack()
             is AIAgentIntent.ExecPrompt -> executePrompt(intent.prompt)
+            is AIAgentIntent.GoToTrack -> executeGoToTrack(intent.idTrack)
         }
 
     fun consumeSideEffect(
         sideEffect: AIAgentSideEffect,
         navController: NavController,
-        context: Context,
     ) {
         when(sideEffect) {
-            AIAgentSideEffect.Back -> { navController.popBackStack() }
+            AIAgentSideEffect.Back -> {
+                navController.popBackStack()
+            }
+            is AIAgentSideEffect.GoToTrack -> {
+                navController.navigate(Page.TrackDetail.createRoute(sideEffect.id))
+            }
         }
     }
 
@@ -100,9 +105,9 @@ class AIAgentViewModel(
         return listOf()
     }
 
-    //TODO: https://docs.koog.ai/model-context-protocol/
-    //TODO: https://blog.kotlin-academy.com/non-graph-strategies-and-when-to-use-them-in-ai-agents-eb0cee6dba73
-    //TODO: Si encuentras un LLM no limitado que no funcione con Koog, hacer interfaz http para acceder igual...
+    private fun executeGoToTrack(id: Long) = flow {
+        emit(AIAgentTransform.AddSideEffect(AIAgentSideEffect.GoToTrack(id)))
+    }
 
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))

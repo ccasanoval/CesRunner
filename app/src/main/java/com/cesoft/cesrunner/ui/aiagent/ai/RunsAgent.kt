@@ -29,7 +29,6 @@ class RunsAgent {
     private val systemPrompt: String =
         " You are a helpful assistant that answers questions about the user runs. " +
         " You can access the runs with some tools you can call." +
-        //" A tool called getCurrentLocation let you get the user current location." +
         " A tool called searchByLocationNear let you get the runs near the current location." +
         " One tool lets you list all the runs with their fields, so you can filter by the fields. " +
         " Each tool returns a json with the values requested." +

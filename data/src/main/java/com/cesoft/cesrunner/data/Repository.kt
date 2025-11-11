@@ -44,7 +44,10 @@ class Repository(
         }
     }
 
-    override suspend fun getNearTracks(lat: Double, lng: Double): Result<List<TrackDto>> {
+    override suspend fun getNearTracks(
+        lat: Double, lng: Double,
+        distanceMax: Int
+    ): Result<List<TrackDto>> {
         val location = Location("point A")
         location.latitude = lat
         location.longitude = lng
@@ -57,7 +60,7 @@ class Repository(
             locationX.latitude = l.latitude
             locationX.longitude = l.longitude
             val d = location.distanceTo(locationX)
-            if(d < 100) {
+            if(d < distanceMax) {
                 tracksId.add(l.idTrack)
             }
         }

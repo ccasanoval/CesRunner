@@ -43,6 +43,7 @@ import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentSideEffect
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentState
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
+import com.cesoft.cesrunner.ui.theme.fontBig
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -145,6 +146,8 @@ private fun Content(
                     item {
                         Text(
                             text = "Id: ${o.id}",
+                            color = Color.Blue,
+                            fontSize = fontBig,
                             modifier = Modifier.clickable {
                                 reduce(AIAgentIntent.GoToTrack(idTrack = o.id))
                             }
@@ -202,7 +205,10 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
             prompt.value = "¿Qué carrera está cerca de aquí?"
         }
         PredefinedOptionButton("Geo2") {
-            prompt.value = "Primero, ¿en que ubicación estamos? Segundo, ¿que carrera con nombre canarias está cerca de la ubicación actual?"
+            prompt.value = "¿Que carrera con nombre canarias está cerca de la ubicación actual?"
+        }
+        PredefinedOptionButton("Geo3") {
+            prompt.value = "Muestra carreras a menos de 50 metros de la ubicación actual"
         }
     }
 }

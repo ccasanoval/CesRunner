@@ -18,11 +18,15 @@ class RunsToolSet(
 
     //----------------------------- RUN LOCATION -------------------------------------------
     @Tool
-    @LLMDescription("Finds the runs that are near to the current user location")
-    suspend fun searchByLocationNear(): String {
+    @LLMDescription("Finds the runs that are near to the current user location," +
+            " optional parameter distanceMax can be used to calculate maximum distance from current location, do not misunderstand with the run distance field")
+    suspend fun searchByLocationNear(
+        @LLMDescription("Maximum distance of the run from the current location in meters")
+        distanceMax: Int?,
+    ): String {
         getLocation()?.let { l ->
-            android.util.Log.e("RunToolsSet", "searchByLocationNear----------******************************************************* $l")
-            val res = getNearTracks(l.latitude, l.longitude)
+            android.util.Log.e("RunToolsSet", "searchByLocationNear----------******************************************************* $l : $distanceMax")
+            val res = getNearTracks(l.latitude, l.longitude, distanceMax)
             if(res.isSuccess) {
                 android.util.Log.e("RunToolsSet", "searchByLocationNear---------- success")
                 res.getOrNull()?.let { tracks ->

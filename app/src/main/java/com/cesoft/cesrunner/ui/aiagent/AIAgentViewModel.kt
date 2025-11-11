@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.ui.aiagent
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,8 +42,12 @@ import kotlin.coroutines.suspendCoroutine
 
 // TODO: Local LLM:
 // https://vivekparasharr.medium.com/how-i-ran-a-local-llm-on-my-android-phone-and-what-i-learned-about-googles-ai-edge-gallery-807572211562
-//TODO: MCP...
 //TODO: Desde UI pude elegir que LLM usar: OpenAI, Gemini, ...
+//TODO:NON-GRAPH: https://medium.com/kotlin-academy/non-graph-strategies-and-when-to-use-them-in-ai-agents-eb0cee6dba73
+//TODO: Gemini Nano local LLM => Only for devices with big memory and cpu
+
+//TODO: Hacer un agente igual que el que tenemos con koog, pero con groq en http... Tiene limites superiores...
+
 class AIAgentViewModel(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,

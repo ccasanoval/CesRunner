@@ -33,7 +33,7 @@ class RunsAgent {
         " One tool lets you list all the runs with their fields, so you can filter by the fields. " +
         " Each tool returns a json with the values requested." +
         " Each run has the fields: id (an identifier), name (the run name or title)," +
-            " timeIni (start time as date), timeEnd (end time as date), distance (in meters)," +
+            " timeIni (start time as date), timeEnd (end time as date), distance (of the run, in meters)," +
             " time (duration in hours and minutes), vo2Max (a value related to fitness), and " +
             " location (and object containing the latitude and longitude of the run)." +
         " After your text response, show the runs as json selected as the answer." +
@@ -54,6 +54,8 @@ class RunsAgent {
         val eventHandler = RunsEventHandler.getEventHandlerConfig(
             onAgentCompleted, onAgentExecutionFailed)
 
+        val temperature = 0.2
+        val maxIterations = 10
         val strategy = strategyStr
 
         _agent = when (model) {
@@ -65,7 +67,7 @@ class RunsAgent {
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
-                    temperature = 0.9,
+                    temperature = temperature,
                     //maxIterations = 5,
                 )
             }
@@ -83,7 +85,7 @@ class RunsAgent {
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
-                    temperature = 0.9,
+                    temperature = temperature,
                     //maxIterations = 5,
                 )
             }
@@ -95,7 +97,7 @@ class RunsAgent {
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
-                    temperature = 0.9,
+                    temperature = temperature,
                     //maxIterations = 5,
                 )
             }
@@ -107,7 +109,7 @@ class RunsAgent {
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
-                    temperature = 0.9,
+                    temperature = temperature,
                     //maxIterations = 5,
                 )
             }
@@ -119,7 +121,7 @@ class RunsAgent {
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
-                    temperature = 0.9,
+                    temperature = temperature,
                     //maxIterations = 5,
                 )
             }

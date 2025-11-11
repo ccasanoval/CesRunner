@@ -31,6 +31,8 @@ data class LocalTrackDto(
         points = points.map { it.toModel() }
     )
 
+    val vo2Max: Double
+        get() = calcVo2Max()
     fun calcVo2Max(): Double {
         return TrackDto.calcVo2Max(timeEnd, timeIni, distance)
     }

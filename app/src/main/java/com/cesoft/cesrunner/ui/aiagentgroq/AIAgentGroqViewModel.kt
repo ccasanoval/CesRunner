@@ -1,0 +1,88 @@
+package com.cesoft.cesrunner.ui.aiagentgroq
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import com.adidas.mvi.MviHost
+import com.adidas.mvi.State
+import com.adidas.mvi.reducer.Reducer
+import com.cesoft.cesrunner.Page
+import com.cesoft.cesrunner.domain.usecase.GetLocationUC
+import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
+import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
+import com.cesoft.cesrunner.domain.usecase.groq.AskGroqUC
+import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity
+import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqIntent
+import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqSideEffect
+import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqState
+import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqTransform
+import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+
+class AIAgentGroqViewModel(
+    private val filterTracks: FilterTracksUC,
+    private val getLocation: GetLocationUC,
+    private val getNearTracks: GetNearTracksUC,
+    private val askGroq: AskGroqUC,
+    coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
+): ViewModel(), MviHost<AIAgentGroqIntent, State<AIAgentGroqState, AIAgentGroqSideEffect>> {
+    private val reducer = Reducer(
+        coroutineScope = viewModelScope,
+        defaultDispatcher = coroutineDispatcher,
+        initialInnerState = AIAgentGroqState.Init(),
+        logger = null,
+        intentExecutor = this::executeIntent
+    )
+    override val state = reducer.state
+    override fun execute(intent: AIAgentGroqIntent) {
+        reducer.executeIntent(intent)
+    }
+    private fun executeIntent(intent: AIAgentGroqIntent) =
+        when(intent) {
+            AIAgentGroqIntent.Back -> executeBack()
+            is AIAgentGroqIntent.ExecPrompt -> executePrompt(intent.prompt)
+            is AIAgentGroqIntent.GoToTrack -> executeGoToTrack(intent.idTrack)
+        }
+
+    fun consumeSideEffect(
+        sideEffect: AIAgentGroqSideEffect,
+        navController: NavController,
+    ) {
+        when(sideEffect) {
+            AIAgentGroqSideEffect.Back -> {
+                navController.popBackStack()
+            }
+            is AIAgentGroqSideEffect.GoToTrack -> {
+                navController.navigate(Page.TrackDetail.createRoute(sideEffect.id))
+            }
+        }
+    }
+
+    private fun executeBack(): Flow<AIAgentGroqTransform.AddSideEffect> = flow {
+        emit(AIAgentGroqTransform.AddSideEffect(AIAgentGroqSideEffect.Back))
+    }
+
+    private fun executeGoToTrack(id: Long):Flow<AIAgentGroqTransform.AddSideEffect> = flow {
+        emit(AIAgentGroqTransform.AddSideEffect(AIAgentGroqSideEffect.GoToTrack(id)))
+    }
+
+    private fun executePrompt(prompt: String): Flow<AIAgentGroqTransform.GoInit> = flow {
+        emit(AIAgentGroqTransform.GoInit(prompt = prompt, loading = true))
+
+        val answer = askGroq(prompt)
+        android.util.Log.e("AIAgentVM", "executePrompt:askGroq:------- ${answer.isSuccess} / ${answer.getOrNull()}")
+
+        if(answer.isSuccess) {
+            emit(AIAgentGroqTransform.GoInit(prompt = prompt, response = answer.getOrNull() ?: ""))
+        }
+        else {
+            emit(AIAgentGroqTransform.GoInit(prompt = prompt, response = "", error = answer.exceptionOrNull()))
+        }
+    }
+
+}

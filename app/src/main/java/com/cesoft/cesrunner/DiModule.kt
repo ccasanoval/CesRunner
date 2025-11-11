@@ -2,6 +2,7 @@ package com.cesoft.cesrunner
 
 import androidx.room.Room
 import com.cesoft.cesrunner.data.Repository
+import com.cesoft.cesrunner.data.groq.Groq
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
@@ -28,8 +29,10 @@ import com.cesoft.cesrunner.domain.usecase.StopLocationUpdatesUC
 import com.cesoft.cesrunner.domain.usecase.UpdateTrackUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
+import com.cesoft.cesrunner.domain.usecase.groq.AskGroqUC
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.aiagent.AIAgentViewModel
+import com.cesoft.cesrunner.ui.aiagentgroq.AIAgentGroqViewModel
 import com.cesoft.cesrunner.ui.details.TrackDetailsViewModel
 import com.cesoft.cesrunner.ui.gnss.GnssViewModel
 import com.cesoft.cesrunner.ui.home.HomeViewModel
@@ -45,8 +48,9 @@ import org.koin.dsl.module
 val appModule = module {
     /// CORE
     single<CoroutineDispatcher> { Dispatchers.Default }
+    single<Groq> { Groq(get()) }
     single<LocationDataSource> { LocationDataSource(get()) }
-    single<RepositoryContract> { Repository(get(), get(), get()) }
+    single<RepositoryContract> { Repository(get(), get(), get(), get()) }
     single<TrackingServiceFac> { TrackingServiceFac(get()) }
     single<AppDatabase> {
         Room.databaseBuilder(get(), AppDatabase::class.java, "CesRunner").build()
@@ -77,6 +81,8 @@ val appModule = module {
     single<FilterTracksUC> { FilterTracksUC(get()) }
     single<GetNearTracksUC> { GetNearTracksUC(get()) }
     //single<GetTrackLocationUC> { GetTrackLocationUC(get()) }
+    //
+    single<AskGroqUC> { AskGroqUC(get()) }
 
     /// VIEWMODEL
     viewModel { HomeViewModel(get(), get(), get(), get(), get(), get()) }
@@ -85,6 +91,7 @@ val appModule = module {
     viewModel { MapViewModel(get()) }
     viewModel { GnssViewModel(get()) }
     viewModel { AIAgentViewModel(get(), get(), get()) }
+    viewModel { AIAgentGroqViewModel(get(), get(), get(), get()) }
     viewModel { TracksViewModel(get(), get()) }
     viewModel { TrackDetailsViewModel(get(), get(), get(), get(), get()) }
 }

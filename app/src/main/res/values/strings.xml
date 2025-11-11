@@ -41,6 +41,7 @@
     <string name="points">Puntos</string>
     <string name="name">Nombre</string>
     <string name="prompt" translatable="false">Prompt</string>
+    <string name="prompt_groq" translatable="false">Groq Prompt</string>
 
     <string name="voice_on">Voz activa</string>
     <string name="min_activate_location">Mínimo cambio para obtener una nueva ubicación:</string>
@@ -54,6 +55,7 @@
 
     <!-- MAIN MENU -->
     <string name="menu_ai_agent">Agente de IA</string>
+    <string name="menu_ai_agent_groq">Agente Groq</string>
     <string name="menu_settings">Opciones</string>
     <string name="menu_start">¡Comenzar carrera!</string>
     <string name="menu_check">¡Ver carrera!</string>

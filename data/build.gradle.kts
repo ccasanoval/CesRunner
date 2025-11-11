@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -13,6 +15,13 @@ android {
         minSdk = rootProject.extra.get("minSdkVer") as Int
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        android.buildFeatures.buildConfig = true
+        val keystoreFile = project.rootProject.file("local.properties")
+        val properties = Properties()
+        properties.load(keystoreFile.inputStream())
+        var key = properties.getProperty("GROQ_KEY") ?: ""
+        buildConfigField(type = "String", name = "GROQ_KEY", value = key)
     }
 
     buildTypes {
@@ -59,4 +68,12 @@ dependencies {
 //    implementation(libs.hilt.android)
 //    implementation(libs.androidx.hilt.navigation.compose)
 //    annotationProcessor(libs.hilt.compiler)
+
+    // AI Agent - Groq
+    implementation("io.github.vyfor:groq-kt:0.1.2")
+    implementation("io.ktor:ktor-client-android:3.3.2")
+    //implementation("io.ktor:ktor-client-okhttp:3.3.2")
+    // JSON
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }

@@ -2,6 +2,7 @@ package com.cesoft.cesrunner.data
 
 import android.content.Context
 import android.location.Location
+import com.cesoft.cesrunner.data.groq.Groq
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
 import com.cesoft.cesrunner.data.local.entity.LocalTrackPointDto
@@ -23,14 +24,20 @@ class Repository(
     private val context: Context,
     private val locationDataSource: LocationDataSource,
     private val db: AppDatabase,
+    private val groq: Groq
 ): RepositoryContract {
 
-    /// AI AGENT
+    /// AI AGENT : GROQ
+    override suspend fun askGroq(prompt: String): Result<String> {
+        return groq.chat(prompt)
+    }
+
+    /// AI AGENT : KOOG
     override suspend fun filterTracks(name: String?, distance: Int?): Result<List<TrackDto>> {
         try {
             android.util.Log.e(TAG, "filterTracks------- name=$name & distance=$distance")
-            val tracks: List<LocalTrackDto>? = db.trackDao().filter(name, distance)
-            return if(tracks.isNullOrEmpty()) Result.failure(AppError.NotFound)
+            val tracks: List<LocalTrackDto> = db.trackDao().filter(name, distance)
+            return if(tracks.isEmpty()) Result.failure(AppError.NotFound)
             else {
                 val value = tracks.map {
                     val points = db.trackPointDao().getByTrackId(it.id)

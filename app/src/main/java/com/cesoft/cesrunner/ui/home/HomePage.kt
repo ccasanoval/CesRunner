@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -130,7 +131,7 @@ private fun HomeButton(
     @StringRes title: Int,
     icon: Int,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
@@ -138,8 +139,7 @@ private fun HomeButton(
     ) {
         Image(
             painter = painterResource(icon),
-            contentDescription = null,
-            modifier = Modifier
+            contentDescription = null
         )
         Text(
             text = stringResource(title),
@@ -181,6 +181,12 @@ private fun ActionsCompo(state: HomeState.Init, reduce: (intent: HomeIntent) -> 
         icon = R.mipmap.ic_ai_agent,
         modifier = modifier,
         onClick = { reduce(HomeIntent.GoAIAgent) }
+    )
+    HomeButton(
+        title = R.string.menu_ai_agent_groq,
+        icon = R.mipmap.ic_ai_agent,
+        modifier = modifier,
+        onClick = { reduce(HomeIntent.GoAIAgentGroq) }
     )
     HomeButton(
         title = R.string.menu_settings,

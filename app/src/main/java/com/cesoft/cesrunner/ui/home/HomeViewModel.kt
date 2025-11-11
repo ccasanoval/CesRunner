@@ -79,6 +79,7 @@ class HomeViewModel(
             HomeIntent.GoTracks -> executeTracks()
             HomeIntent.GoGnss -> executeGnss()
             HomeIntent.GoAIAgent -> executeAIAgent()
+            HomeIntent.GoAIAgentGroq -> executeAIAgentGroq()
         }
     fun consumeSideEffect(
         sideEffect: HomeSideEffect,
@@ -92,6 +93,7 @@ class HomeViewModel(
             HomeSideEffect.GoMap -> { navController.navigate(Page.Map.route) }
             HomeSideEffect.GoGnss -> { navController.navigate(Page.Gnss.route) }
             HomeSideEffect.GoAIAgent -> { navController.navigate(Page.AIAgent.route) }
+            HomeSideEffect.GoAIAgentGroq -> { navController.navigate(Page.AIAgentGroq.route) }
             HomeSideEffect.Close -> { (context as Activity).finish() }
         }
     }
@@ -169,7 +171,12 @@ class HomeViewModel(
 
     private fun executeAIAgent() = flow {
         emit(HomeTransform.AddSideEffect(HomeSideEffect.GoAIAgent))
-        delay(1000L)
+        delay(200L)
+        emit(HomeTransform.GoLoading)
+    }
+    private fun executeAIAgentGroq() = flow {
+        emit(HomeTransform.AddSideEffect(HomeSideEffect.GoAIAgentGroq))
+        delay(200L)
         emit(HomeTransform.GoLoading)
     }
 

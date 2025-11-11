@@ -1,8 +1,6 @@
-package com.cesoft.cesrunner.ui.aiagent
+package com.cesoft.cesrunner.ui.aiagentgroq
 
 import ai.koog.agents.core.feature.model.toAgentError
-import android.content.Context.INPUT_METHOD_SERVICE
-import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -32,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,32 +40,34 @@ import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
-import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentSideEffect
-import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentState
+import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqIntent
+import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqSideEffect
+import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqState
 import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fontBig
 import org.koin.androidx.compose.koinViewModel
+import kotlin.text.firstOrNull
 
 @Composable
-fun AIAgentPage(
+fun AIAgentGroqPage(
     navController: NavController,
-    viewModel: AIAgentViewModel = koinViewModel(),
+    viewModel: AIAgentGroqViewModel = koinViewModel(),
 ) {
     MviScreen(
         state = viewModel.state,
-        onSideEffect = { sideEffect: AIAgentSideEffect ->
+        onSideEffect = { sideEffect: AIAgentGroqSideEffect ->
             viewModel.consumeSideEffect(
                 sideEffect = sideEffect,
                 navController = navController
             )
         },
         onBackPressed = {
-            viewModel.execute(AIAgentIntent.Back)
+            viewModel.execute(AIAgentGroqIntent.Back)
         },
-    ) { state: AIAgentState ->
+    ) { state: AIAgentGroqState ->
         when(state) {
-            is AIAgentState.Init -> {
+            is AIAgentGroqState.Init -> {
                 Content(state = state, reduce = viewModel::execute)
             }
         }
@@ -93,8 +92,8 @@ fun DisableLoadingCompo(modifier: Modifier = Modifier) {
 
 @Composable
 private fun Content(
-    state: AIAgentState.Init,
-    reduce: (intent: AIAgentIntent) -> Unit,
+    state: AIAgentGroqState.Init,
+    reduce: (intent: AIAgentGroqIntent) -> Unit,
 ) {
     if(state.loading) {
         DisableLoadingCompo()
@@ -109,8 +108,8 @@ private fun Content(
         OutlinedTextField(
             value = prompt.value,
             onValueChange = { prompt.value = it },
-            label = { Text(text = stringResource(R.string.prompt)) },
-            maxLines = 4,
+            label = { Text(text = stringResource(R.string.prompt_groq)) },
+            maxLines = 5,
             modifier = Modifier
                 .weight(.2f)
                 .fillMaxWidth()
@@ -120,9 +119,8 @@ private fun Content(
         Button(
             modifier = Modifier.padding(start = SepMed),
             onClick = {
-                android.util.Log.e("AAA", "----------------- $kb "+ kb?.hide())
                 kb?.hide()
-                reduce(AIAgentIntent.ExecPrompt(prompt = prompt.value))
+                reduce(AIAgentGroqIntent.ExecPrompt(prompt = prompt.value))
             }
         ) {
             Text(text = stringResource(R.string.request))
@@ -135,7 +133,7 @@ private fun Content(
                 text = state.error.message ?: "Error ?",
                 color = Color.Red,
                 modifier = Modifier
-                    .weight(.4f)
+                    .weight(.3f)
                     .fillMaxWidth()
                     .padding(SepMed),
             )
@@ -158,7 +156,7 @@ private fun Content(
                             color = Color.Blue,
                             fontSize = fontBig,
                             modifier = Modifier.clickable {
-                                reduce(AIAgentIntent.GoToTrack(idTrack = o.id))
+                                reduce(AIAgentGroqIntent.GoToTrack(idTrack = o.id))
                             }
                         )
                         Text(stringResource(R.string.name)+": ${o.name}")
@@ -226,7 +224,7 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
 @Preview
 @Composable
 private fun AIAgentPage_Preview() {
-    val state = AIAgentState.Init()
+    val state = AIAgentGroqState.Init()
     Surface(modifier = Modifier.fillMaxWidth()) {
         Content(state) { }
     }
@@ -235,7 +233,7 @@ private fun AIAgentPage_Preview() {
 @Preview
 @Composable
 private fun AIAgentPage_Loading_Preview() {
-    val state = AIAgentState.Init(
+    val state = AIAgentGroqState.Init(
         prompt = "Prompt test and bla bla bla",
         response = "Response test and bla bla bla",
         loading = true

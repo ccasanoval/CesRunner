@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cesoft.cesrunner.ui.aiagent.AIAgentPage
+import com.cesoft.cesrunner.ui.aiagentgroq.AIAgentGroqPage
 import com.cesoft.cesrunner.ui.details.TrackDetailsPage
 import com.cesoft.cesrunner.ui.gnss.GnssPage
 import com.cesoft.cesrunner.ui.home.HomePage
@@ -32,6 +33,7 @@ sealed class Page(val route: String) {
     data object Map: Page("map")
     data object Gnss: Page("gnss")
     data object AIAgent: Page("ai_agent")
+    data object AIAgentGroq: Page("ai_agent_groq")
     data object Tracks: Page("tracks")
     data object TrackDetail: Page("trackDetail/{id}") {
         private const val ARG_ID = "id"
@@ -51,6 +53,7 @@ fun PageNavigation() {
         composable(route = Page.Map.route) { MapPage(navController) }
         composable(route = Page.Gnss.route) { GnssPage(navController) }
         composable(route = Page.AIAgent.route) { AIAgentPage(navController) }
+        composable(route = Page.AIAgentGroq.route) { AIAgentGroqPage(navController) }
         composable(route = Page.Tracks.route) { TracksPage(navController) }
         composable(route = Page.TrackDetail.route) { TrackDetailsPage(navController) }
     }

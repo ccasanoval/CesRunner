@@ -174,9 +174,8 @@ class RunsToolSet(
             val gson = Gson()
             return gson.toJson(track)
         }*/
-        private fun tracksToString(tracks: List<RunEntity>): String {
-            val gson = Gson()
-            return gson.toJson(tracks)
-        }
+        fun RunEntity.toJson(): String = Gson().toJson(listOf(this))
+        fun List<RunEntity>.toJson(): String = Gson().toJson(this)
+        private fun tracksToString(tracks: List<RunEntity>) = tracks.toJson()
     }
 }

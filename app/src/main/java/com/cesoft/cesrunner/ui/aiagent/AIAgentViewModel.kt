@@ -46,8 +46,6 @@ import kotlin.coroutines.suspendCoroutine
 //TODO:NON-GRAPH: https://medium.com/kotlin-academy/non-graph-strategies-and-when-to-use-them-in-ai-agents-eb0cee6dba73
 //TODO: Gemini Nano local LLM => Only for devices with big memory and cpu
 
-//TODO: Hacer un agente igual que el que tenemos con koog, pero con groq en http... Tiene limites superiores...
-
 class AIAgentViewModel(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,

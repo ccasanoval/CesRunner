@@ -42,4 +42,7 @@ interface RepositoryContract {
     suspend fun deleteTrack(id: Long): Result<Unit>
     suspend fun getLastLocation(id: Long): Result<TrackPointDto>
     suspend fun getNearTracks(lat: Double, lng: Double, distanceMax: Int): Result<List<TrackDto>>
+
+    // GROQ
+    suspend fun askGroq(prompt: String): Result<String>
 }

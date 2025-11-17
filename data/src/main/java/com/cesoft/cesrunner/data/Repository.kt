@@ -2,6 +2,7 @@ package com.cesoft.cesrunner.data
 
 import android.content.Context
 import android.location.Location
+import android.util.Log
 import com.cesoft.cesrunner.data.groq.Groq
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
@@ -16,6 +17,7 @@ import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackDto.Companion.VO2MAX
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -29,14 +31,18 @@ class Repository(
 
     /// AI AGENT : GROQ
     override suspend fun askGroq(prompt: String): Result<String> {
-        return groq.chat(prompt)
+        Log.e(TAG, "askGroq--------------------------------A----------------------------------------------- ")
+        val a = groq.chat(prompt)
+        delay(100)
+        Log.e(TAG, "askGroq--------------------------------B----------------------------------------------- ")
+        return a
     }
 
     /// AI AGENT : KOOG
     override suspend fun filterTracks(name: String?, distance: Int?): Result<List<TrackDto>> {
         try {
             android.util.Log.e(TAG, "filterTracks------- name=$name & distance=$distance")
-            val tracks: List<LocalTrackDto> = db.trackDao().filter(name, distance)
+            val tracks: List<LocalTrackDto> = db.trackDao().filter(null, name, distance)
             return if(tracks.isEmpty()) Result.failure(AppError.NotFound)
             else {
                 val value = tracks.map {

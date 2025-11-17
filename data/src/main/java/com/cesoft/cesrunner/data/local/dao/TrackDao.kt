@@ -36,12 +36,18 @@ interface TrackDao {
 
     // AI AGENT
     @Query("SELECT * FROM $TrackTableName " +
-            " WHERE (:name IS NULL OR name LIKE '%' || :name || '%')" +
-            " AND (:distance IS NULL OR (distance < :distance +200 AND distance > :distance -200))" +
+            " WHERE (:id IS NULL OR id = :id)" +
+            " AND (:name IS NULL OR name LIKE '%' || :name || '%')" +
+            //" AND (:name IS NULL OR name LIKE :name)" +
+            " AND (:distance IS NULL OR (distance < :distance +100 AND distance > :distance -100))" +
+            " AND (:dateIni IS NULL OR :dateEnd IS NULL OR (:dateIni < timeIni AND :dateEnd > timeEnd))" +
             " ORDER BY id"
     )
     suspend fun filter(
-        name: String?,
-        distance: Int?,
+        id: Long? = null,
+        name: String? = null,
+        distance: Int? = null,
+        dateIni: String? = null,
+        dateEnd: String? = null,
     ): List<LocalTrackDto>
 }

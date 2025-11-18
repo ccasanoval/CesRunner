@@ -4,7 +4,6 @@ import com.adidas.mvi.LoggableState
 import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity
 
 sealed class AIAgentGroqState: LoggableState {
-    //data object Loading: AIAgentState()
     data class Init(
         val prompt: String = "",
         val response: String = "",

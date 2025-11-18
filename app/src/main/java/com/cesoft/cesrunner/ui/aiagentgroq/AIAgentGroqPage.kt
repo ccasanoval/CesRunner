@@ -95,6 +95,7 @@ private fun Content(
     state: AIAgentGroqState.Init,
     reduce: (intent: AIAgentGroqIntent) -> Unit,
 ) {
+    android.util.Log.e("AA", "-------------- $state")
     if(state.loading) {
         DisableLoadingCompo()
     }
@@ -140,14 +141,6 @@ private fun Content(
         }
         else {
             LazyColumn(Modifier.weight(.4f)) {
-                item {
-                    Text(
-                        text = state.response,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(SepMed),
-                    )
-                }
                 for(o in state.responseData) {
                     item { HorizontalDivider() }
                     item {
@@ -166,7 +159,14 @@ private fun Content(
                         Text(stringResource(R.string.vo2max, o.vo2Max))
                     }
                 }
-
+                item { HorizontalDivider() }
+                item { HorizontalDivider() }
+                item {
+                    Text(
+                        text = state.response,
+                        modifier = Modifier.fillMaxWidth().padding(SepMed)
+                    )
+                }
             }
         }
     }
@@ -206,7 +206,7 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
             prompt.value = "Ordena las carreras por mayor Vo2Max y dame las tres primeras, gracias."
         }
         PredefinedOptionButton("Complex B") {
-            prompt.value = "Dame las carreras que se llaman Canarias o similar"
+            prompt.value = "Dame las carreras que se llaman 'Canarias'" //( o similar) -> hace que no quiera trabajar ??!!
         }
         PredefinedOptionButton("Geo") {
             prompt.value = "¿Qué carrera está cerca de aquí?"

@@ -50,6 +50,16 @@ data class RunEntity(
             if(h > 0) return "${h}h ${m}m"
             else return "${m}m"
         }
+        fun TrackDto.toRunEntity() = RunEntity(
+            id = id,
+            name = name,
+            timeIni = timeIni.toDate() ?: "?",
+            timeEnd = timeEnd.toDate() ?: "?",
+            distance = distance,
+            time = (timeEnd - timeIni).toHoursMinutes(),
+            vo2Max = calcVo2Max(),
+            location = points.firstOrNull()?.toLocation() ?: Location.Empty
+        )
         fun toUi(track: TrackDto) = RunEntity(
             id = track.id,
             name = track.name,

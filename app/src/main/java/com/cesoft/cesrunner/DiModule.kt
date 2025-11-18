@@ -91,7 +91,7 @@ val appModule = module {
     viewModel { MapViewModel(get()) }
     viewModel { GnssViewModel(get()) }
     viewModel { AIAgentViewModel(get(), get(), get()) }
-    viewModel { AIAgentGroqViewModel(get(), get(), get(), get()) }
+    viewModel { AIAgentGroqViewModel(get()) }
     viewModel { TracksViewModel(get(), get()) }
     viewModel { TrackDetailsViewModel(get(), get(), get(), get(), get()) }
 }

@@ -23,9 +23,12 @@ class Groq(private val db: AppDatabase) {
     private var toolCall: List<CompletionToolCall> = listOf()
     private var result: Result<String> = Result.failure(Exception())
     private val client = GroqClient(BuildConfig.GROQ_KEY)
-    private val system0 = "You are a helpful assistant that answers questions about the user runs." +
-            " Please, be super brief in your response." +
-            //" You have access to all the runs in the database." +
+    private val system0 = "You are a helpful assistant that answers questions about the runs." +
+            //
+            " Do not extend much in your response." +
+            " After your textual response, return also a json of the list of runs you have selected," +
+            " compose a json list even if the run selected is just one, and the root of the list must be and object named 'cesjson'." +
+            //
             " The runs have the following fields:" +
             " id (the identification number of the run);" +
             " name (how the user calls the run);" +
@@ -239,8 +242,8 @@ class Groq(private val db: AppDatabase) {
 
     companion object {
         private const val TAG = "Groq"
-        const val SEED = 1
-        const val TEMPERATURE = 0.0
+        const val SEED = 10
+        const val TEMPERATURE = 0.2
         val MODEL = GroqModel.LLAMA_4_SCOUT_17B_16E_INSTRUCT
     }
 }

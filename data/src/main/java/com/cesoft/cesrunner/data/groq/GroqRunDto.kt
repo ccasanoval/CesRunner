@@ -30,6 +30,7 @@ data class GroqRunDto(
     val timeIni: String,//TODO: Better millis since 1970
     val timeEnd: String,//TODO: Better millis since 1970
     val distance: Int,
+    val distanceToLocation: Int,
     val time: String,//TODO: Remove....
     val timeMillis: Long,
     val vo2Max: Double,
@@ -37,6 +38,7 @@ data class GroqRunDto(
     val longitude: Double,
 ) {
     companion object {
+        val EMPTY = GroqRunDto(-1, "", "", "", 0, 0, "", 0, 0.0, 0.0, 0.0)
         fun Long.toDate(showTime: Boolean = true): String? {
             if (this == 0L) return null
             val date = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
@@ -51,12 +53,16 @@ data class GroqRunDto(
             return if (h > 0) "${h}h ${m}m"
             else "${m}m"
         }
-        fun LocalTrackDto.toRun(points: List<LocalTrackPointDto> = listOf()) = GroqRunDto(
+        fun LocalTrackDto.toRun(
+            points: List<LocalTrackPointDto> = listOf(),
+            distanceToLocation: Int = 0
+        ) = GroqRunDto(
             id = id,
             name = name,
             timeIni = timeIni.toDate() ?: "?",
             timeEnd = timeEnd.toDate() ?: "?",
             distance = distance,
+            distanceToLocation = distanceToLocation,
             time = (timeEnd - timeIni).toHoursMinutes(),
             timeMillis = timeEnd - timeIni,
             vo2Max = calcVo2Max(),

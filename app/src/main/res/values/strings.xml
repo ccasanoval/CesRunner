@@ -28,6 +28,7 @@
     <string name="accuracy">Precisión</string>
     <string name="provider">Fuente</string>
     <string name="distance">Distancia</string>
+    <string name="distance_to_user">Cerca de aquí</string>
     <string name="speed">Velocidad</string>
     <string name="altitude">Altitud</string>
     <string name="kilometer">Kilómetro</string>

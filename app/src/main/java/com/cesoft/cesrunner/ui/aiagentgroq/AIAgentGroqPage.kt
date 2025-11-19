@@ -154,6 +154,7 @@ private fun Content(
                 }
                 for(o in state.responseData) {
                     item {
+                        android.util.Log.e("Page", "----------- ${o.id} / ${o.name} / ${o.distance} / ${o.time} / ${o.timeIni} / ${o.timeEnd} / ${o.vo2Max} / ${o.distanceToLocation}")
                         HorizontalDivider()
                         Text(
                             text = "Id: ${o.id}",
@@ -163,11 +164,12 @@ private fun Content(
                                 reduce(AIAgentGroqIntent.GoToTrack(idTrack = o.id))
                             }
                         )
-                        Text(stringResource(R.string.name)+": ${o.name}")
-                        Text(stringResource(R.string.distance)+": ${o.distance} m")//TODO: To km if > 1000m
-                        Text(stringResource(R.string.time)+": ${o.time} . . Lat/Lng: ${o.latitude} / ${o.longitude}")
-                        Text(stringResource(R.string.time_ini)+": ${o.timeIni}")
-                        Text("Vo2max: "+stringResource(R.string.vo2max, o.vo2Max))
+                        if(o.name != null) Text(stringResource(R.string.name) + ": ${o.name}")
+                        if(o.distance > 0) Text(stringResource(R.string.distance)+": ${o.distance} m")//TODO: To km if > 1000m
+                        if(o.time != null) Text(stringResource(R.string.time)+": ${o.time} ")//. . Lat/Lng: ${o.latitude} / ${o.longitude}")
+                        if(o.timeIni != null) Text(stringResource(R.string.time_ini)+": ${o.timeIni}")
+                        if(o.vo2Max > 0) Text("Vo2max: "+stringResource(R.string.vo2max, o.vo2Max))
+                        if(o.distanceToLocation > 0) Text(stringResource(R.string.distance_to_user)+": ${o.distanceToLocation} m")//TODO: To km if > 1000m
                     }
                 }
                 item {

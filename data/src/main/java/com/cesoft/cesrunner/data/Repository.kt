@@ -31,12 +31,7 @@ class Repository(
 
     /// AI AGENT : GROQ
     override suspend fun askGroq(prompt: String): Result<String> {
-        Log.e(TAG, "askGroq--------------------------------A----------------------------------------------- ")
-        val a = groq.chat(prompt)
-        Log.e(TAG, "askGroq--------------------------------B----------------------------------------------- ")
-        delay(100)
-        Log.e(TAG, "askGroq--------------------------------C----------------------------------------------- ")
-        return a
+        return groq.chat(prompt)
     }
 
     /// AI AGENT : KOOG

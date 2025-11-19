@@ -100,7 +100,7 @@ object GroqTools {
             buildJsonObject {
                 put("type", "object")
                 putJsonObject("properties") {
-                    putJsonObject("distance") {
+                    putJsonObject("distanceToLocation") {
                         put("type", "string")
                         put("description", "Maximum distance of the run from the current location in meters, default value is 100 meters")
                     }

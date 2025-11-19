@@ -31,6 +31,7 @@
     <string name="accuracy">Accuracy</string>
     <string name="provider">Provider</string>
     <string name="distance">Distance</string>
+    <string name="distance_to_user">Near here</string>
     <string name="speed">Speed</string>
     <string name="altitude">Altitude</string>
     <string name="kilometer">Kilometer</string>

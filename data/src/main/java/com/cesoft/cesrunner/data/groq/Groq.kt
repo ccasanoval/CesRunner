@@ -1,11 +1,13 @@
 package com.cesoft.cesrunner.data.groq
 
+import android.location.Location
 import android.util.Log
 import com.cesoft.cesrunner.data.BuildConfig
 import com.cesoft.cesrunner.data.groq.GroqRunDto.Companion.toRun
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
 import com.cesoft.cesrunner.data.local.entity.LocalTrackPointDto
+import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.google.gson.Gson
@@ -17,7 +19,10 @@ import io.github.vyfor.groqkt.api.chat.ChatCompletion
 import io.github.vyfor.groqkt.api.chat.CompletionToolCall
 
 //NOTE: https://github.com/vyfor/groq-kt
-class Groq(private val db: AppDatabase) {
+class Groq(
+    private val db: AppDatabase,
+    private val location: LocationDataSource
+) {
     //TODO: Thread safety
     private var toolCall: List<CompletionToolCall> = listOf()
     private var result: Result<String> = Result.failure(Exception())
@@ -92,6 +97,7 @@ class Groq(private val db: AppDatabase) {
             Log.e(TAG, "while(toolCall.isNotEmpty())-----------------------tool $tool($params)")
             val runs = processTool(tool, params)
             Log.e(TAG, "while(toolCall.isNotEmpty())-----------------------result: #${runs.getOrNull()?.size} / first.name= ${runs.getOrNull()?.first()?.name}")
+            for(i in runs.getOrNull() ?: listOf())Log.e(TAG, "while(toolCall.isNotEmpty())----------------------- i = ${i.id}")
             Log.e(TAG, "while(toolCall.isNotEmpty())-----------------------result: json=" + Gson().toJson(runs))
             toolCall = listOf()
 
@@ -128,9 +134,30 @@ class Groq(private val db: AppDatabase) {
         return result
     }
 
-    private suspend fun getAllRuns(): List<GroqRunDto> {
+    private suspend fun getAllRuns_(): List<GroqRunDto> {
         val tracks: List<LocalTrackDto> = db.trackDao().getAll()
         return tracks.map { it.toRun() }
+    }
+    private suspend fun getAllRuns(): List<GroqRunDto> {
+        val locUsr = location.getLastKnownLocation()
+        val tracks: List<LocalTrackDto> = db.trackDao().getAll()
+        val runs = mutableListOf<GroqRunDto>()
+        for(track in tracks) {
+            val trackPoints: List<LocalTrackPointDto> = db.trackPointDao().getByTrackId(track.id)
+            val trackPoint = trackPoints.firstOrNull()
+            val points = if(trackPoint!=null) listOf(trackPoint) else listOf()
+
+            var distanceToLocation = 0
+            if(locUsr != null && trackPoint != null) {
+                val locRun = Location("")
+                locRun.latitude = trackPoint.latitude
+                locRun.longitude = trackPoint.longitude
+                distanceToLocation = locUsr.distanceTo(locRun).toInt()
+            }
+
+            runs.add(track.toRun(points, distanceToLocation))
+        }
+        return runs
     }
     private suspend fun getAllRunsComplete(): List<GroqRunDto> {
         val tracks: List<LocalTrackDto> = db.trackDao().getAll()
@@ -147,16 +174,15 @@ class Groq(private val db: AppDatabase) {
         params: String
     ): Result<List<GroqRunDto>> {
         try {
-            var obj: TrackDto?
-            if(params.isNotEmpty()) {
+            val obj: GroqRunDto =
                 try {
-                    obj = Gson().fromJson(params, TrackDto::class.java)
-                    Log.e("AA", "-------- param = $obj")
+                    Gson().fromJson(params, GroqRunDto::class.java)
                 }
                 catch (e: Exception) {
                     Log.e("AA", "-------- param:e = $e / $params")
+                    GroqRunDto.EMPTY
                 }
-            }
+            Log.e("AA", "-------- param = $obj")
 /*
             if(tracks.isEmpty()) return Result.failure(AppError.NotFound)
             val all = tracks.map {
@@ -167,36 +193,34 @@ class Groq(private val db: AppDatabase) {
             Log.e(TAG, "processTool----------000------- tool = $tool")
             return when(tool) {
                 GroqToolType.GetLongest -> {
-                    //var l = 0
-                    //var run: GroqRunDto? = null
                     val run = getAllRuns().maxByOrNull { it.distance }
-//                    for(r in runs) {
-//                        if(r.distance > l) {
-//                            l = r.distance
-//                            run = r
-//                        }
-//                    }
                     Log.e(TAG, "processTool-$tool----------------------run= ${run?.name}")
                     if(run != null) Result.success(listOf(run))
                     else Result.failure(AppError.NotFound)
                 }
                 GroqToolType.GetShortest -> {
-//                    var l = Int.MAX_VALUE
-//                    var run: TrackDto? = null
-//                    for(r in all) {
-//                        if(r.distance < l) {
-//                            l = r.distance
-//                            run = r
-//                        }
-//                    }
                     val run = getAllRuns().minByOrNull { it.distance }
                     Log.e(TAG, "processTool-$tool---------------------- ${run?.name}")
                     if(run != null) Result.success(listOf(run))
                     else Result.failure(AppError.NotFound)
                 }
                 GroqToolType.GetNear -> {
-                    Log.e(TAG, "processTool-$tool---------------------- ")
-                    Result.failure(Exception())//TODO:
+                    /*val i = params.indexOf("distanceToLocation\":")
+                    val j = params.lastIndexOf("\"}")
+                    Log.e(TAG, "processTool-$tool---------------------- $params $i $j")
+                    val distance = if(i in 1..< j-22) {
+                        try { params.substring(i + 21, j).toInt() }
+                        catch (e: Exception) {
+                            Log.e(TAG, "processTool-$tool---------------------- $e")
+                            100
+                        }
+                    } else null*/
+                    val distance = if(obj.distanceToLocation > 0) obj.distanceToLocation else 100
+                    Log.e(TAG, "processTool-$tool---------------------- d = $distance")
+                    val runs = getAllRuns().filter { it.distanceToLocation < distance }
+                    Log.e(TAG, "processTool-$tool---------------------- # = ${runs.size}")
+                    if(runs.isNotEmpty()) Result.success(runs)
+                    else Result.failure(AppError.NotFound)
                 }
                 GroqToolType.GetAll -> {
                     Log.e(TAG, "processTool-$tool---------------------- ")
@@ -207,6 +231,7 @@ class Groq(private val db: AppDatabase) {
             }
         }
         catch(e: Throwable) {
+            Log.e(TAG, "processTool-$tool----------------------e: $e")
             return Result.failure(e)
         }
     }
@@ -257,24 +282,27 @@ class Groq(private val db: AppDatabase) {
         const val SEED = 10
         const val TEMPERATURE = 0.2
         private val MODEL = GroqModel.LLAMA_4_SCOUT_17B_16E_INSTRUCT
-        private const val SYSTEM = "You are a helpful assistant that answers questions about the runs." +
-                //
-                //" Do not extend much in your response." +
-                //" After your textual response, return also a json of the list of runs you have selected," +
-                //" compose a json list even if the run selected is just one, and the root of the list must be and object named 'cesjson'." +
-                " Return only a json of the list of runs you have selected as response, do not add any other text;" +
-                " compose a json list even if the run selected is just one;" +
-                " the root of the list must be and object named 'cesjson'."+
-                //
-                " The runs have the following fields:" +
-                " id (long, the identification number of the run);" +
-                " name (string, how the user calls the run);" +
-                " distance (integer, the number of meters between the starting point and the final point of the run);" +
-                " timeIni (the date and time when the user start running);" +
-                " timeEnd (the date and time when the user finish running);" +
-                " time (long, milliseconds spent in the run);" +
-                " vo2Max (double, the VO2Max, precalculated measure of the user fitness in this run);" +
-                " latitude (double, the approximate latitude of the run location);"+
-                " longitude (double, the approximate longitude of the run location)."
+        private const val SYSTEM =
+            "You are a helpful assistant that answers questions about the runs." +
+            //
+            //" Do not extend much in your response." +
+            //" After your textual response, return also a json of the list of runs you have selected," +
+            //" compose a json list even if the run selected is just one, and the root of the list must be and object named 'cesjson'." +
+            " Return only a json of the list of runs you have selected as response, do not add any other text;" +
+            //" Return a json of the list of runs you have selected as response;" +
+            " compose a json list even if the run selected is just one;" +
+            " the root of the list must be and object named 'cesjson'."+
+            //
+            " The runs have the following fields:" +
+            " id (long, the identification number of the run);" +
+            " name (string, how the user calls the run);" +
+            " distance (integer, the number of meters between the starting point and the final point of the run);" +
+            " distanceToLocation (integer, the number of meters between the run and the user current location);" +
+            " timeIni (the date and time when the user start running);" +
+            " timeEnd (the date and time when the user finish running);" +
+            " time (long, milliseconds spent in the run);" +
+            " vo2Max (double, the VO2Max, precalculated measure of the user fitness in this run);" +
+            " latitude (double, the approximate latitude of the run location);"+
+            " longitude (double, the approximate longitude of the run location)."
     }
 }

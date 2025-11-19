@@ -48,7 +48,7 @@ import org.koin.dsl.module
 val appModule = module {
     /// CORE
     single<CoroutineDispatcher> { Dispatchers.Default }
-    single<Groq> { Groq(get()) }
+    single<Groq> { Groq(get(), get()) }
     single<LocationDataSource> { LocationDataSource(get()) }
     single<RepositoryContract> { Repository(get(), get(), get(), get()) }
     single<TrackingServiceFac> { TrackingServiceFac(get()) }

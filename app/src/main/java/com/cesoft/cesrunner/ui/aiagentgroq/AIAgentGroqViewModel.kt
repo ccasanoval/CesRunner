@@ -8,6 +8,7 @@ import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.Page
+import com.cesoft.cesrunner.data.groq.GroqRunDto
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.groq.AskGroqUC
@@ -91,10 +92,11 @@ class AIAgentGroqViewModel(
             else {
                 val i = res.indexOf("\"cesjson\":")//TODO: In groq call, also return RunEntity from the start, so grok can use vo2max etc
                 val j = res.lastIndexOf("]")
-                val typeOfT = object: TypeToken<List<TrackDto>>(){}.type
-                var data = mutableListOf<TrackDto>()
+                val typeOfT = object: TypeToken<List<GroqRunDto>>(){}.type
+                var data = mutableListOf<GroqRunDto>()
                 if(i >= 0 && res.length > i + 10 && j > 0) {
                     val txt = res.substring(i+10, j+1)
+                    android.util.Log.e("AIAgentVM", "executePrompt:askGroq:txt------- $txt")
                     try {
                         val gson = GsonBuilder()
                             .setStrictness(Strictness.LENIENT)
@@ -105,8 +107,8 @@ class AIAgentGroqViewModel(
                         Log.e("AA", "--------********************************** data:e = $e / $txt")
                     }
                 }
-                val responseData = data.map { it.toRunEntity() }
-                Log.e("AA", "--------********************************** $responseData")
+                val responseData = data
+                Log.e("AA", "--------********************************** responseData $responseData")
                 emit(AIAgentGroqTransform.GoInit(prompt = prompt, response = res, responseData = responseData))
             }
         }

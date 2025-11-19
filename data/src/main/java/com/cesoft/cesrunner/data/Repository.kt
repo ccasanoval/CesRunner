@@ -33,8 +33,9 @@ class Repository(
     override suspend fun askGroq(prompt: String): Result<String> {
         Log.e(TAG, "askGroq--------------------------------A----------------------------------------------- ")
         val a = groq.chat(prompt)
-        delay(100)
         Log.e(TAG, "askGroq--------------------------------B----------------------------------------------- ")
+        delay(100)
+        Log.e(TAG, "askGroq--------------------------------C----------------------------------------------- ")
         return a
     }
 

@@ -69,6 +69,7 @@
     <string name="min">(min.)</string>
 
     <!-- ERRORS -->
+    <string name="error_run_not_found">No se encontró una carrera con tales características</string>
     <string name="error_not_found">No se encontraron datos</string>
     <string name="error_db">Error en los datos</string>
 

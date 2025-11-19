@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -141,9 +142,19 @@ private fun Content(
         }
         else {
             LazyColumn(Modifier.weight(.4f)) {
-                for(o in state.responseData) {
-                    item { HorizontalDivider() }
+                if(state.responseData.isEmpty() && state.response.isNotEmpty()) {
                     item {
+                        HorizontalDivider()
+                        Text(
+                            text = stringResource(R.string.error_run_not_found),
+                            color = Color.Red,
+                            modifier = Modifier.fillMaxWidth().padding(SepMed)
+                        )
+                    }
+                }
+                for(o in state.responseData) {
+                    item {
+                        HorizontalDivider()
                         Text(
                             text = "Id: ${o.id}",
                             color = Color.Blue,
@@ -154,14 +165,13 @@ private fun Content(
                         )
                         Text(stringResource(R.string.name)+": ${o.name}")
                         Text(stringResource(R.string.distance)+": ${o.distance} m")//TODO: To km if > 1000m
-                        Text(stringResource(R.string.time)+": ${o.time} . Lat/Lng: ${o.location.latitude} / ${o.location.longitude}")
+                        Text(stringResource(R.string.time)+": ${o.time} . . Lat/Lng: ${o.latitude} / ${o.longitude}")
                         Text(stringResource(R.string.time_ini)+": ${o.timeIni}")
-                        Text(stringResource(R.string.vo2max, o.vo2Max))
+                        Text("Vo2max: "+stringResource(R.string.vo2max, o.vo2Max))
                     }
                 }
-                item { HorizontalDivider() }
-                item { HorizontalDivider() }
                 item {
+                    HorizontalDivider(modifier = Modifier.padding(SepMed))
                     Text(
                         text = state.response,
                         modifier = Modifier.fillMaxWidth().padding(SepMed)
@@ -205,8 +215,9 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
         PredefinedOptionButton("Complex A") {
             prompt.value = "Ordena las carreras por mayor Vo2Max y dame las tres primeras, gracias."
         }
+        // (sin el numero devuelve solo 2, y no las 3 que hay??!!)    ( o similar) -> hace que no quiera trabajar ??!!
         PredefinedOptionButton("Complex B") {
-            prompt.value = "Dame las carreras que se llaman 'Canarias'" //( o similar) -> hace que no quiera trabajar ??!!
+            prompt.value = "Dame las 10 carreras que se llaman 'Canarias'"
         }
         PredefinedOptionButton("Geo") {
             prompt.value = "¿Qué carrera está cerca de aquí?"

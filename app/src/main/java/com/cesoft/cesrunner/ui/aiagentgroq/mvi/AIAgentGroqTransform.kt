@@ -3,6 +3,7 @@ package com.cesoft.cesrunner.ui.aiagentgroq.mvi
 import com.adidas.mvi.sideeffects.SideEffects
 import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
+import com.cesoft.cesrunner.data.groq.GroqRunDto
 import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity
 
 object AIAgentGroqTransform {
@@ -10,7 +11,7 @@ object AIAgentGroqTransform {
     data class GoInit(
         val prompt: String = "",
         val response: String = "",
-        val responseData: List<RunEntity> = listOf(),
+        val responseData: List<GroqRunDto> = listOf(),
         val loading: Boolean = false,
         val error: Throwable? = null
     ): ViewTransform<AIAgentGroqState, AIAgentGroqSideEffect>() {

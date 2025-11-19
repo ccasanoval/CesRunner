@@ -2,7 +2,6 @@ package com.cesoft.cesrunner.data
 
 import android.content.Context
 import android.location.Location
-import android.util.Log
 import com.cesoft.cesrunner.data.groq.Groq
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
@@ -11,13 +10,13 @@ import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.data.prefs.PrefDataSource
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.ID_NULL
+import com.cesoft.cesrunner.domain.entity.AIAgentRes
 import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.entity.TrackDto.Companion.VO2MAX
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -30,7 +29,7 @@ class Repository(
 ): RepositoryContract {
 
     /// AI AGENT : GROQ
-    override suspend fun askGroq(prompt: String): Result<String> {
+    override suspend fun askGroq(prompt: String): Result<AIAgentRes> {
         return groq.chat(prompt)
     }
 

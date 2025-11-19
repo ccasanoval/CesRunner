@@ -2,7 +2,9 @@ package com.cesoft.cesrunner.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.cesoft.cesrunner.domain.entity.RunDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import io.ktor.util.date.getTimeMillis
 
 const val TrackTableName = "track"
 @Entity(tableName = TrackTableName)
@@ -18,6 +20,22 @@ data class LocalTrackDto(
 //    val speedMin: Int,
 //    val speedMax: Int,
 ) {
+    fun toModelDto(
+        distanceToLocation: Int = -1,
+        latitude: Double = 0.0,
+        longitude: Double = 0.0
+    ) = RunDto(
+        id = id,
+        name = name,
+        timeIni = timeIni,
+        timeEnd = timeEnd,
+        distance = distance,
+        distanceToLocation = distanceToLocation,
+        latitude = latitude,
+        longitude = longitude,
+        vo2Max = calcVo2Max()
+    )
+
     fun toModel(points: List<LocalTrackPointDto>) = TrackDto(
         id = id,
         timeIni = timeIni,

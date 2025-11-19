@@ -3,20 +3,25 @@ package com.cesoft.cesrunner.data.groq
 import android.location.Location
 import android.util.Log
 import com.cesoft.cesrunner.data.BuildConfig
-import com.cesoft.cesrunner.data.groq.GroqRunDto.Companion.toRun
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
 import com.cesoft.cesrunner.data.local.entity.LocalTrackPointDto
 import com.cesoft.cesrunner.data.location.LocationDataSource
 import com.cesoft.cesrunner.domain.AppError
-import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.entity.AIAgentRes
+import com.cesoft.cesrunner.domain.entity.RunDto
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
+import com.google.gson.reflect.TypeToken
 import io.github.vyfor.groqkt.GroqClient
 import io.github.vyfor.groqkt.GroqModel
 import io.github.vyfor.groqkt.api.GroqResponse
 import io.github.vyfor.groqkt.api.chat.ChatCompletion
 import io.github.vyfor.groqkt.api.chat.CompletionToolCall
+import kotlin.text.indexOf
+import kotlin.text.lastIndexOf
+import kotlin.text.substring
 
 //NOTE: https://github.com/vyfor/groq-kt
 class Groq(
@@ -25,60 +30,52 @@ class Groq(
 ) {
     //TODO: Thread safety
     private var toolCall: List<CompletionToolCall> = listOf()
-    private var result: Result<String> = Result.failure(Exception())
+    private var result: Result<AIAgentRes> = Result.failure(Exception())
     private val client = GroqClient(BuildConfig.GROQ_KEY)
 
-    suspend fun chat(prompt: String): Result<String> {
+    suspend fun chat(prompt: String): Result<AIAgentRes> {
         toolCall = listOf()
         result = Result.failure(Exception())
 
         Log.e(TAG, "chat-----------------------00000 prompt = $prompt")
         Log.wtf(TAG, "chat-----000")
-        var response: Result<GroqResponse<ChatCompletion>>
-        try {
-            response = client.chat {
-                model = MODEL
-                seed = SEED
-                temperature = TEMPERATURE
-                tools = GroqTools.tools
+        var response: Result<GroqResponse<ChatCompletion>> =
+            try {
+                client.chat {
+                    model = MODEL
+                    seed = SEED
+                    temperature = TEMPERATURE
+                    tools = GroqTools.tools
 
-                // json mode cannot be combined with tool/function calling
-                //responseFormat = CompletionResponseFormat(CompletionResponseFormatType.JSON_OBJECT)
+                    // json mode cannot be combined with tool/function calling
+                    //responseFormat = CompletionResponseFormat(CompletionResponseFormatType.JSON_OBJECT)
 
-                /*var frequencyPenalty: Double? = null
-            var functionCall: CompletionFunctionCallType? = null
-            var functions: MutableList<CompletionFunction>? = null
-            var maxTokens: Int? = null
-            var n: Int? = null
-            var parallelToolCalls: Boolean? = null
-            var presencePenalty: Double? = null
-            var responseFormat: CompletionResponseFormat? = null
-            var seed: Int? = null
-            var stop: MutableList<String>? = null
-            var stream: Boolean? = null
-            var streamOptions: CompletionStreamOptions? = null
-            var temperature: Double? = null
-            var toolChoice: CompletionToolChoice? = null
-            var topP: Double? = null
-            var user: String? = null*/
-                messages {
-                    system(SYSTEM)
-                    text(prompt)
+                    /*var frequencyPenalty: Double? = null
+                    var functionCall: CompletionFunctionCallType? = null
+                    var functions: MutableList<CompletionFunction>? = null
+                    var maxTokens: Int? = null
+                    var n: Int? = null
+                    var parallelToolCalls: Boolean? = null
+                    var presencePenalty: Double? = null
+                    var responseFormat: CompletionResponseFormat? = null
+                    var seed: Int? = null
+                    var stop: MutableList<String>? = null
+                    var stream: Boolean? = null
+                    var streamOptions: CompletionStreamOptions? = null
+                    var temperature: Double? = null
+                    var toolChoice: CompletionToolChoice? = null
+                    var topP: Double? = null
+                    var user: String? = null*/
+                    messages {
+                        system(SYSTEM)
+                        text(prompt)
+                    }
                 }
             }
-        }
-        catch (e: Exception) {
-            response = Result.failure(e)
-            Log.wtf(TAG, "chat-----e:$e")
-            /*chat-----e:io.ktor.client.call.NoTransformationFoundException: Expected response body of the type 'class io.github.vyfor.groqkt.api.GroqResponseType' but was 'class io.ktor.utils.io.SourceByteReadChannel'
-            In response from `https://api.groq.com/openai/v1/chat/completions`
-                    Response status `500 Internal Server Error`
-            Response header `ContentType: text/html; charset=UTF-8`
-            Request header `Accept: application/json`
-
-            You can read how to resolve NoTransformationFoundException at FAQ:
-            https://ktor.io/docs/faq.html#no-transformation-found-exception*/
-        }
+            catch (e: Exception) {
+                Log.wtf(TAG, "chat-----e:$e")
+                Result.failure(e)
+            }
         Log.wtf(TAG, "chat-----001")
         Log.e(TAG, "chat-----------------------data = ${response.getOrNull()} / e= ${response.exceptionOrNull()}")
         Log.e(TAG, "chat-----------------------msg  = ${response.getOrNull()?.data?.choices?.firstOrNull()?.message?.content}")
@@ -97,7 +94,7 @@ class Groq(
             Log.e(TAG, "while(toolCall.isNotEmpty())-----------------------tool $tool($params)")
             val runs = processTool(tool, params)
             Log.e(TAG, "while(toolCall.isNotEmpty())-----------------------result: #${runs.getOrNull()?.size} / first.name= ${runs.getOrNull()?.first()?.name}")
-            for(i in runs.getOrNull() ?: listOf())Log.e(TAG, "while(toolCall.isNotEmpty())----------------------- i = ${i.id}")
+            for(i in runs.getOrNull() ?: listOf())Log.e(TAG, "while(toolCall.isNotEmpty())----------------------- i = ${i.id} ${i.name} ${i.distance}")
             Log.e(TAG, "while(toolCall.isNotEmpty())-----------------------result: json=" + Gson().toJson(runs))
             toolCall = listOf()
 
@@ -126,7 +123,8 @@ class Groq(
             Log.e(TAG, "while(toolCall.isNotEmpty())--------999--------------- ${toolCall.firstOrNull()?.function?.name} == $toolName")
             if(toolCall.firstOrNull()?.function?.name == toolName) {
                 Log.e(TAG, "while(toolCall.isNotEmpty())--------REPEATED TOOL-------- $runsJson ")
-                result = Result.success(runsJson)
+                //TODO: data ?
+                result = Result.success(AIAgentRes(runsJson, listOf()))
                 toolCall = listOf()
             }
             Log.e(TAG, "while(toolCall.isNotEmpty())--------END--------------- ${toolCall.size} / ${result.getOrNull()}")
@@ -134,14 +132,10 @@ class Groq(
         return result
     }
 
-    private suspend fun getAllRuns_(): List<GroqRunDto> {
-        val tracks: List<LocalTrackDto> = db.trackDao().getAll()
-        return tracks.map { it.toRun() }
-    }
-    private suspend fun getAllRuns(): List<GroqRunDto> {
+    private suspend fun getAllRuns(): List<RunDto> {
         val locUsr = location.getLastKnownLocation()
         val tracks: List<LocalTrackDto> = db.trackDao().getAll()
-        val runs = mutableListOf<GroqRunDto>()
+        val runs = mutableListOf<RunDto>()
         for(track in tracks) {
             val trackPoints: List<LocalTrackPointDto> = db.trackPointDao().getByTrackId(track.id)
             val trackPoint = trackPoints.firstOrNull()
@@ -155,32 +149,40 @@ class Groq(
                 distanceToLocation = locUsr.distanceTo(locRun).toInt()
             }
 
-            runs.add(track.toRun(points, distanceToLocation))
+            val lat = points.firstOrNull()?.latitude ?: 0.0
+            val lon = points.firstOrNull()?.longitude ?: 0.0
+            runs.add(track.toModelDto(distanceToLocation, lat, lon))
         }
         return runs
     }
-    private suspend fun getAllRunsComplete(): List<GroqRunDto> {
-        val tracks: List<LocalTrackDto> = db.trackDao().getAll()
-        val runs = mutableListOf<GroqRunDto>()
-        for(track in tracks) {
-            val trackPoints: List<LocalTrackPointDto> = db.trackPointDao().getByTrackId(track.id)
-            runs.add(track.toRun(trackPoints))
-        }
-        return runs
-    }
+//    private suspend fun getAllRuns_(): List<RunDto> {
+//        val tracks: List<LocalTrackDto> = db.trackDao().getAll()
+//        return tracks.map { it.toModelDto() }
+//    }
+//    private suspend fun getAllRunsComplete(): List<RunDto> {
+//        val tracks: List<LocalTrackDto> = db.trackDao().getAll()
+//        val runs = mutableListOf<RunDto>()
+//        for(track in tracks) {
+//            val points: List<LocalTrackPointDto> = db.trackPointDao().getByTrackId(track.id)
+//            val lat = points.firstOrNull()?.latitude ?: 0.0
+//            val lon = points.firstOrNull()?.longitude ?: 0.0
+//            runs.add(track.toModelDto(-1,lat, lon))
+//        }
+//        return runs
+//    }
 
     private suspend fun processTool(
         tool: GroqToolType,
         params: String
-    ): Result<List<GroqRunDto>> {
+    ): Result<List<RunDto>> {
         try {
-            val obj: GroqRunDto =
+            val obj: RunDto =
                 try {
-                    Gson().fromJson(params, GroqRunDto::class.java)
+                    Gson().fromJson(params, RunDto::class.java)
                 }
                 catch (e: Exception) {
                     Log.e("AA", "-------- param:e = $e / $params")
-                    GroqRunDto.EMPTY
+                    RunDto()
                 }
             Log.e("AA", "-------- param = $obj")
 /*
@@ -205,20 +207,10 @@ class Groq(
                     else Result.failure(AppError.NotFound)
                 }
                 GroqToolType.GetNear -> {
-                    /*val i = params.indexOf("distanceToLocation\":")
-                    val j = params.lastIndexOf("\"}")
-                    Log.e(TAG, "processTool-$tool---------------------- $params $i $j")
-                    val distance = if(i in 1..< j-22) {
-                        try { params.substring(i + 21, j).toInt() }
-                        catch (e: Exception) {
-                            Log.e(TAG, "processTool-$tool---------------------- $e")
-                            100
-                        }
-                    } else null*/
                     val distance = if(obj.distanceToLocation > 0) obj.distanceToLocation else 100
                     Log.e(TAG, "processTool-$tool---------------------- d = $distance")
                     val runs = getAllRuns().filter { it.distanceToLocation < distance }
-                    Log.e(TAG, "processTool-$tool---------------------- # = ${runs.size}")
+                    Log.e(TAG, "processTool-GetNear---------------------- # = ${runs.size}")
                     if(runs.isNotEmpty()) Result.success(runs)
                     else Result.failure(AppError.NotFound)
                 }
@@ -246,23 +238,41 @@ class Groq(
             Log.e(TAG, "process------------------- SUCCESS: id=$id / obj=$obj / time=$totalTime ")
             for(r in data?.choices ?: listOf()) {
                 Log.e(TAG, "process------------------- SUCCESS: finish=${r.finishReason} / msg=${r.message.content} / tool=${r.message.toolCalls} /")
-                val content = r.message.content ?: ""
+                val msg = r.message.content ?: ""
                 toolCall = r.message.toolCalls ?: listOf()
 
                 //finish=tool_calls / content=La carrera más corta es la correspondient / tool=GetShortest ... -> It shoul be finishReason=stop, but LLM wanna call tool again ??!!
                 //if(r.finishReason == "stop" && content.isNotEmpty()) {
-                if(content.isNotEmpty()) {
-                    Log.e(TAG, "process------------------- SUCCESS: STOP : $content")
-                    if(content == "[][]")
-                        result = Result.success("No se encontró una carrera con tales características")
-                    else
-                        result = Result.success(content)
+                if(msg.isNotEmpty()) {
+                    Log.e(TAG, "process------------------- SUCCESS: STOP : $msg")
+                    //if(content == "[][]")
+                        //result = Result.success(GroqRes("No se encontró una carrera con tales características"))
+                    //else
+                    val i = msg.indexOf("\"cesjson\":")
+                    val j = msg.indexOf("]", i)
+                    val typeOfT = object: TypeToken<List<RunDto>>(){}.type
+                    var data = mutableListOf<RunDto>()
+                    if(i >= 0 && msg.length > i + 10 && j > 0) {
+                        val json = msg.substring(i+10, j+1)
+                        android.util.Log.e(TAG, "process------- json = $json")
+                        try {
+                            val gson = GsonBuilder()
+                                .setStrictness(Strictness.LENIENT)
+                                .create()
+                            data = gson.fromJson(json, typeOfT)
+                        }
+                        catch (e: Exception) {
+                            Log.e(TAG, "--------********************************** data:e = $e / $json")
+                        }
+                    }
+
+                    result = Result.success(AIAgentRes(msg, data))
                 }
                 else if(r.finishReason == "tool_calls" && toolCall.isNotEmpty()) {
                     Log.e(TAG, "process------------------- SUCCESS: TOOL CALL : ${toolCall.size}")
                     val gson = GsonBuilder().create()
                     val answer = gson.toJson(toolCall)
-                    result = Result.success(answer)
+                    result = Result.success(AIAgentRes(answer))//TODO: DATA?
                 }
                 else {
                     Log.e(TAG, "process------------------- SUCCESS: ??? ")
@@ -288,8 +298,8 @@ class Groq(
             //" Do not extend much in your response." +
             //" After your textual response, return also a json of the list of runs you have selected," +
             //" compose a json list even if the run selected is just one, and the root of the list must be and object named 'cesjson'." +
-            " Return only a json of the list of runs you have selected as response, do not add any other text;" +
-            //" Return a json of the list of runs you have selected as response;" +
+            //" Return only a json of the list of runs you have selected as response, do not add any other text;" +
+            " Return a json of the list of runs you have selected as response;" +
             " compose a json list even if the run selected is just one;" +
             " the root of the list must be and object named 'cesjson'."+
             //

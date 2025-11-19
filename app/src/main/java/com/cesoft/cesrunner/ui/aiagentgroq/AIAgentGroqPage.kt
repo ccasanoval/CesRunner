@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.ui.aiagentgroq
 
-import ai.koog.agents.core.feature.model.toAgentError
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -40,7 +38,6 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
-import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
 import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqIntent
 import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqSideEffect
 import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqState
@@ -48,7 +45,12 @@ import com.cesoft.cesrunner.ui.theme.SepMed
 import com.cesoft.cesrunner.ui.theme.SepMin
 import com.cesoft.cesrunner.ui.theme.fontBig
 import org.koin.androidx.compose.koinViewModel
-import kotlin.text.firstOrNull
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Composable
 fun AIAgentGroqPage(
@@ -96,7 +98,7 @@ private fun Content(
     state: AIAgentGroqState.Init,
     reduce: (intent: AIAgentGroqIntent) -> Unit,
 ) {
-    android.util.Log.e("AA", "-------------- $state")
+    //android.util.Log.e("Page", "Content-------------- state = $state")
     if(state.loading) {
         DisableLoadingCompo()
     }
@@ -129,8 +131,6 @@ private fun Content(
         }
         Spacer(Modifier.height(SepMed))
         if(state.error != null) {
-            android.util.Log.e("Page", "state.error---A--------------- ${state.error} / ${state.error.toAgentError()} ")
-            android.util.Log.e("Page", "state.error---B--------------- ${state.error.toAgentError().message} / ${state.error.toAgentError().stackTrace.firstOrNull()?.toString()} ")
             Text(
                 text = state.error.message ?: "Error ?",
                 color = Color.Red,
@@ -154,7 +154,7 @@ private fun Content(
                 }
                 for(o in state.responseData) {
                     item {
-                        android.util.Log.e("Page", "----------- ${o.id} / ${o.name} / ${o.distance} / ${o.time} / ${o.timeIni} / ${o.timeEnd} / ${o.vo2Max} / ${o.distanceToLocation}")
+                        android.util.Log.e("Page", "----------- ${o.id} / ${o.name} / ${o.distance} / ${o.timeIni} / ${o.timeEnd} / ${o.vo2Max} / ${o.distanceToLocation}")
                         HorizontalDivider()
                         Text(
                             text = "Id: ${o.id}",
@@ -164,12 +164,21 @@ private fun Content(
                                 reduce(AIAgentGroqIntent.GoToTrack(idTrack = o.id))
                             }
                         )
-                        if(o.name != null) Text(stringResource(R.string.name) + ": ${o.name}")
-                        if(o.distance > 0) Text(stringResource(R.string.distance)+": ${o.distance} m")//TODO: To km if > 1000m
-                        if(o.time != null) Text(stringResource(R.string.time)+": ${o.time} ")//. . Lat/Lng: ${o.latitude} / ${o.longitude}")
-                        if(o.timeIni != null) Text(stringResource(R.string.time_ini)+": ${o.timeIni}")
-                        if(o.vo2Max > 0) Text("Vo2max: "+stringResource(R.string.vo2max, o.vo2Max))
-                        if(o.distanceToLocation > 0) Text(stringResource(R.string.distance_to_user)+": ${o.distanceToLocation} m")//TODO: To km if > 1000m
+                        if(o.name != null)
+                            Text(stringResource(R.string.name) + ": ${o.name}")
+                        if(o.distance > 0)
+                            Text(stringResource(R.string.distance)+": ${o.distance.toDistance()}")
+                        if(o.timeIni != null && o.timeEnd != null) {
+                            val time = o.timeEnd - o.timeIni
+                            Text(stringResource(R.string.time) + ": ${time.toHoursMinutes()} ")
+                        }
+                        if(o.timeIni != null) {
+                            Text(stringResource(R.string.time_ini) + ": ${o.timeIni.toDate()}")
+                        }
+                        if(o.vo2Max > 0)
+                            Text("Vo2max: "+stringResource(R.string.vo2max, o.vo2Max))
+                        if(o.distanceToLocation > 0)
+                            Text(stringResource(R.string.distance_to_user)+": ${o.distanceToLocation.toDistance()}")
                     }
                 }
                 item {
@@ -182,6 +191,32 @@ private fun Content(
             }
         }
     }
+}
+
+fun Int.toDistance(): String {
+    return if(this < 1000) {
+        "$this m"
+    }
+    else {
+        val km = floorDiv(1000)
+        val m = this - km * 1000
+        "$km km \t $m m"
+    }
+}
+
+fun Long.toDate(showTime: Boolean = true): String? {
+    if (this == 0L) return null
+    val date = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
+    val formatter = if (showTime) DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+    else DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    return date.format(formatter)
+}
+fun Long.toHoursMinutes(): String {
+    val duration = toDuration(DurationUnit.MILLISECONDS)
+    val h = duration.inWholeHours
+    val m = duration.inWholeMinutes
+    return if (h > 0) "${h}h ${m}m"
+    else "${m} min"
 }
 
 @Composable
@@ -206,7 +241,7 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
             prompt.value = "¿Cuál es la carrera más larga?"
         }
         PredefinedOptionButton("Nombre") {
-            prompt.value = "Encuentra la carrera que se llama "
+            prompt.value = "Encuentra la carrera que lleva 'xxx' en el nombre"
         }
         PredefinedOptionButton("Vo2Max") {
             prompt.value = "¿Qué carrera tiene el mayor vo2Max?"
@@ -214,18 +249,21 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
         PredefinedOptionButton("Vo2Min") {
             prompt.value = "¿Qué carrera tiene el menor vo2Max?"
         }
+        PredefinedOptionButton("Fecha") {
+            prompt.value = "Muestrame la carrera del 23 de octubre?"
+        }
         PredefinedOptionButton("Complex A") {
             prompt.value = "Ordena las carreras por mayor Vo2Max y dame las tres primeras, gracias."
         }
         // (sin el numero devuelve solo 2, y no las 3 que hay??!!)    ( o similar) -> hace que no quiera trabajar ??!!
         PredefinedOptionButton("Complex B") {
-            prompt.value = "Dame las 10 carreras que se llaman 'Canarias'"
+            prompt.value = "Dame las 10 carreras que se llaman 'xxx'"
         }
         PredefinedOptionButton("Geo") {
             prompt.value = "¿Qué carrera está cerca de aquí?"
         }
         PredefinedOptionButton("Geo2") {
-            prompt.value = "¿Que carrera con nombre canarias está cerca de la ubicación actual?"
+            prompt.value = "¿Que carrera que lleve 'xxx' en el nombre está cerca de la ubicación actual?"
         }
         PredefinedOptionButton("Geo3") {
             prompt.value = "Muestra carreras a menos de 50 metros de la ubicación actual"

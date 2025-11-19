@@ -1,6 +1,7 @@
 package com.cesoft.cesrunner.domain.repository
 
 import android.location.Location
+import com.cesoft.cesrunner.domain.entity.AIAgentRes
 import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -44,5 +45,5 @@ interface RepositoryContract {
     suspend fun getNearTracks(lat: Double, lng: Double, distanceMax: Int): Result<List<TrackDto>>
 
     // GROQ
-    suspend fun askGroq(prompt: String): Result<String>
+    suspend fun askGroq(prompt: String): Result<AIAgentRes>
 }

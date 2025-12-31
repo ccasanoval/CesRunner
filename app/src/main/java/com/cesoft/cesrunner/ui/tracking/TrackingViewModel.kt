@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
@@ -113,12 +115,10 @@ class TrackingViewModel(
 
     fun consumeSideEffect(
         sideEffect: TrackingSideEffect,
-        navController: NavController
+        onBack: () -> Unit
     ) {
         when(sideEffect) {
-            TrackingSideEffect.Close -> {
-                navController.popBackStack()
-            }
+            TrackingSideEffect.Close -> onBack()
         }
     }
 

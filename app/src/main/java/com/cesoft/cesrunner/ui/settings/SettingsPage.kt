@@ -6,19 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.entity.SettingsDto
@@ -46,63 +35,28 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SettingsPage(
-    navController: NavController,
+    onBack: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     MviScreen(
         state = viewModel.state,
-        onSideEffect = { sideEffect ->
-            viewModel.consumeSideEffect(
-                sideEffect = sideEffect,
-                navController = navController
-            )
-        },
-        onBackPressed = {
-            viewModel.execute(SettingsIntent.Close)
-        },
+        onSideEffect = { },
+        onBackPressed = onBack  // Android back button
+
     ) { state ->
-        Content(state = state, reduce = viewModel::execute)
+        Content(state = state, onBack = onBack, reduce = viewModel::execute)
     }
 }
 
 @Composable
 private fun Content(
     state: SettingsState,
-    reduce: (intent: SettingsIntent) -> Unit,
+    onBack: () -> Unit = {},
+    reduce: (intent: SettingsIntent) -> Unit = {},
 ) {
-    var onClose by remember { mutableStateOf({ reduce(SettingsIntent.Close) }) }
-    /*Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    //containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Text(stringResource(R.string.menu_settings))
-                },
-                navigationIcon = {
-                    IconButton(onClick = onClose) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-//                actions = {
-//                    IconButton(onClick = { /* do something */ }) {
-//                        Icon(
-//                            imageVector = Icons.Filled.Menu,
-//                            contentDescription = "Localized description"
-//                        )
-//                    }
-//                },
-            )
-        },*/
     ToolbarCompo(
         title = stringResource(R.string.menu_settings),
-        onBack = onClose
+        onBack = onBack // UI back icon
     ) {
         when(state) {
             is SettingsState.Loading -> {
@@ -111,10 +65,6 @@ private fun Content(
             }
             is SettingsState.Init -> {
                 var settings by remember { mutableStateOf(state.settings) }
-                onClose = {
-                    reduce(SettingsIntent.Save(settings))
-                    //reduce(SettingsIntent.Close)
-                }
                 Settings(state.settings) { settings = it }
             }
         }
@@ -130,8 +80,6 @@ private fun Settings(
     var distance by remember { mutableIntStateOf(settings.minDistance) }
     var voice by remember { mutableStateOf(settings.voice) }
     LazyColumn(
-        //verticalArrangement = Arrangement.Center,
-        //horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = SepMin, horizontal = SepMax)
@@ -200,32 +148,10 @@ private fun Settings(
         }
     }
 }
-/*
-@Composable
-private fun ItemInt(
-    title: String,
-    value: Int,
-    onChange: (Int) -> Unit
-) {
-    Column {
-        OutlinedTextField(
-            value = value.toString(),
-            onValueChange = { onChange(it.toInt()) },
-            label = { Text(title) }
-        )
-    }
-}*/
 
 //--------------------------------------------------------------------------------------------------
 @Preview
 @Composable
 private fun Content_Preview() {
-    Content(SettingsState.Init(SettingsDto(5, 0, true))) {}
+    Content(SettingsState.Init(SettingsDto(5, 0, true)))
 }
-//
-//@Preview
-//@Composable
-//private fun SettingsPage_Preview() {
-//    val navController = rememberNavController()
-//    Surface { SettingsPage(navController, SettingsViewModel()) }
-//}

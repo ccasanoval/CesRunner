@@ -2,11 +2,9 @@ package com.cesoft.cesrunner.ui.aiagentgroq
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.AIAgentRes
 import com.cesoft.cesrunner.domain.usecase.groq.AskGroqUC
@@ -36,32 +34,8 @@ class AIAgentGroqViewModel(
     }
     private fun executeIntent(intent: AIAgentGroqIntent) =
         when(intent) {
-            AIAgentGroqIntent.Back -> executeBack()
             is AIAgentGroqIntent.ExecPrompt -> executePrompt(intent.prompt)
-            is AIAgentGroqIntent.GoToTrack -> executeGoToTrack(intent.idTrack)
         }
-
-    fun consumeSideEffect(
-        sideEffect: AIAgentGroqSideEffect,
-        navController: NavController,
-    ) {
-        when(sideEffect) {
-            AIAgentGroqSideEffect.Back -> {
-                navController.popBackStack()
-            }
-            is AIAgentGroqSideEffect.GoToTrack -> {
-                navController.navigate(Page.TrackDetail.createRoute(sideEffect.id))
-            }
-        }
-    }
-
-    private fun executeBack(): Flow<AIAgentGroqTransform.AddSideEffect> = flow {
-        emit(AIAgentGroqTransform.AddSideEffect(AIAgentGroqSideEffect.Back))
-    }
-
-    private fun executeGoToTrack(id: Long):Flow<AIAgentGroqTransform.AddSideEffect> = flow {
-        emit(AIAgentGroqTransform.AddSideEffect(AIAgentGroqSideEffect.GoToTrack(id)))
-    }
 
     private fun executePrompt(prompt: String): Flow<AIAgentGroqTransform.GoInit> = flow {
         emit(AIAgentGroqTransform.GoInit(prompt = prompt, loading = true))

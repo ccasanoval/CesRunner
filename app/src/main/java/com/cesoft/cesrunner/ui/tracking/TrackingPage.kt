@@ -23,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -49,7 +48,7 @@ import java.text.DecimalFormatSymbols
 //TODO: Remember the zoom the user set for all the session...
 @Composable
 fun TrackingPage(
-    navController: NavController,
+    onBack: () -> Unit,
     viewModel: TrackingViewModel = koinViewModel(),
 ) {
     MviScreen(
@@ -57,7 +56,7 @@ fun TrackingPage(
         onSideEffect = { sideEffect ->
             viewModel.consumeSideEffect(
                 sideEffect = sideEffect,
-                navController = navController
+                onBack = onBack
             )
         },
         onBackPressed = {

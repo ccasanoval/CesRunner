@@ -8,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +53,12 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun HomePage(
     navController: NavController,
+    onStart: () -> Unit,
+    onTracks: () -> Unit,
+    onMap: () -> Unit,
+    onAIAgent: () -> Unit,
+    onAIAgentGroq: () -> Unit,
+    onSettings: () -> Unit,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
@@ -76,7 +81,15 @@ fun HomePage(
                 LoadingCompo()
             }
             is HomeState.Init -> {
-                Content(state = state, reduce = viewModel::execute)
+                Content(
+                    state = state,
+                    onStart = onStart,
+                    onTracks = onTracks,
+                    onMap = onMap,
+                    onAIAgent = onAIAgent,
+                    onAIAgentGroq = onAIAgentGroq,
+                    onSettings = onSettings
+                )
             }
         }
     }
@@ -85,7 +98,12 @@ fun HomePage(
 @Composable
 private fun Content(
     state: HomeState.Init,
-    reduce: (intent: HomeIntent) -> Unit,
+    onStart: () -> Unit = {},
+    onTracks: () -> Unit = {},
+    onMap: () -> Unit = {},
+    onAIAgent: () -> Unit = {},
+    onAIAgentGroq: () -> Unit = {},
+    onSettings: () -> Unit = {}
 ) {
     Surface {
         Column(
@@ -121,7 +139,15 @@ private fun Content(
 //            }
 
             /// Actions
-            ActionsCompo(state, reduce)
+            ActionsCompo(
+                state = state,
+                onStart = onStart,
+                onTracks = onTracks,
+                onMap = onMap,
+                onAIAgent = onAIAgent,
+                onAIAgentGroq = onAIAgentGroq,
+                onSettings = onSettings
+            )
         }
     }
 }
@@ -151,7 +177,15 @@ private fun HomeButton(
 }
 
 @Composable
-private fun ActionsCompo(state: HomeState.Init, reduce: (intent: HomeIntent) -> Unit) {
+private fun ActionsCompo(
+    state: HomeState.Init,
+    onStart: () -> Unit,
+    onTracks: () -> Unit,
+    onMap: () -> Unit,
+    onAIAgent: () -> Unit,
+    onAIAgentGroq: () -> Unit,
+    onSettings: () -> Unit
+) {
     val modifier = Modifier.fillMaxWidth(.8f).padding(SepMed)
     val track by state.trackFlow.collectAsStateWithLifecycle()
     val isTracking = track?.isCreated == true
@@ -160,7 +194,7 @@ private fun ActionsCompo(state: HomeState.Init, reduce: (intent: HomeIntent) -> 
         title = title,
         icon = R.mipmap.ic_run,
         modifier = modifier,
-        onClick = { reduce(HomeIntent.GoStart) }
+        onClick = onStart
     )
     if(isTracking) CurrentTrackingCompo(track)
 
@@ -168,31 +202,31 @@ private fun ActionsCompo(state: HomeState.Init, reduce: (intent: HomeIntent) -> 
         title = R.string.menu_tracks,
         icon = R.mipmap.ic_list,
         modifier = modifier,
-        onClick = { reduce(HomeIntent.GoTracks) }
+        onClick = onTracks
     )
     HomeButton(
         title = R.string.menu_maps,
         icon = R.mipmap.ic_map,
         modifier = modifier,
-        onClick = { reduce(HomeIntent.GoMap) }
+        onClick = onMap
     )
     HomeButton(
         title = R.string.menu_ai_agent,
         icon = R.mipmap.ic_ai_agent,
         modifier = modifier,
-        onClick = { reduce(HomeIntent.GoAIAgent) }
+        onClick = onAIAgent
     )
     HomeButton(
         title = R.string.menu_ai_agent_groq,
         icon = R.mipmap.ic_ai_agent,
         modifier = modifier,
-        onClick = { reduce(HomeIntent.GoAIAgentGroq) }
+        onClick = onAIAgentGroq
     )
     HomeButton(
         title = R.string.menu_settings,
         icon = R.mipmap.ic_settings,
         modifier = modifier,
-        onClick = { reduce(HomeIntent.GoSettings) }
+        onClick = onSettings
     )
 //                HomeButton(
 //                    title = R.string.menu_gnss,
@@ -271,17 +305,5 @@ private fun HomePage_Preview() {
         trackFlow = MutableStateFlow(TrackDto.Empty),
         error = AppError.NetworkError,
     )
-    Content(state) { }
+    Content(state)
 }
-/*
-@Preview
-@Composable
-private fun HomePage_Preview() {
-    val state = HomeState.Init(
-        //trackFlow = flowOf(TrackDto(id = 69, name = "Tracking A")),
-        trackIdFlow = trackIdFlow,
-        trackFlow = null,
-        error = AppError.NetworkError,
-    )
-    Content(state) { }
-}*/

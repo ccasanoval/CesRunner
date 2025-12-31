@@ -1,8 +1,6 @@
 package com.cesoft.cesrunner.ui.aiagent
 
 import ai.koog.agents.core.feature.model.toAgentError
-import android.content.Context.INPUT_METHOD_SERVICE
-import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -32,14 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
@@ -52,24 +48,24 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AIAgentPage(
-    navController: NavController,
-    viewModel: AIAgentViewModel = koinViewModel(),
+    onGoBack: () -> Unit,
+    onGoToTrack: (Long) -> Unit,
+    viewModel: AIAgentViewModel = koinViewModel()
 ) {
     MviScreen(
         state = viewModel.state,
         onSideEffect = { sideEffect: AIAgentSideEffect ->
-            viewModel.consumeSideEffect(
-                sideEffect = sideEffect,
-                navController = navController
-            )
+//            viewModel.consumeSideEffect(sideEffect = sideEffect)
         },
-        onBackPressed = {
-            viewModel.execute(AIAgentIntent.Back)
-        },
+        onBackPressed = onGoBack,
     ) { state: AIAgentState ->
         when(state) {
             is AIAgentState.Init -> {
-                Content(state = state, reduce = viewModel::execute)
+                Content(
+                    state = state,
+                    reduce = viewModel::execute,
+                    onGoToTrack = onGoToTrack
+                )
             }
         }
     }
@@ -94,12 +90,12 @@ fun DisableLoadingCompo(modifier: Modifier = Modifier) {
 @Composable
 private fun Content(
     state: AIAgentState.Init,
-    reduce: (intent: AIAgentIntent) -> Unit,
+    reduce: (intent: AIAgentIntent) -> Unit = {},
+    onGoToTrack: (Long) -> Unit = {}
 ) {
     if(state.loading) {
         DisableLoadingCompo()
     }
-
     val prompt = rememberSaveable { mutableStateOf("Which is the longest run?") }
     LaunchedEffect(state.prompt, state.response) {
         if(state.prompt.isNotBlank()) prompt.value = state.prompt
@@ -158,7 +154,8 @@ private fun Content(
                             color = Color.Blue,
                             fontSize = fontBig,
                             modifier = Modifier.clickable {
-                                reduce(AIAgentIntent.GoToTrack(idTrack = o.id))
+                                onGoToTrack(o.id)
+                                //reduce(AIAgentIntent.GoToTrack(idTrack = o.id))
                             }
                         )
                         Text(stringResource(R.string.name)+": ${o.name}")
@@ -228,7 +225,7 @@ private fun PredefinedOptions(prompt: MutableState<String>) {
 private fun AIAgentPage_Preview() {
     val state = AIAgentState.Init()
     Surface(modifier = Modifier.fillMaxWidth()) {
-        Content(state) { }
+        Content(state)
     }
 }
 
@@ -241,6 +238,6 @@ private fun AIAgentPage_Loading_Preview() {
         loading = true
     )
     Surface(modifier = Modifier.fillMaxWidth()) {
-        Content(state) { }
+        Content(state)
     }
 }

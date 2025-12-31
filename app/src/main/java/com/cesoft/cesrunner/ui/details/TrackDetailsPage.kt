@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +31,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.AppError
@@ -54,22 +54,20 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun TrackDetailsPage(
-    navController: NavController,
+    id: Long,
+    onBack: () -> Unit,
     viewModel: TrackDetailsViewModel = koinViewModel(),
 ) {
-    val context = LocalContext.current
+    viewModel.trackId = id
     MviScreen(
         state = viewModel.state,
         onSideEffect = { sideEffect ->
             viewModel.consumeSideEffect(
                 sideEffect = sideEffect,
-                navController = navController,
-                context = context
+                onBack = onBack
             )
         },
-        onBackPressed = {
-            viewModel.execute(TrackDetailsIntent.Close)
-        },
+        onBackPressed = onBack,
     ) { state ->
         when (state) {
             is TrackDetailsState.Loading -> {
@@ -77,7 +75,7 @@ fun TrackDetailsPage(
                 LoadingCompo()
             }
             is TrackDetailsState.Init -> {
-                Content(state, viewModel::execute)
+                Content(state, viewModel::execute, onBack)
             }
         }
     }
@@ -86,13 +84,14 @@ fun TrackDetailsPage(
 @Composable
 fun Content(
     state: TrackDetailsState.Init,
-    reduce: (TrackDetailsIntent) -> Unit,
+    reduce: (TrackDetailsIntent) -> Unit = {},
+    onBack: () -> Unit = {},
 ) {
     val askDelete = remember { mutableStateOf(false) }
     AskDelete(show = askDelete, onDelete = { reduce(TrackDetailsIntent.Delete) })
     ToolbarCompo(
         title = stringResource(R.string.menu_track_details),
-        onBack = { reduce(TrackDetailsIntent.Close) },
+        onBack = onBack,
         error = state.error,
         message = state.message?.toStr(LocalContext.current),
         actions = { ActionsMenu(reduce, askDelete) }
@@ -254,6 +253,6 @@ private fun TrackPage_Preview() {
         error = AppError.NotFound
     )
     Surface(modifier = Modifier.fillMaxWidth()) {
-        Content(state) { }
+        Content(state)
     }
 }

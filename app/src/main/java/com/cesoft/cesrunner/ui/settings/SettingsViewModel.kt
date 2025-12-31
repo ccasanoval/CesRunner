@@ -35,12 +35,6 @@ class SettingsViewModel(
     override val state = reducer.state
     override fun execute(intent: SettingsIntent) { reducer.executeIntent(intent) }
 
-//    private fun loading() = flow {
-//        emit(SettingsTransform.SetIsLoggingIn(isLoggingIn = true))
-//        delay(300)
-//        emit(LoginTransform.SetIsLoggingIn(isLoggingIn = false))
-//    }
-
     private fun executeIntent(intent: SettingsIntent) =
         when(intent) {
             SettingsIntent.Load -> exeLoad()
@@ -65,14 +59,6 @@ class SettingsViewModel(
         emit(SettingsTransform.AddSideEffect(SettingsSideEffect.Close))
     }
 
-    fun consumeSideEffect(
-        sideEffect: SettingsSideEffect,
-        navController: NavController
-    ) {
-        when(sideEffect) {
-            SettingsSideEffect.Close -> {
-                navController.popBackStack()
-            }
-        }
+    fun consumeSideEffect() {
     }
 }

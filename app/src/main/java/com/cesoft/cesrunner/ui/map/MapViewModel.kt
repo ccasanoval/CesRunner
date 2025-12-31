@@ -39,15 +39,15 @@ class MapViewModel(
             else -> executeClose()
         }
 
-    fun consumeSideEffect(
-        sideEffect: MapSideEffect,
-        navController: NavController,
-        context: Context,
-    ) {
-        when(sideEffect) {
-            MapSideEffect.Close -> { navController.popBackStack() }
-        }
-    }
+//    fun consumeSideEffect(
+//        sideEffect: MapSideEffect,
+//        navController: NavController,
+//        context: Context,
+//    ) {
+//        when(sideEffect) {
+//            MapSideEffect.Close -> { navController.popBackStack() }
+//        }
+//    }
 
     private fun executeClose() = flow {
         emit(MapTransform.AddSideEffect(MapSideEffect.Close))

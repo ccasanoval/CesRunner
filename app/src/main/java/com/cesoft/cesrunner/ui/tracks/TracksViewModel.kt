@@ -7,7 +7,6 @@ import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.usecase.DeleteTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadAllTracksUC
@@ -42,25 +41,13 @@ class TracksViewModel(
     private fun executeIntent(intent: TracksIntent) =
         when (intent) {
             TracksIntent.Load -> executeLoad()
-            TracksIntent.Close -> executeClose()
             is TracksIntent.Details -> executeDetails(intent.id)
             is TracksIntent.Delete -> executeDelete(intent.id)
         }
-    fun consumeSideEffect(
-        sideEffect: TracksSideEffect,
-        navController: NavController,
-        context: Context,
-    ) {
-        when (sideEffect) {
-            TracksSideEffect.Close -> { navController.popBackStack() }
-            is TracksSideEffect.Details -> {
-                navController.navigate(Page.TrackDetail.createRoute(sideEffect.id))
-            }
-        }
-    }
 
-    private fun executeClose() = flow {
-        emit(TracksTransform.AddSideEffect(TracksSideEffect.Close))
+    //fun consumeSideEffect(sideEffect: TracksSideEffect) {}
+    fun refresh() {
+        reducer.executeIntent(TracksIntent.Load)
     }
 
     private fun executeLoad() = flow {

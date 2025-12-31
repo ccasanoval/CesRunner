@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     //
     alias(libs.plugins.ksp)
-    kotlin("plugin.serialization")
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -54,10 +54,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        //compileOptions { jvmTarget = JvmTarget.JVM_24.target }
-        jvmTarget = "21"
-    }
+//    kotlinOptions {
+//        //compileOptions { jvmTarget = JvmTarget.JVM_24.target }
+//        jvmTarget = "21"
+//    }
     buildFeatures {
         compose = true
         buildConfig = true
@@ -91,6 +91,11 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.compose.material.icons.extended)
+    // Navigation 3
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.json)
 
     // Test
     testImplementation(libs.junit)
@@ -121,6 +126,6 @@ dependencies {
     // AI Agents
     implementation(libs.koog.agents)
     // JSON
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation(libs.converter.gson)
+    implementation(libs.kotlinx.serialization.json)
 }

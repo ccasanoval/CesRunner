@@ -5,10 +5,11 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -29,7 +30,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel(
@@ -42,6 +42,7 @@ class HomeViewModel(
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<HomeIntent, State<HomeState, HomeSideEffect>> {
 
+    lateinit var navigation: NavBackStack<NavKey>
 //    private var location: Location? = null
 //    init {
 //        android.util.Log.e(TAG, "init---a---------- 00000")
@@ -87,14 +88,15 @@ class HomeViewModel(
         context: Context,
     ) {
         when(sideEffect) {
-            HomeSideEffect.Start -> { navController.navigate(Page.Tracking.route) }
-            HomeSideEffect.GoSettings -> { navController.navigate(Page.Settings.route) }
-            HomeSideEffect.GoTracks -> { navController.navigate(Page.Tracks.route) }
-            HomeSideEffect.GoMap -> { navController.navigate(Page.Map.route) }
-            HomeSideEffect.GoGnss -> { navController.navigate(Page.Gnss.route) }
-            HomeSideEffect.GoAIAgent -> { navController.navigate(Page.AIAgent.route) }
-            HomeSideEffect.GoAIAgentGroq -> { navController.navigate(Page.AIAgentGroq.route) }
+//            HomeSideEffect.Start -> { navController.navigate(Page.Tracking.route) }
+//            HomeSideEffect.GoSettings -> { navController.navigate(Page.Settings.route) }
+//            HomeSideEffect.GoTracks -> { navController.navigate(Page.Tracks.route) }
+//            HomeSideEffect.GoMap -> { navController.navigate(Page.Map.route) }
+//            HomeSideEffect.GoGnss -> { navController.navigate(Page.Gnss.route) }
+//            HomeSideEffect.GoAIAgent -> { navController.navigate(Page.AIAgent.route) }
+//            HomeSideEffect.GoAIAgentGroq -> { navController.navigate(Page.AIAgentGroq.route) }
             HomeSideEffect.Close -> { (context as Activity).finish() }
+            else -> {}
         }
     }
 

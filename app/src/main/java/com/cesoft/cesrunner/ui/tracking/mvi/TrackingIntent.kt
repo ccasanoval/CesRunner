@@ -7,7 +7,7 @@ sealed class TrackingIntent: Intent {
     data object Close: TrackingIntent()
     //data object Refresh: TrackingIntent()
 
-    data object Pause: TrackingIntent()
-    data object Continue: TrackingIntent()
+    //data object Pause: TrackingIntent()
+    //data object Continue: TrackingIntent()
     data object Stop: TrackingIntent()
 }

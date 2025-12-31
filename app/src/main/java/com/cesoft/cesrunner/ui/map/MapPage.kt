@@ -40,20 +40,17 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun MapPage(
-    navController: NavController,
+    onBack: () -> Unit,
     viewModel: MapViewModel = koinViewModel(),
 ) {
-    val context = LocalContext.current
-    val onBack = { viewModel.execute(MapIntent.Close) }
     MviScreen(
         state = viewModel.state,
         onBackPressed = onBack,
         onSideEffect = { sideEffect: MapSideEffect ->
-            viewModel.consumeSideEffect(
-                sideEffect = sideEffect,
-                navController = navController,
-                context = context
-            )
+//            viewModel.consumeSideEffect(
+//                sideEffect = sideEffect,
+//                context = context
+//            )
         }
     ) { state: MapState ->
         when (state) {
@@ -62,7 +59,7 @@ fun MapPage(
                 LoadingCompo()
             }
             is MapState.Init -> {
-                Content(state = state, reduce = viewModel::execute)
+                Content(state = state, onBack = onBack)
             }
         }
     }
@@ -71,7 +68,7 @@ fun MapPage(
 @Composable
 private fun Content(
     state: MapState.Init,
-    reduce: (MapIntent) -> Unit
+    onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val mapView = rememberMapCompo(context)
@@ -86,7 +83,7 @@ private fun Content(
     var menuExpanded by remember { mutableStateOf(false) }
     ToolbarCompo(
         title = stringResource(R.string.menu_maps),
-        onBack = { reduce(MapIntent.Close) },
+        onBack = onBack,
         error = state.error,
         actions = {
             IconButton(onClick = { menuExpanded = !menuExpanded }) {

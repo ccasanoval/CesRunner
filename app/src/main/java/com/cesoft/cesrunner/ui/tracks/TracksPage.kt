@@ -8,27 +8,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.AppError
@@ -49,35 +42,39 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun TracksPage(
-    navController: NavController,
-    viewModel: TracksViewModel = koinViewModel(),
+    onDetails: (Long) -> Unit,
+    onBack: () -> Unit,
+    viewModel: TracksViewModel = koinViewModel()
 ) {
-    val context = LocalContext.current
+    LaunchedEffect(onDetails) {
+        viewModel.refresh() // In case user deleted the track in details
+    }
     MviScreen(
         state = viewModel.state,
         onSideEffect = { sideEffect ->
-            viewModel.consumeSideEffect(
-                sideEffect = sideEffect,
-                navController = navController,
-                context = context
-            )
+//            viewModel.consumeSideEffect(sideEffect = sideEffect)
         },
-        onBackPressed = {
-            viewModel.execute(TracksIntent.Close)
-        },
+        onBackPressed = onBack,
     ) { state ->
-        Content(state = state, reduce = viewModel::execute)
+        Content(
+            state = state,
+            reduce = viewModel::execute,
+            onDetails = onDetails,
+            onBack = onBack
+        )
     }
 }
 
 @Composable
 fun Content(
     state: TracksState,
-    reduce: (TracksIntent) -> Unit,//KFunction1<TracksIntent, Unit>
+    reduce: (TracksIntent) -> Unit = {},
+    onDetails: (Long) -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     ToolbarCompo(
         title = stringResource(R.string.menu_tracks),
-        onBack = { reduce(TracksIntent.Close) }
+        onBack = onBack
     ) {
         when (state) {
             is TracksState.Loading -> {
@@ -85,7 +82,7 @@ fun Content(
                 LoadingCompo()
             }
             is TracksState.Init -> {
-                TracksData(state = state, reduce = reduce)
+                TracksData(state = state, reduce = reduce, onDetails = onDetails)
             }
         }
     }
@@ -95,6 +92,7 @@ fun Content(
 fun TracksData(
     state: TracksState.Init,
     reduce: (TracksIntent) -> Unit,
+    onDetails: (Long) -> Unit = {}
 ) {
     Column(modifier = Modifier) {
         //TODO: Search bar: by date and name?
@@ -103,7 +101,10 @@ fun TracksData(
                 item {
                     Item(
                         data =  track,
-                        onClick = { reduce(TracksIntent.Details(track.id)) },
+                        onClick = {
+                            //reduce(TracksIntent.Details(track.id))
+                            onDetails(track.id)
+                                  },
                         onDelete = { reduce(TracksIntent.Delete(track.id)) },
                     )
                 }
@@ -195,6 +196,6 @@ private fun TrackPage_Preview() {
         error = AppError.NotFound
     )
     Surface(modifier = Modifier.fillMaxWidth()) {
-        Content(state) { }
+        Content(state)
     }
 }

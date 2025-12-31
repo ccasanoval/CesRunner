@@ -4,5 +4,5 @@ import com.adidas.mvi.Intent
 
 sealed class MapIntent : Intent {
     data object Load: MapIntent()
-    data object Close: MapIntent()
+    //data object Close: MapIntent()
 }

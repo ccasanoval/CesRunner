@@ -54,24 +54,20 @@ import kotlin.time.toDuration
 
 @Composable
 fun AIAgentGroqPage(
-    navController: NavController,
     viewModel: AIAgentGroqViewModel = koinViewModel(),
+    onGoBack: () -> Unit = {},
+    onGoToTrack: (Long) -> Unit = {}
 ) {
     MviScreen(
         state = viewModel.state,
         onSideEffect = { sideEffect: AIAgentGroqSideEffect ->
-            viewModel.consumeSideEffect(
-                sideEffect = sideEffect,
-                navController = navController
-            )
+//            viewModel.consumeSideEffect(sideEffect = sideEffect)
         },
-        onBackPressed = {
-            viewModel.execute(AIAgentGroqIntent.Back)
-        },
+        onBackPressed = onGoBack,
     ) { state: AIAgentGroqState ->
         when(state) {
             is AIAgentGroqState.Init -> {
-                Content(state = state, reduce = viewModel::execute)
+                Content(state = state, reduce = viewModel::execute, onGoToTrack)
             }
         }
     }
@@ -96,7 +92,8 @@ fun DisableLoadingCompo(modifier: Modifier = Modifier) {
 @Composable
 private fun Content(
     state: AIAgentGroqState.Init,
-    reduce: (intent: AIAgentGroqIntent) -> Unit,
+    reduce: (intent: AIAgentGroqIntent) -> Unit = {},
+    onGoToTrack: (Long) -> Unit = {}
 ) {
     //android.util.Log.e("Page", "Content-------------- state = $state")
     if(state.loading) {
@@ -161,7 +158,8 @@ private fun Content(
                             color = Color.Blue,
                             fontSize = fontBig,
                             modifier = Modifier.clickable {
-                                reduce(AIAgentGroqIntent.GoToTrack(idTrack = o.id))
+                                onGoToTrack(o.id)
+                                //reduce(AIAgentGroqIntent.GoToTrack(idTrack = o.id))
                             }
                         )
                         if(o.name != null)

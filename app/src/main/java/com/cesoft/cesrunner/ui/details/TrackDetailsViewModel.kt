@@ -1,15 +1,11 @@
 package com.cesoft.cesrunner.ui.details
 
-import android.content.Context
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
 import com.cesoft.cesrunner.MessageType
-import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.data.gpx.GpxUtil
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -27,7 +23,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 
 class TrackDetailsViewModel(
-    private val savedStateHandle: SavedStateHandle,
     private val readTrack: ReadTrackUC,
     private val updateTrack: UpdateTrackUC,
     private val getLocation: GetLocationUC,
@@ -35,6 +30,7 @@ class TrackDetailsViewModel(
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TrackDetailsIntent, State<TrackDetailsState, TrackDetailsSideEffect>> {
     private var track: TrackDto = TrackDto.Empty
+    var trackId: Long = -1
 
     private val reducer =
         Reducer(
@@ -52,29 +48,25 @@ class TrackDetailsViewModel(
     private fun executeIntent(intent: TrackDetailsIntent) =
         when (intent) {
             TrackDetailsIntent.Load -> executeLoad()
-            TrackDetailsIntent.Close -> executeClose()
             TrackDetailsIntent.Delete -> executeDelete()
             TrackDetailsIntent.Export -> executeExport()
             is TrackDetailsIntent.SaveName -> executeSaveName(intent.name)
         }
+
     fun consumeSideEffect(
         sideEffect: TrackDetailsSideEffect,
-        navController: NavController,
-        context: Context,
+        onBack: () -> Unit
     ) {
-        when (sideEffect) {
-            TrackDetailsSideEffect.Close -> { navController.popBackStack() }
+        when(sideEffect) {
+            TrackDetailsSideEffect.Close -> onBack()
         }
     }
 
-    private fun executeClose() = flow {
-        emit(TrackDetailsTransform.AddSideEffect(TrackDetailsSideEffect.Close))
-    }
     private fun executeLoad() = flow {
         val location = getLocation()
-        val id = Page.TrackDetail.getId(savedStateHandle)
-        id?.let {
-            val res = readTrack(id)
+        //val id = Page.TrackDetail.getId(savedStateHandle)
+        if(trackId > 0) {
+            val res = readTrack(trackId)
             track = res.getOrNull() ?: TrackDto.Empty
             var error: AppError? = null
             val e = res.exceptionOrNull()
@@ -86,7 +78,7 @@ class TrackDetailsViewModel(
                 delay(ERROR_TIME)//Delete error from state
                 emit(TrackDetailsTransform.GoInit(track, location, null, null))
             }
-        } ?: run {
+        } else {
             emit(TrackDetailsTransform.GoInit(track, location, AppError.NotFound))
             delay(ERROR_TIME)//Delete error from state
             emit(TrackDetailsTransform.GoInit(track, location, null, null))

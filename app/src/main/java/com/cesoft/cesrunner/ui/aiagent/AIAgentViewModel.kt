@@ -3,11 +3,9 @@ package com.cesoft.cesrunner.ui.aiagent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.Page
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
@@ -65,28 +63,8 @@ class AIAgentViewModel(
     }
     private fun executeIntent(intent: AIAgentIntent) =
         when(intent) {
-            AIAgentIntent.Back -> executeBack()
-            is AIAgentIntent.ExecPrompt -> executePrompt(intent.prompt)
-            is AIAgentIntent.GoToTrack -> executeGoToTrack(intent.idTrack)
-        }
-
-    fun consumeSideEffect(
-        sideEffect: AIAgentSideEffect,
-        navController: NavController,
-    ) {
-        when(sideEffect) {
-            AIAgentSideEffect.Back -> {
-                navController.popBackStack()
-            }
-            is AIAgentSideEffect.GoToTrack -> {
-                navController.navigate(Page.TrackDetail.createRoute(sideEffect.id))
-            }
-        }
-    }
-
-    private fun executeBack() = flow {
-        emit(AIAgentTransform.AddSideEffect(AIAgentSideEffect.Back))
-    }
+             is AIAgentIntent.ExecPrompt -> executePrompt(intent.prompt)
+         }
 
     private fun jsonToRunEntity(json: String): List<RunEntity> {
         val gson = GsonBuilder()
@@ -104,10 +82,6 @@ class AIAgentViewModel(
             }
         }
         return listOf()
-    }
-
-    private fun executeGoToTrack(id: Long) = flow {
-        emit(AIAgentTransform.AddSideEffect(AIAgentSideEffect.GoToTrack(id)))
     }
 
     private fun executePrompt(prompt: String) = flow {
@@ -152,5 +126,4 @@ class AIAgentViewModel(
         }
         emit(callbackResult)
     }
-
  }

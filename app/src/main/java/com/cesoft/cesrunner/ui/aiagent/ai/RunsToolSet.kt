@@ -25,16 +25,13 @@ class RunsToolSet(
         distanceMax: Int?,
     ): String {
         getLocation()?.let { l ->
-            android.util.Log.e("RunToolsSet", "searchByLocationNear----------******************************************************* $l : $distanceMax")
             val res = getNearTracks(l.latitude, l.longitude, distanceMax)
             if(res.isSuccess) {
-                android.util.Log.e("RunToolsSet", "searchByLocationNear---------- success")
                 res.getOrNull()?.let { tracks ->
-                    android.util.Log.e("RunToolsSet", "searchByLocationNear---------- ${tracks.size}")
                     return tracksToString(tracks.map { RunEntity.toUi(it) })
                 }
             }
-            DB_ERR + res.exceptionOrNull()?.message
+            return DB_ERR + res.exceptionOrNull()?.message
         }
         return NO_LOCATION
     }
@@ -43,7 +40,6 @@ class RunsToolSet(
     @LLMDescription("Returns current location, the latitude and longitude where the user is")
     suspend fun getCurrentLocation(): String {
         getLocation()?.let { l ->
-            android.util.Log.e("RunToolsSet", "getCurrentLocation----------******************************************************** $l")
             val ll = RunEntity.Location(l.latitude, l.longitude)
             val gson = Gson()
             return gson.toJson(ll)
@@ -144,25 +140,17 @@ class RunsToolSet(
     @Tool
     @LLMDescription("Get all the runs and all their data to compare fields")
     suspend fun getRuns(): String {
-    //suspend fun getRuns(): Result<List<RunEntity>> {
         val res: Result<List<TrackDto>> = filterTracks()//TODO: getAll()
         return if (res.isSuccess) {
             val tracks = res.getOrNull()
             if(tracks.isNullOrEmpty()) {
                 NO_RUN
-                //Result.failure(Throwable(NO_RUN))
             }
             else {
-                val tracks = tracks.map {
-                    //val l = getTrackLocation(it.id)
-                    RunEntity.toUi(it)
-                }
-                tracksToString(tracks)
-                //Result.success(tracks.map { RunEntity.toUi(it) })
+                tracksToString(tracks.map { RunEntity.toUi(it) })
             }
         } else {
             DB_ERR + res.exceptionOrNull()?.message
-            //Result.failure(Throwable(DB_ERR + res.exceptionOrNull()?.message))
         }
     }
 

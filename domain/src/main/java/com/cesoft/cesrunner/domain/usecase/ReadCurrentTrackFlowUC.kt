@@ -1,26 +1,25 @@
 package com.cesoft.cesrunner.domain.usecase
 
-import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flattenConcat
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.flatMapLatest
 
 class ReadCurrentTrackFlowUC(private val repository: RepositoryContract) {
-    @OptIn(FlowPreview::class)
+    /// Database flows never complete, so when the current track changes (ie: tracking stops)
+    /// the flow of the previous track must be cancelled: flatMapLatest, not flattenConcat
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend operator fun invoke(): Result<Flow<TrackDto?>> {
-        val res = repository.readCurrentTrackIdFlow()
-        val flow = res.getOrNull()?.filterNotNull()
-        if(res.isSuccess && flow != null) {
-            return Result.success(
-                flow.transform { id ->
-                    repository.readTrackFlow(id).getOrNull()?.let { emit(it) }
-                }.flattenConcat()//.stateIn(WhileSubscribed(5_000L)) ?
-            )
+        val idFlow = repository.readCurrentTrackIdFlow().getOrElse {
+            return Result.failure(it)
         }
-        return Result.failure(res.exceptionOrNull() ?: AppError.NotFound)
+        return Result.success(
+            idFlow.filterNotNull().flatMapLatest { id ->
+                repository.readTrackFlow(id).getOrNull() ?: emptyFlow()
+            }
+        )
     }
 }

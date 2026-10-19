@@ -132,7 +132,6 @@ class TrackDetailsViewModel(
     }
 
     companion object {
-        private const val TAG = "TrackDetailsVM"
         private const val MESSAGE_TIME = 3000L//ms
         private const val ERROR_TIME = 3000L//ms
     }

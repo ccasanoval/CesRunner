@@ -29,15 +29,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
+import com.cesoft.cesrunner.toUserMessage
 import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqIntent
 import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqSideEffect
 import com.cesoft.cesrunner.ui.aiagentgroq.mvi.AIAgentGroqState
@@ -95,7 +96,6 @@ private fun Content(
     reduce: (intent: AIAgentGroqIntent) -> Unit = {},
     onGoToTrack: (Long) -> Unit = {}
 ) {
-    //android.util.Log.e("Page", "Content-------------- state = $state")
     if(state.loading) {
         DisableLoadingCompo()
     }
@@ -129,7 +129,7 @@ private fun Content(
         Spacer(Modifier.height(SepMed))
         if(state.error != null) {
             Text(
-                text = state.error.message ?: "Error ?",
+                text = state.error.toUserMessage(LocalContext.current),
                 color = Color.Red,
                 modifier = Modifier
                     .weight(.3f)
@@ -151,7 +151,6 @@ private fun Content(
                 }
                 for(o in state.responseData) {
                     item {
-                        android.util.Log.e("Page", "----------- ${o.id} / ${o.name} / ${o.distance} / ${o.timeIni} / ${o.timeEnd} / ${o.vo2Max} / ${o.distanceToLocation}")
                         HorizontalDivider()
                         Text(
                             text = "Id: ${o.id}",
@@ -159,18 +158,17 @@ private fun Content(
                             fontSize = fontBig,
                             modifier = Modifier.clickable {
                                 onGoToTrack(o.id)
-                                //reduce(AIAgentGroqIntent.GoToTrack(idTrack = o.id))
                             }
                         )
-                        if(o.name != null)
+                        if(o.name.isNotEmpty())
                             Text(stringResource(R.string.name) + ": ${o.name}")
                         if(o.distance > 0)
                             Text(stringResource(R.string.distance)+": ${o.distance.toDistance()}")
-                        if(o.timeIni != null && o.timeEnd != null) {
+                        if(o.timeIni > 0 && o.timeEnd > 0) {
                             val time = o.timeEnd - o.timeIni
                             Text(stringResource(R.string.time) + ": ${time.toHoursMinutes()} ")
                         }
-                        if(o.timeIni != null) {
+                        if(o.timeIni > 0) {
                             Text(stringResource(R.string.time_ini) + ": ${o.timeIni.toDate()}")
                         }
                         if(o.vo2Max > 0)

@@ -15,7 +15,6 @@ object AIAgentGroqTransform {
         val error: Throwable? = null
     ): ViewTransform<AIAgentGroqState, AIAgentGroqSideEffect>() {
         override fun mutate(currentState: AIAgentGroqState): AIAgentGroqState {
-            //android.util.Log.e("AIAgentTransform", "GoInit-------------------- $prompt -> $response / $loading / $error")
             return AIAgentGroqState.Init(prompt, response, responseData, loading, error)
         }
     }

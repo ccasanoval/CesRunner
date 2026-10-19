@@ -4,7 +4,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -15,13 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.data.gpx.GpxUtil
@@ -32,7 +29,6 @@ import com.cesoft.cesrunner.ui.common.MapCompo
 import com.cesoft.cesrunner.ui.common.ToolbarCompo
 import com.cesoft.cesrunner.ui.common.rememberMapCompo
 import com.cesoft.cesrunner.ui.map.mvi.MapIntent
-import com.cesoft.cesrunner.ui.map.mvi.MapSideEffect
 import com.cesoft.cesrunner.ui.map.mvi.MapState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -46,12 +42,7 @@ fun MapPage(
     MviScreen(
         state = viewModel.state,
         onBackPressed = onBack,
-        onSideEffect = { sideEffect: MapSideEffect ->
-//            viewModel.consumeSideEffect(
-//                sideEffect = sideEffect,
-//                context = context
-//            )
-        }
+        onSideEffect = { }
     ) { state: MapState ->
         when (state) {
             is MapState.Loading -> {

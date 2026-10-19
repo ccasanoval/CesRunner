@@ -5,9 +5,11 @@ datastorePreferences = "1.2.0"
 koogAgents = "0.6.0"
 kotlin = "2.3.0"
 kotlinxSerializationJson = "1.9.0"
-ksp = "2.2.21-2.0.4"
+ksp = "2.3.12"
 coreKtx = "1.17.0"
 junit = "4.13.2"
+kotlinxCoroutines = "1.10.2"
+mockk = "1.14.5"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
@@ -17,13 +19,13 @@ materialIconsExtended = "1.7.8"
 mvi = "1.9.3"
 mviCompose = "0.3.0"
 navigation3Runtime = "1.0.0"
-navigationCompose = "2.9.6"
+groqKt = "0.1.2"
+ktor = "3.3.2"
 appcompat = "1.7.1"
 material = "1.13.0"
 osmdroidAndroid = "6.1.20"
 roomRuntime = "2.8.4"
 koin = "4.1.1"
-koin-annotations = "2.3.1"
 koin-android = "4.1.1"
 koin-compose = "4.1.1"
 lifecycleService = "2.10.0"
@@ -35,14 +37,18 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleRuntimeKtx" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3Runtime" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3Runtime" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+groq-kt = { module = "io.github.vyfor:groq-kt", version.ref = "groqKt" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
@@ -62,8 +68,6 @@ material = { group = "com.google.android.material", name = "material", version.r
 mvi = { module = "com.adidas.mvi:mvi", version.ref = "mvi" }
 koinCore = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koinAndroid = { module = "io.insert-koin:koin-android", version.ref = "koin-android" }
-koinAnnotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
-koinKspCompiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koin-annotations" }
 koinCompose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin-compose" }
 mvi-compose = { module = "com.adidas.mvi:mvi-compose", version.ref = "mviCompose" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
@@ -73,6 +77,8 @@ osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "os
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

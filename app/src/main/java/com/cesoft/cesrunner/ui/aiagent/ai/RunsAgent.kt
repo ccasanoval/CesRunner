@@ -16,13 +16,25 @@ import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
 import ai.koog.prompt.llm.OllamaModels
-import com.cesoft.cesrunner.BuildConfig
+import com.cesoft.cesrunner.domain.entity.ApiKeysDto
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
 
 class RunsAgent {
     enum class Model { GEMINI, OPENAI, OPEN_ROUTER, OLLAMA, DEEPSEEK }
+
+    companion object {
+        /// Ollama runs locally and doesn't need a key
+        fun apiKeyFor(model: Model, keys: ApiKeysDto): String = when(model) {
+            Model.GEMINI -> keys.gemini
+            Model.OPENAI -> keys.openAi
+            Model.OPEN_ROUTER -> keys.openRouter
+            Model.DEEPSEEK -> keys.deepSeek
+            Model.OLLAMA -> ""
+        }
+        fun needsApiKey(model: Model) = model != Model.OLLAMA
+    }
 
     private val _agent: AIAgent<String, String>
 
@@ -42,6 +54,7 @@ class RunsAgent {
 
     constructor(
         model: Model,
+        apiKey: String,
         filterTracks: FilterTracksUC,
         getLocation: GetLocationUC,
         getNearTracks: GetNearTracksUC,
@@ -55,20 +68,18 @@ class RunsAgent {
             onAgentCompleted, onAgentExecutionFailed)
 
         val temperature = 0.2
-        val maxIterations = 10
         val strategy = strategyStr
 
         _agent = when (model) {
             Model.GEMINI -> {
                 AIAgent<String, String>(
-                    promptExecutor = simpleGoogleAIExecutor(BuildConfig.GEMINI_KEY),
+                    promptExecutor = simpleGoogleAIExecutor(apiKey),
                     systemPrompt = systemPrompt,
                     llmModel = GoogleModels.Gemini2_0FlashLite,
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
                     temperature = temperature,
-                    //maxIterations = 5,
                 )
             }
             //NOTE: DEEPSEEK = 402 Payment Required
@@ -76,7 +87,7 @@ class RunsAgent {
                 AIAgent(
                     promptExecutor = MultiLLMPromptExecutor(
                         DeepSeekLLMClient(
-                            apiKey = BuildConfig.DEEPSEEK_KEY,
+                            apiKey = apiKey,
                             settings = DeepSeekClientSettings()
                         )
                     ),
@@ -86,31 +97,28 @@ class RunsAgent {
                     toolRegistry = toolRegistry,
                     strategy = strategy,
                     temperature = temperature,
-                    //maxIterations = 5,
                 )
             }
             Model.OPENAI -> {
                 AIAgent(
-                    promptExecutor = simpleOpenAIExecutor(BuildConfig.OPENAI_KEY),
+                    promptExecutor = simpleOpenAIExecutor(apiKey),
                     systemPrompt = systemPrompt,
                     llmModel = OpenAIModels.Chat.GPT5Nano,
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
                     temperature = temperature,
-                    //maxIterations = 5,
                 )
             }
             Model.OPEN_ROUTER -> {
                 AIAgent(
-                    promptExecutor = simpleOpenRouterExecutor(BuildConfig.OPENROUTER_KEY),
+                    promptExecutor = simpleOpenRouterExecutor(apiKey),
                     systemPrompt = systemPrompt,
                     llmModel = OpenRouterModels.Claude3Haiku, //.Gemini2_5FlashLite,
                     installFeatures = { install(EventHandler, eventHandler) },
                     toolRegistry = toolRegistry,
                     strategy = strategy,
                     temperature = temperature,
-                    //maxIterations = 5,
                 )
             }
             Model.OLLAMA -> {//TODO: How does it work?
@@ -122,7 +130,6 @@ class RunsAgent {
                     toolRegistry = toolRegistry,
                     strategy = strategy,
                     temperature = temperature,
-                    //maxIterations = 5,
                 )
             }
         }

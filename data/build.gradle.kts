@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -15,13 +13,6 @@ android {
         minSdk = rootProject.extra.get("minSdkVer") as Int
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
-        android.buildFeatures.buildConfig = true
-        val keystoreFile = project.rootProject.file("local.properties")
-        val properties = Properties()
-        properties.load(keystoreFile.inputStream())
-        var key = properties.getProperty("GROQ_KEY") ?: ""
-        buildConfigField(type = "String", name = "GROQ_KEY", value = key)
     }
 
     buildTypes {
@@ -33,13 +24,14 @@ android {
             )
         }
     }
+    testOptions {
+        // android.util.Log & co. return default values instead of throwing in local unit tests
+        unitTests.isReturnDefaultValues = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-//    kotlinOptions {
-//        jvmTarget = "21"
-//    }
 }
 
 dependencies {
@@ -50,30 +42,28 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
     // DB - Room
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
     // Preferences
     implementation(libs.androidx.datastore.preferences)
-    //implementation(libs.androidx.security.crypto)
-
-    // DI - Hilt
-//    ksp(libs.hilt.android.ksp)
-//    implementation(libs.hilt.android)
-//    implementation(libs.androidx.hilt.navigation.compose)
-//    annotationProcessor(libs.hilt.compiler)
 
     // AI Agent - Groq
-    implementation("io.github.vyfor:groq-kt:0.1.2")
-    implementation("io.ktor:ktor-client-android:3.3.2")
-    //implementation("io.ktor:ktor-client-okhttp:3.3.2")
+    implementation(libs.groq.kt)
+    implementation(libs.ktor.client.android)
     // JSON
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation(libs.converter.gson)
+    implementation(libs.kotlinx.serialization.json)
+}
+
+ksp {
+    // Keep the Room schema history in the repo, needed to write and test migrations
+    arg("room.schemaLocation", "$projectDir/schemas")
 }

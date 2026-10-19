@@ -1,6 +1,5 @@
 package com.cesoft.cesrunner.ui.aiagent
 
-import ai.koog.agents.core.feature.model.toAgentError
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -30,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
+import com.cesoft.cesrunner.toUserMessage
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentSideEffect
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentState
@@ -116,7 +117,6 @@ private fun Content(
         Button(
             modifier = Modifier.padding(start = SepMed),
             onClick = {
-                android.util.Log.e("AAA", "----------------- $kb "+ kb?.hide())
                 kb?.hide()
                 reduce(AIAgentIntent.ExecPrompt(prompt = prompt.value))
             }
@@ -125,10 +125,8 @@ private fun Content(
         }
         Spacer(Modifier.height(SepMed))
         if(state.error != null) {
-            android.util.Log.e("Page", "state.error---A--------------- ${state.error} / ${state.error.toAgentError()} ")
-            android.util.Log.e("Page", "state.error---B--------------- ${state.error.toAgentError().message} / ${state.error.toAgentError().stackTrace.firstOrNull()?.toString()} ")
             Text(
-                text = state.error.message ?: "Error ?",
+                text = state.error.toUserMessage(LocalContext.current),
                 color = Color.Red,
                 modifier = Modifier
                     .weight(.4f)

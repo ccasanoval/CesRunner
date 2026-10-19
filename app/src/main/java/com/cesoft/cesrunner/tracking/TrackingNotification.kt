@@ -12,7 +12,7 @@ import com.cesoft.cesrunner.ui.MainActivity
 
 object TrackingNotification {
     private const val NOTIFICATION_CHANNEL_ID = "CesRunnerChannel"
-    var CANCEL_TRACKING: String = ""
+    const val CANCEL_TRACKING = "com.cesoft.cesrunner.CANCEL_TRACKING"
 
     fun generateNotification(
         context: Context,
@@ -24,41 +24,28 @@ object TrackingNotification {
         notificationChannel.enableVibration(false)
         notificationChannel.importance = NotificationManager.IMPORTANCE_DEFAULT
         notificationChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        //notificationChannel.setSound(null, null)
         notificationManager.createNotificationChannel(notificationChannel)
         val bigTextStyle = NotificationCompat.BigTextStyle().setBigContentTitle(titleText)
 
-//        val cancelIntent = Intent(context, TrackingService::class.java)
-//        cancelIntent.putExtra(CANCEL_TRACKING, true)
-//        val servicePendingIntent = PendingIntent.getService(
-//            context, 0, cancelIntent,
-//            PendingIntent.FLAG_IMMUTABLE + PendingIntent.FLAG_UPDATE_CURRENT
-//        )
 
         val launchActivityIntent = Intent(context, MainActivity::class.java)
         launchActivityIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         val activityPendingIntent = PendingIntent.getActivity(
-            context, 0, launchActivityIntent, PendingIntent.FLAG_MUTABLE)
+            context, 0, launchActivityIntent, PendingIntent.FLAG_IMMUTABLE)
 
         val notificationCompatBuilder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
         return notificationCompatBuilder
             .setStyle(bigTextStyle)
             .setContentTitle(titleText)
-//            .setContentText(mainNotificationText)//TODO: Show current tracking data
+            //TODO: Show current tracking data with setContentText()
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setOngoing(true)
-            //.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .addAction(
                 android.R.drawable.ic_input_add,
                 context.getString(R.string.open),
                 activityPendingIntent
             )
-//            .addAction(
-//                android.R.drawable.ic_menu_close_clear_cancel,
-//                context.getString(R.string.stop_tracking),
-//                servicePendingIntent
-//            )
             .build()
     }
 }

@@ -5,98 +5,59 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
+import android.util.Log
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 @SuppressLint("MissingPermission")
 class LocationDataSource(
-    context: Context
+    private val context: Context
 ) {
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    // Last location received by any consumer, used as fallback when the system has none cached
+    @Volatile
+    private var currentLocation: Location? = null
+
     init {
-        android.util.Log.e(TAG, "INIT:---------- 00000")
-        try {
-            locationManager.getCurrentLocation(
-                LocationManager.NETWORK_PROVIDER,
-                null,
-                context.applicationContext.mainExecutor
-            ) {
-                android.util.Log.e(TAG, "INIT:NET:---------- $it")
-                _currentLocation = it
+        // Warm up the cache, so the first screens can show something before any update arrives
+        for(provider in listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)) {
+            try {
+                locationManager.getCurrentLocation(provider, null, context.mainExecutor) { location ->
+                    location?.let { currentLocation = it }
+                }
             }
-        }
-        catch (e: Exception) {
-            android.util.Log.e(TAG, "INIT:NET:e:---------- $e")
-        }
-        try {
-            locationManager.getCurrentLocation(
-                LocationManager.GPS_PROVIDER,
-                null,
-                context.applicationContext.mainExecutor
-            ) {
-                android.util.Log.e(TAG, "INIT:GPS:---------- $it")
-                _currentLocation = it
+            catch(e: Exception) {
+                Log.e(TAG, "init: $provider: $e")
             }
-        }
-        catch (e: Exception) {
-            android.util.Log.e(TAG, "INIT:GPS:e:---------- $e")
         }
     }
 
     // Cached location in the system: doesn't activate GPS chip
-    @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(): Location? {
-        val net = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-        val gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        if(gps != null) return gps
-        if(net != null) return net
-        return _currentLocation
-    }
+    fun getLastKnownLocation(): Location? =
+        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            ?: currentLocation
 
-    private var _currentLocation: Location? = null
-    private val _locationFlow: MutableStateFlow<Location?> = MutableStateFlow(null)
-    private val _locationListener: LocationListener = object : LocationListener {
-        @SuppressLint("MissingPermission")
-        override fun onLocationChanged(location: Location) {
-            _currentLocation = location
-            _locationFlow.tryEmit(location)
-            android.util.Log.e(TAG, "*** onLocationChanged: $location / #subscribers: "+_locationFlow.subscriptionCount)
-            if(_locationFlow.subscriptionCount.value == 0) {
-                //TODO: Delay?
-                android.util.Log.e(TAG, "*** onLocationChanged: Zero subscribers, remove updates")
-                locationManager.removeUpdates(this)
-            }
+    /// Each collector gets its own listener, so different consumers (home screen, tracking service)
+    /// don't overwrite each other's interval, and updates stop when the collector is cancelled.
+    fun requestLocationUpdates(minInterval: Long, minDistance: Float): Flow<Location> = callbackFlow {
+        val listener = LocationListener { location ->
+            currentLocation = location
+            trySend(location)
         }
-        override fun onProviderEnabled(provider: String) {
-            android.util.Log.e(TAG, "*** locationListener: $provider")
-        }
-        override fun onProviderDisabled(provider: String) {
-            android.util.Log.e(TAG, "*** onProviderDisabled: $provider")
-        }
-    }
-    @SuppressLint("MissingPermission")
-    fun requestLocationUpdates(minInterval: Long, minDistance: Float): MutableStateFlow<Location?> {
         // FUSED_PROVIDER, ==> Google doesn't want FUSED to work!!
         //https://stackoverflow.com/questions/35456254/application-getting-wrong-location-until-open-inbuilt-google-map-application
-        //TODO: Add network provider?
         locationManager.requestLocationUpdates(
             LocationManager.GPS_PROVIDER,
             minInterval / 2,
             minDistance,
-            _locationListener)
-        return _locationFlow
+            context.mainExecutor,
+            listener
+        )
+        awaitClose { locationManager.removeUpdates(listener) }
     }
-    fun stopLocationUpdates() {
-        locationManager.removeUpdates(_locationListener)
-    }
-
-//    fun isGpsOn(): Boolean = locationManager.isLocationEnabled
-//    fun checkGpsStateAndStart() {
-//        if( ! locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-//            context.startActivity(intent)
-//        }
-//    }
 
     companion object {
         private const val TAG = "LocationDS"

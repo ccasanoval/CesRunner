@@ -25,6 +25,10 @@ interface TrackDao {
     @Update
     suspend fun update(data: LocalTrackDto)
 
+    /// Only the fields that change while tracking, so a rename done meanwhile is not overwritten
+    @Query("UPDATE $TrackTableName SET distance = :distance, timeIni = :timeIni, timeEnd = :timeEnd WHERE id = :id")
+    suspend fun updateProgress(id: Long, distance: Int, timeIni: Long, timeEnd: Long)
+
     @Delete
     suspend fun delete(data: LocalTrackDto)
 
@@ -38,16 +42,12 @@ interface TrackDao {
     @Query("SELECT * FROM $TrackTableName " +
             " WHERE (:id IS NULL OR id = :id)" +
             " AND (:name IS NULL OR name LIKE '%' || :name || '%')" +
-            //" AND (:name IS NULL OR name LIKE :name)" +
             " AND (:distance IS NULL OR (distance < :distance +100 AND distance > :distance -100))" +
-            " AND (:dateIni IS NULL OR :dateEnd IS NULL OR (:dateIni < timeIni AND :dateEnd > timeEnd))" +
             " ORDER BY id"
     )
     suspend fun filter(
         id: Long? = null,
         name: String? = null,
         distance: Int? = null,
-        dateIni: String? = null,
-        dateEnd: String? = null,
     ): List<LocalTrackDto>
 }

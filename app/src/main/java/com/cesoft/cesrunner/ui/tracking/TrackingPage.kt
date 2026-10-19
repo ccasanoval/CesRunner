@@ -109,10 +109,6 @@ private fun TrackingCompo(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize().padding(SepMax)
     ) {
-//        Button(
-//            onClick = { reduce(TrackingIntent.Stop) },
-//            modifier = Modifier.fillMaxWidth(.5f),
-//        ) { Text(stringResource(R.string.stop)) }
         var unlocked by remember { mutableStateOf(false) }
         SlideToUnlock(
             isUnlocked = unlocked,
@@ -144,8 +140,6 @@ private fun TrackData(
     val df = DecimalFormat("#,###", dfs).format(track.distance)
     val distance = "$df m"
 
-//    val timeIni = track.timeIni.toDateStr()
-//    val timeEnd = track.timeEnd.toDateStr()//Sometimes points get refresh before track data!
     val timeIni = track.points.firstOrNull()?.time
     val timeEnd = track.points.lastOrNull()?.time
     val duration = track.timeEnd - track.timeIni
@@ -164,24 +158,10 @@ private fun TrackData(
     val speedMed = speeds.average()
     val speed = String.format(
         Locale.current.platformLocale,
-        //"%.0f - %.0f Km/h (%d - %d m/s)",
-        //speedMin*3.6, speedMax*3.6, speedMin, speedMax)
         "%.0f Km/h (max %.0f Km/h)",
         speedMed*3.6, speedMax*3.6
     )
-//    android.util.Log.e("TrackingPage", "DATA------points= ${track.points.size} ")
-//    android.util.Log.e("TrackingPage", "DATA------first= ${track.points.firstOrNull()?.time?.toDateStr()} / $timeIni")
-//    android.util.Log.e("TrackingPage", "DATA------last= ${track.points.lastOrNull()?.time?.toDateStr()} / $timeEnd")
-//    android.util.Log.e("TrackingPage", "DATA------dis= ${TrackDto.calcDistance(track.points)} / $distance")
     LazyColumn(modifier = modifier.fillMaxWidth()) {
-//        item {
-//            Text(
-//                text = track.name,
-//                fontWeight = FontWeight.Bold,
-//                fontSize = fontBig,
-//                modifier = Modifier.padding(vertical = SepMin)
-//            )
-//        }
         item { InfoRowBig(stringResource(R.string.distance), distance) }
         item { InfoRowBig(stringResource(R.string.time), duration.toTimeStr()) }
         item { InfoRow(stringResource(R.string.time_ini), timeIni?.toDateStr() ?: "") }

@@ -46,7 +46,7 @@ fun ToolbarCompo(
     LaunchedEffect(error, message) {
         val duration = SnackbarDuration.Long
         error?.let {
-            snackbarHostState.showSnackbar(message = it.toStr(context) ?: "", duration = duration)
+            snackbarHostState.showSnackbar(message = it.toStr(context), duration = duration)
         }
         message?.let {
             snackbarHostState.showSnackbar(message = it, duration = duration)

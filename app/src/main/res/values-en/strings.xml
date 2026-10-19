@@ -50,6 +50,7 @@
     <string name="location_current">Location</string>
     <string name="ask_delete_title">Delete?</string>
     <string name="ask_delete_message">Sure you want to delete?</string>
+    <string name="error_run_not_found">No such track was found</string>
     <string name="error_not_found">Data not found</string>
     <string name="error_db">Error in data</string>
     <string name="slide_stop">Slide to stop</string>
@@ -57,4 +58,8 @@
     <string name="saved_ok">Saved</string>
     <string name="exported_ok">Track exported</string>
     <string name="deleted_ok">Track deleted</string>
+    <string name="error_no_locations">No location data, no GPS data</string>
+    <string name="api_keys">AI agents API keys</string>
+    <string name="api_keys_info">They are only stored in this device. Required to use the AI agents.</string>
+    <string name="error_missing_api_key">Missing API key: enter it in Settings</string>
 </resources>

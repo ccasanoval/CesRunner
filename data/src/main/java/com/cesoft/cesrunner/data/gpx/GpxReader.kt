@@ -407,7 +407,7 @@ class GpxReader {
         do {
             container = readByte(dis, container)
         } while (chars.contains(container.byte!!.toInt()))
-        return Container.of(container.byte!!, container.position)
+        return Container.of(container.byte, container.position)
     }
 
     private fun readExactly(dis: InputStream, buffer: Container, charSequence: CharSequence): Container {

@@ -1,7 +1,7 @@
 package com.cesoft.cesrunner.data
 
-import android.content.Context
 import android.location.Location
+import androidx.room.withTransaction
 import com.cesoft.cesrunner.data.groq.Groq
 import com.cesoft.cesrunner.data.local.AppDatabase
 import com.cesoft.cesrunner.data.local.entity.LocalTrackDto
@@ -11,6 +11,7 @@ import com.cesoft.cesrunner.data.prefs.PrefDataSource
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.ID_NULL
 import com.cesoft.cesrunner.domain.entity.AIAgentRes
+import com.cesoft.cesrunner.domain.entity.ApiKeysDto
 import com.cesoft.cesrunner.domain.entity.LocationDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
@@ -18,11 +19,10 @@ import com.cesoft.cesrunner.domain.entity.TrackDto.Companion.VO2MAX
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.domain.repository.RepositoryContract
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
 class Repository(
-    private val context: Context,
+    private val prefs: PrefDataSource,
     private val locationDataSource: LocationDataSource,
     private val db: AppDatabase,
     private val groq: Groq
@@ -34,230 +34,123 @@ class Repository(
     }
 
     /// AI AGENT : KOOG
-    override suspend fun filterTracks(name: String?, distance: Int?): Result<List<TrackDto>> {
-        try {
-            android.util.Log.e(TAG, "filterTracks------- name=$name & distance=$distance")
-            val tracks: List<LocalTrackDto> = db.trackDao().filter(null, name, distance)
-            return if(tracks.isEmpty()) Result.failure(AppError.NotFound)
-            else {
-                val value = tracks.map {
-                    val points = db.trackPointDao().getByTrackId(it.id)
-                    it.toModel(points)
-                }
-                Result.success(value)
-            }
+    override suspend fun filterTracks(name: String?, distance: Int?): Result<List<TrackDto>> =
+        runCatching {
+            val tracks = db.trackDao().filter(null, name, distance)
+            if(tracks.isEmpty()) throw AppError.NotFound
+            tracks.map { it.toModel(db.trackPointDao().getByTrackId(it.id)) }
         }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
-    }
 
     override suspend fun getNearTracks(
         lat: Double, lng: Double,
         distanceMax: Int
-    ): Result<List<TrackDto>> {
-        val location = Location("point A")
-        location.latitude = lat
-        location.longitude = lng
-        val tracks = mutableListOf<LocalTrackDto>()
-        val tracksId = mutableListOf<Long>()
-        val locationsX = db.trackPointDao().getAllLocations()
-        for(l in locationsX) {
-            if(tracksId.contains(l.idTrack)) continue
-            val locationX = Location("point B")
-            locationX.latitude = l.latitude
-            locationX.longitude = l.longitude
-            val d = location.distanceTo(locationX)
-            if(d < distanceMax) {
-                tracksId.add(l.idTrack)
+    ): Result<List<TrackDto>> = runCatching {
+        val location = LocationDto(lat, lng)
+        val tracksId = linkedSetOf<Long>()
+        for(point in db.trackPointDao().getAllLocations()) {
+            if(point.idTrack in tracksId) continue
+            if(location.distanceTo(LocationDto(point.latitude, point.longitude)) < distanceMax) {
+                tracksId.add(point.idTrack)
             }
         }
-        for(trackId in tracksId) {
-            db.trackDao().getById(trackId)?.let { track ->
-                tracks.add(track)
-            }
-        }
-        return Result.success(tracks.map { it.toModel(listOf()) })
+        tracksId.mapNotNull { db.trackDao().getById(it)?.toModel(listOf()) }
     }
 
     /// VO2MAX
     override suspend fun readVo2Max(): Double {
-        var vo2max = PrefDataSource(context).readVo2Max(0.0)
+        var vo2max = prefs.readVo2Max(0.0)
         if(vo2max > VO2MAX) vo2max = 0.0
         if(vo2max == 0.0) {
-            val tracks = db.trackDao().getAll()
-            for(track in tracks) {
-                //val timeMinutes = (track.timeEnd - track.timeIni)/60_000
-                //val vo2max0 = (track.distance / timeMinutes) * 0.2 + 3.5
-                val vo2max0 = track.calcVo2Max()
-                if(vo2max0 > vo2max) vo2max = vo2max0
-            }
+            vo2max = db.trackDao().getAll().maxOfOrNull { it.calcVo2Max() } ?: 0.0
             if(vo2max > 0.0) {
-                PrefDataSource(context).saveVo2Max(vo2max)
+                prefs.saveVo2Max(vo2max)
             }
         }
         return vo2max
     }
+    /// Only stores the value if it's a new record
     override suspend fun saveVo2Max(value: Double): Result<Unit> {
-        val vo2Max = readVo2Max()
-        return if(value > vo2Max)
-            PrefDataSource(context).saveVo2Max(value)
-        else
-            Result.failure(AppError.NotFound)
+        return if(value > readVo2Max()) prefs.saveVo2Max(value)
+        else Result.success(Unit)
     }
 
     /// PREFS
-    override suspend fun readSettings(): Result<SettingsDto> {
-        return PrefDataSource(context).readSettings()
-    }
-    override suspend fun saveSettings(data: SettingsDto): Result<Unit> {
-        return PrefDataSource(context).saveSettings(data)
-    }
+    override suspend fun readSettings(): Result<SettingsDto> = prefs.readSettings()
+    override suspend fun saveSettings(data: SettingsDto): Result<Unit> = prefs.saveSettings(data)
+    override suspend fun readApiKeys(): Result<ApiKeysDto> = prefs.readApiKeys()
+    override suspend fun saveApiKeys(data: ApiKeysDto): Result<Unit> = prefs.saveApiKeys(data)
     override suspend fun readCurrentTrack(): Result<TrackDto> {
-        val id = PrefDataSource(context).readCurrentTrackingId(ID_NULL)
+        val id = prefs.readCurrentTrackingId(ID_NULL)
         return if(id > ID_NULL) readTrack(id) else Result.failure(AppError.NotFound)
     }
-//    override suspend fun readCurrentTrackFlow(): Result<Flow<TrackDto?>> {
-//        val flow = PrefDataSource(context).readCurrentTrackingIdFlow()
-//            .reduce { it?.let { readTrackFlow(it).getOrNull() } }
-//        return Result.success(flow)
-//    }
     override suspend fun saveCurrentTrack(id: Long): Result<Unit> {
-        PrefDataSource(context).saveCurrentTrackingId(id)
+        prefs.saveCurrentTrackingId(id)
         return Result.success(Unit)
     }
     override suspend fun readCurrentTrackId(): Result<Long> {
-        return Result.success(PrefDataSource(context).readCurrentTrackingId(ID_NULL))
+        return Result.success(prefs.readCurrentTrackingId(ID_NULL))
     }
     override suspend fun readCurrentTrackIdFlow(): Result<Flow<Long?>> {
-        return Result.success(PrefDataSource(context).readCurrentTrackingIdFlow())
+        return Result.success(prefs.readCurrentTrackingIdFlow())
     }
 
-
-    /// TRACKING SERVICE
-    override fun getLastKnownLocation(): LocationDto? {
-        val location = locationDataSource.getLastKnownLocation()
-        return if(location == null) null else LocationDto(location.latitude, location.longitude)
-    }
-    override fun requestLocationUpdates(minInterval: Long, minDistance: Float):
-            Result<MutableStateFlow<Location?>> {
-        try {
-            val locationFlow = locationDataSource.requestLocationUpdates(minInterval, minDistance)
-            return Result.success(locationFlow)
-        }
-        catch(e: Exception) {
-            return Result.failure(e)
-        }
-    }
-    override fun stopLocationUpdates(): Result<Unit> {
-        try {
-            locationDataSource.stopLocationUpdates()
-            return Result.success(Unit)
-        }
-        catch(e: Exception) {
-            return Result.failure(e)
-        }
-    }
+    /// LOCATION
+    override fun getLastKnownLocation(): LocationDto? =
+        locationDataSource.getLastKnownLocation()?.let { LocationDto(it.latitude, it.longitude) }
+    override fun requestLocationUpdates(minInterval: Long, minDistance: Float): Flow<TrackPointDto> =
+        locationDataSource.requestLocationUpdates(minInterval, minDistance).map { it.toTrackPointDto() }
 
     /// TRACKING DATABASE
-    override suspend fun createTrack(data: TrackDto): Result<Long> {
-        try {
-            val id: Long = db.trackDao().create(LocalTrackDto.fromModel(data))
-            return if( id > 0) Result.success(id)
-            else Result.failure(Throwable())
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
+    override suspend fun createTrack(data: TrackDto): Result<Long> = runCatching {
+        val id: Long = db.trackDao().create(LocalTrackDto.fromModel(data))
+        if(id > 0) id else throw AppError.DataBaseError(IllegalStateException("Track not created"))
+    }
+    override suspend fun updateTrack(data: TrackDto): Result<Unit> = runCatching {
+        db.trackDao().update(LocalTrackDto.fromModel(data))
+    }
+    override suspend fun addTrackPoint(
+        id: Long,
+        point: TrackPointDto,
+        distance: Int,
+        timeIni: Long
+    ): Result<Unit> = runCatching {
+        db.withTransaction {
+            db.trackPointDao().add(LocalTrackPointDto.fromModel(id, point))
+            db.trackDao().updateProgress(id, distance, timeIni, point.time)
         }
     }
-    override suspend fun updateTrack(data: TrackDto): Result<Unit> {
-        try {
-            db.trackDao().update(LocalTrackDto.fromModel(data))
-            return Result.success(Unit)
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
+    override suspend fun readTrack(id: Long): Result<TrackDto> = runCatching {
+        val track = db.trackDao().getById(id) ?: throw AppError.NotFound
+        track.toModel(db.trackPointDao().getByTrackId(id))
     }
-    override suspend fun addTrackPoint(id: Long, data: TrackPointDto): Result<Unit> {
-        try {
-            db.trackPointDao().add(LocalTrackPointDto.fromModel(id, data))
-            return Result.success(Unit)
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
+    override suspend fun readTrackFlow(id: Long): Result<Flow<TrackDto?>> = runCatching {
+        db.trackPointDao().getFlowByTrackId(id)
+            .map { points -> db.trackDao().getById(id)?.toModel(points) }
     }
-    override suspend fun readTrack(id: Long): Result<TrackDto> {
-        try {
-            val points = db.trackPointDao().getByTrackId(id)
-            val track = db.trackDao().getById(id)
-            track?.let { return Result.success(it.toModel(points)) }
-                ?: run { return Result.failure(AppError.NotFound) }
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
+    override suspend fun readLastTrack(): Result<TrackDto> = runCatching {
+        val track = db.trackDao().getLast() ?: throw AppError.NotFound
+        track.toModel(db.trackPointDao().getByTrackId(track.id))
     }
-    override suspend fun readTrackFlow(id: Long): Result<Flow<TrackDto?>> {
-        try {
-            val points = db.trackPointDao().getFlowByTrackId(id)
-            return Result.success(
-                points.map { db.trackDao().getById(id)?.toModel(it) }
-            )
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
+    override suspend fun readAllTracks(): Result<List<TrackDto>> = runCatching {
+        db.trackDao().getAll().map { it.toModel(listOf()) }
     }
-    override suspend fun readLastTrack(): Result<TrackDto> {
-        try {
-            val track = db.trackDao().getLast()
-            track?.let {
-                val points = db.trackPointDao().getByTrackId(track.id)
-                return Result.success(track.toModel(points))
-            } ?: run {
-                return Result.failure(AppError.NotFound)
-            }
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
-    }
-    override suspend fun readAllTracks(): Result<List<TrackDto>> {
-        try {
-            val tracks = db.trackDao().getAll()
-            return Result.success(tracks.map { it.toModel(listOf()) })
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
-    }
-    override suspend fun deleteTrack(id: Long): Result<Unit> {
-        try {
+    override suspend fun deleteTrack(id: Long): Result<Unit> = runCatching {
+        db.withTransaction {
             db.trackPointDao().deleteByTrackId(id)
             db.trackDao().deleteById(id)
-            return Result.success(Unit)
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
-        }
-    }
-
-    override suspend fun getLastLocation(id: Long): Result<TrackPointDto> {
-        try {
-            db.trackPointDao().getLastByTrackId(id)?.let {
-                return Result.success(it.toModel())
-            } ?: run {
-                return Result.failure(AppError.NotFound)
-            }
-        }
-        catch(e: Throwable) {
-            return Result.failure(e)
         }
     }
 
     companion object {
-        private const val TAG = "Repo"
+        internal fun Location.toTrackPointDto() = TrackPointDto(
+            latitude = latitude,
+            longitude = longitude,
+            time = time,
+            accuracy = accuracy,
+            provider = provider ?: "?",
+            altitude = altitude,
+            bearing = bearing,
+            speed = speed
+        )
     }
 }

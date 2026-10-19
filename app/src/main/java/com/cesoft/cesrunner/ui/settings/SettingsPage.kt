@@ -6,21 +6,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
+import com.cesoft.cesrunner.domain.entity.ApiKeysDto
 import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.ui.common.LoadingCompo
 import com.cesoft.cesrunner.ui.common.NumberPicker
@@ -42,7 +47,6 @@ fun SettingsPage(
         state = viewModel.state,
         onSideEffect = { },
         onBackPressed = onBack  // Android back button
-
     ) { state ->
         Content(state = state, onBack = onBack, reduce = viewModel::execute)
     }
@@ -64,8 +68,12 @@ private fun Content(
                 LoadingCompo()
             }
             is SettingsState.Init -> {
-                var settings by remember { mutableStateOf(state.settings) }
-                Settings(state.settings) { settings = it }
+                Settings(
+                    initialSettings = state.settings,
+                    initialApiKeys = state.apiKeys,
+                    onChange = { reduce(SettingsIntent.Save(it)) },
+                    onApiKeysChange = { reduce(SettingsIntent.SaveApiKeys(it)) },
+                )
             }
         }
     }
@@ -73,12 +81,22 @@ private fun Content(
 
 @Composable
 private fun Settings(
-    settings: SettingsDto,
-    onChange: (SettingsDto) -> Unit
+    initialSettings: SettingsDto,
+    initialApiKeys: ApiKeysDto,
+    onChange: (SettingsDto) -> Unit,
+    onApiKeysChange: (ApiKeysDto) -> Unit,
 ) {
-    var period by remember { mutableIntStateOf(settings.minInterval) }
-    var distance by remember { mutableIntStateOf(settings.minDistance) }
-    var voice by remember { mutableStateOf(settings.voice) }
+    // Each change builds on the latest values, so changing one field doesn't undo another
+    var settings by remember { mutableStateOf(initialSettings) }
+    var apiKeys by remember { mutableStateOf(initialApiKeys) }
+    fun update(newSettings: SettingsDto) {
+        settings = newSettings
+        onChange(newSettings)
+    }
+    fun update(newApiKeys: ApiKeysDto) {
+        apiKeys = newApiKeys
+        onApiKeysChange(newApiKeys)
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -94,11 +112,8 @@ private fun Settings(
                     modifier = Modifier.padding(start = SepMin).weight(.5f)
                 )
                 Switch(
-                    checked = voice,
-                    onCheckedChange = {
-                        voice = it
-                        onChange(settings.copy(voice = it))
-                    },
+                    checked = settings.voice,
+                    onCheckedChange = { update(settings.copy(voice = it)) },
                     modifier = Modifier
                 )
             }
@@ -122,11 +137,8 @@ private fun Settings(
                 modifier = Modifier,
                 min = 0,
                 max = 15,
-                value = period,
-                onSelect = {
-                    period = it
-                    onChange(settings.copy(minInterval = it))
-                }
+                value = settings.minInterval,
+                onSelect = { update(settings.copy(minInterval = it)) }
             )
         }
         /// MinDistance
@@ -138,15 +150,50 @@ private fun Settings(
                 modifier = Modifier.padding(bottom = SepMin),
                 min = 0,
                 max = 50,
-                value = distance,
-                onSelect = {
-                    distance = it
-                    onChange(settings.copy(minDistance = it))
-                }
+                value = settings.minDistance,
+                onSelect = { update(settings.copy(minDistance = it)) }
             )
             HorizontalDivider()
         }
+        /// API keys
+        item { Spacer(Modifier.size(SepMed)) }
+        item {
+            Text(
+                text = stringResource(R.string.api_keys),
+                fontSize = fontBig,
+                modifier = Modifier.padding(SepMin)
+            )
+            Text(
+                text = stringResource(R.string.api_keys_info),
+                modifier = Modifier.padding(SepMin)
+            )
+        }
+        item {
+            ApiKeyField("Groq", apiKeys.groq) { update(apiKeys.copy(groq = it)) }
+            ApiKeyField("Gemini", apiKeys.gemini) { update(apiKeys.copy(gemini = it)) }
+            ApiKeyField("OpenAI", apiKeys.openAi) { update(apiKeys.copy(openAi = it)) }
+            ApiKeyField("OpenRouter", apiKeys.openRouter) { update(apiKeys.copy(openRouter = it)) }
+            ApiKeyField("DeepSeek", apiKeys.deepSeek) { update(apiKeys.copy(deepSeek = it)) }
+            Spacer(Modifier.size(SepMax))
+        }
     }
+}
+
+@Composable
+private fun ApiKeyField(
+    label: String,
+    value: String,
+    onChange: (String) -> Unit,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onChange,
+        label = { Text(label) },
+        singleLine = true,
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        modifier = Modifier.fillMaxWidth().padding(vertical = SepMin)
+    )
 }
 
 //--------------------------------------------------------------------------------------------------

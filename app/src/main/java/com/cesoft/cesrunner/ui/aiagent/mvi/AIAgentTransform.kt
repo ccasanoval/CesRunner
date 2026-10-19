@@ -15,7 +15,6 @@ object AIAgentTransform {
         val error: Throwable? = null
     ): ViewTransform<AIAgentState, AIAgentSideEffect>() {
         override fun mutate(currentState: AIAgentState): AIAgentState {
-            //android.util.Log.e("AIAgentTransform", "GoInit-------------------- $prompt -> $response / $loading / $error")
             return AIAgentState.Init(prompt, response, responseData, loading, error)
         }
     }

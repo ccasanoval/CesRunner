@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -101,7 +100,6 @@ class MainActivity : ComponentActivity() {
         /// Disable battery optimization : also, check Manifest
         val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
         if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-            Log.e(TAG, "isIgnoringBatteryOptimizations------- FALSE")
             val intent = Intent()
             //intent.setAction(ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
             intent.setAction(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
@@ -171,9 +169,5 @@ class MainActivity : ComponentActivity() {
                 PermissionsAlert { }
             }
         }
-    }
-
-    companion object {
-        private const val TAG = "MainAct"
     }
 }

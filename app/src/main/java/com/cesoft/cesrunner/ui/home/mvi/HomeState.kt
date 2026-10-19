@@ -1,9 +1,9 @@
 package com.cesoft.cesrunner.ui.home.mvi
 
-import android.location.Location
 import com.adidas.mvi.LoggableState
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import kotlinx.coroutines.flow.StateFlow
 
 sealed class HomeState: LoggableState {
@@ -11,7 +11,7 @@ sealed class HomeState: LoggableState {
     data class Init(
         val vo2Max: Double,
         val trackFlow: StateFlow<TrackDto?>,
-        val locationFlow: StateFlow<Location?>? = null,
+        val locationFlow: StateFlow<TrackPointDto?>? = null,
         val error: AppError? = null
     ): HomeState()
 }

@@ -1,26 +1,19 @@
 package com.cesoft.cesrunner.ui.tracking
 
-import android.annotation.SuppressLint
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
-import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.NavKey
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
-import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.ID_NULL
-import com.cesoft.cesrunner.domain.entity.SettingsDto
 import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.CreateTrackUC
 import com.cesoft.cesrunner.domain.usecase.DeleteCurrentTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadCurrentTrackIdUC
-import com.cesoft.cesrunner.domain.usecase.ReadSettingsUC
 import com.cesoft.cesrunner.domain.usecase.ReadTrackFlowUC
 import com.cesoft.cesrunner.domain.usecase.SaveCurrentTrackingUC
+import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.tracking.TrackingServiceFac
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingIntent
 import com.cesoft.cesrunner.ui.tracking.mvi.TrackingSideEffect
@@ -34,7 +27,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 
-@SuppressLint("StaticFieldLeak")
 class TrackingViewModel(
     private val createTrack: CreateTrackUC,
     private val trackingServiceFac: TrackingServiceFac,
@@ -42,7 +34,6 @@ class TrackingViewModel(
     private val readTrackFlow: ReadTrackFlowUC,
     private val saveCurrentTracking: SaveCurrentTrackingUC,
     private val deleteCurrentTracking: DeleteCurrentTrackUC,
-    private val readSettings: ReadSettingsUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): ViewModel(), MviHost<TrackingIntent, State<TrackingState, TrackingSideEffect>> {
 
@@ -60,21 +51,15 @@ class TrackingViewModel(
     private fun executeIntent(intent: TrackingIntent) =
         when(intent) {
             TrackingIntent.Load -> executeLoad()
-
             TrackingIntent.Close -> executeClose()
             TrackingIntent.Stop -> executeStop()
-
-            else -> executeClose()
         }
 
     private fun executeLoad() = flow {
         var id = readCurrentTrackId().getOrNull() ?: ID_NULL
         if(id == ID_NULL) {
-            //val settings = readSettings().getOrNull() ?: SettingsDto.Empty
             val time = System.currentTimeMillis()
             val track = TrackDto(
-                //minInterval = settings.minInterval,
-                //minDistance = settings.minDistance,
                 timeIni = time,
                 timeEnd = time,
                 name = time.toDateStr(),
@@ -85,9 +70,7 @@ class TrackingViewModel(
                 saveCurrentTracking(id)
             }
         }
-        //val track = readCurrentTrack().getOrNull() ?: TrackDto.Empty
-        val settings = readSettings().getOrNull() ?: SettingsDto.Empty
-        trackingServiceFac.start(settings.minInterval, settings.minDistance)
+        trackingServiceFac.start()
         val res = readTrackFlow(id)
         res.getOrNull()?.let {
             val flow: StateFlow<TrackDto?> = it.stateIn(
@@ -120,9 +103,5 @@ class TrackingViewModel(
         when(sideEffect) {
             TrackingSideEffect.Close -> onBack()
         }
-    }
-
-    companion object {
-        private const val TAG = "TrackingVM"
     }
 }

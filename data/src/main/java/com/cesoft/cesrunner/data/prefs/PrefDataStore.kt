@@ -11,7 +11,6 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
@@ -67,8 +66,3 @@ suspend fun Context.readBool(key: String, default: Boolean = false): Boolean {
         pref[booleanPreferencesKey(key)]
     }.firstOrNull() ?: default
 }
-//fun Context.readBoolFlow(key: String): Flow<Boolean> {
-//    return dataStore.data.map { pref ->
-//        pref[booleanPreferencesKey(key)] ?: false
-//    }
-//}

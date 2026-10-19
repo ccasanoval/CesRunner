@@ -1,11 +1,12 @@
 package com.cesoft.cesrunner.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.cesoft.cesrunner.domain.entity.TrackPointDto
 
 const val TrackPointTableName = "track_point"
-@Entity(tableName = TrackPointTableName)
+@Entity(tableName = TrackPointTableName, indices = [Index("idTrack")])
 data class LocalTrackPointDto(
     @PrimaryKey(autoGenerate = true)
     val id: Long,

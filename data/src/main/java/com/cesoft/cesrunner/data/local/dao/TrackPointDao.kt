@@ -18,8 +18,8 @@ interface TrackPointDao {
     @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id")
     fun getFlowByTrackId(id: Long): Flow<List<LocalTrackPointDto>>
 
-    @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id ORDER BY id DESC LIMIT 1")
-    suspend fun getLastByTrackId(id: Long): LocalTrackPointDto?
+    @Query("SELECT * FROM $TrackPointTableName WHERE idTrack = :id ORDER BY id ASC LIMIT 1")
+    suspend fun getFirstByTrackId(id: Long): LocalTrackPointDto?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(data: LocalTrackPointDto)
@@ -30,7 +30,7 @@ interface TrackPointDao {
     @Query("DELETE FROM $TrackPointTableName")
     suspend fun deleteAll()
 
-    // IA AGENT
+    // AI AGENT
     @Query("SELECT id, idTrack, latitude, longitude FROM $TrackPointTableName")
     suspend fun getAllLocations(): List<LocalLocationDto>
 }

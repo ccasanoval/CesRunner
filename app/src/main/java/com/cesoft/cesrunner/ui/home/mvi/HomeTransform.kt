@@ -1,11 +1,11 @@
 package com.cesoft.cesrunner.ui.home.mvi
 
-import android.location.Location
 import com.adidas.mvi.sideeffects.SideEffects
 import com.adidas.mvi.transform.SideEffectTransform
 import com.adidas.mvi.transform.ViewTransform
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import kotlinx.coroutines.flow.StateFlow
 
 internal object HomeTransform {
@@ -19,7 +19,7 @@ internal object HomeTransform {
     data class GoInit(
         val vo2Max: Double,
         val trackFlow: StateFlow<TrackDto?>,
-        val locationFlow: StateFlow<Location?>?,
+        val locationFlow: StateFlow<TrackPointDto?>?,
         val error: AppError?,
     ): ViewTransform<HomeState, HomeSideEffect>() {
         override fun mutate(currentState: HomeState): HomeState {

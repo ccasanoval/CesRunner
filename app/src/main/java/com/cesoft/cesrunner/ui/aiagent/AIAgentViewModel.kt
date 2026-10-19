@@ -6,7 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.adidas.mvi.MviHost
 import com.adidas.mvi.State
 import com.adidas.mvi.reducer.Reducer
+import com.cesoft.cesrunner.domain.AppError
+import com.cesoft.cesrunner.domain.entity.ApiKeysDto
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
+import com.cesoft.cesrunner.domain.usecase.ReadApiKeysUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
 import com.cesoft.cesrunner.ui.aiagent.ai.RunEntity
@@ -18,12 +21,10 @@ import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentTransform
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 //TODO: AGENTE DE ACCION (fuera de busquedas)
 //   En pagina principal: User dice: "Empieza una nueva carrera en 10 segundos"
@@ -48,6 +49,7 @@ class AIAgentViewModel(
     private val filterTracks: FilterTracksUC,
     private val getLocation: GetLocationUC,
     private val getNearTracks: GetNearTracksUC,
+    private val readApiKeys: ReadApiKeysUC,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): ViewModel(), MviHost<AIAgentIntent, State<AIAgentState, AIAgentSideEffect>> {
     private val reducer = Reducer(
@@ -74,56 +76,66 @@ class AIAgentViewModel(
             val typeOfT = object : TypeToken<List<RunEntity>>() {}.type
             return gson.fromJson(json, typeOfT)
         } catch (e: Exception) {
-            android.util.Log.e("AIAgentVM", "executePrompt:ok:---LIST----e: $e")
             try {
                 return listOf(gson.fromJson(json, RunEntity::class.java))
             } catch (e: Exception) {
-                android.util.Log.e("AIAgentVM", "executePrompt:ok:---OBJ----e: $e")
+                Log.e(TAG, "jsonToRunEntity:e: $e")
             }
         }
         return listOf()
     }
 
+    /// The LLM answers with text followed by a ```json block with the selected runs
+    private fun parseResponse(prompt: String, response: String): AIAgentTransform.GoInit {
+        val i = response.indexOf("json")
+        if(i < 3) return AIAgentTransform.GoInit(prompt = prompt, response = response)
+        return try {
+            val llm = response.substring(0, i - 3)
+            val json = response.substring(i + 4, response.length - 3)
+            AIAgentTransform.GoInit(prompt = prompt, response = llm, responseData = jsonToRunEntity(json))
+        }
+        catch(e: Exception) {
+            AIAgentTransform.GoInit(prompt = prompt, response = response)
+        }
+    }
+
     private fun executePrompt(prompt: String) = flow {
         emit(AIAgentTransform.GoInit(prompt = prompt, loading = true))
-        val callbackResult: AIAgentTransform.GoInit = suspendCoroutine { cont ->
-            val agent = RunsAgent(
-                model = RunsAgent.Model.GEMINI,//TODO: Gemini seems the only one working, delete the rest?
-                filterTracks = filterTracks,
-                getLocation = getLocation,
-                getNearTracks = getNearTracks,
-                onAgentCompleted = { response ->
-                    android.util.Log.e("AIAgentVM", "executePrompt:ok:------- $response")
-                    val i = response.indexOf("json")
-                    if(i >= 3) {
-                        try {
-                            android.util.Log.e("AIAgentVM", "executePrompt:ok:i------- $i")
-                            val llm = response.substring(0, i-3)
-                            android.util.Log.e("AIAgentVM", "executePrompt:ok:LLM------- $llm")
-                            val json = response.substring(i + 4, response.length - 3)
-                            android.util.Log.e("AIAgentVM", "executePrompt:ok:JSON------- $json")
-                            val data = jsonToRunEntity(json)
-                            val value = AIAgentTransform.GoInit(prompt = prompt, response = llm, responseData = data)
-                            cont.resume(value)
-                        }
-                        catch (e: Exception) {
-                            val value = AIAgentTransform.GoInit(prompt = prompt, response = response)
-                            cont.resume(value)
-                        }
-                    }
-                    else {
-                        cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = response))
-                    }
-                },
-                onAgentExecutionFailed = { error ->
-                    cont.resume(AIAgentTransform.GoInit(prompt = prompt, response = "", error = error))
-                }
-            )
-            viewModelScope.launch {
-                try { agent.run(prompt) }
-                catch (e: Throwable) { Log.e("AIAgentVM", "executePrompt:e:------ $e") }
-            }
+
+        val model = MODEL
+        val apiKey = RunsAgent.apiKeyFor(model, readApiKeys().getOrNull() ?: ApiKeysDto.Empty)
+        if(RunsAgent.needsApiKey(model) && apiKey.isBlank()) {
+            emit(AIAgentTransform.GoInit(prompt = prompt, response = "", error = AppError.MissingApiKey))
+            return@flow
         }
-        emit(callbackResult)
+
+        // The agent answers through callbacks; complete() only keeps the first result
+        val result = CompletableDeferred<AIAgentTransform.GoInit>()
+        val agent = RunsAgent(
+            model = model,
+            apiKey = apiKey,
+            filterTracks = filterTracks,
+            getLocation = getLocation,
+            getNearTracks = getNearTracks,
+            onAgentCompleted = { response -> result.complete(parseResponse(prompt, response)) },
+            onAgentExecutionFailed = { error ->
+                result.complete(AIAgentTransform.GoInit(prompt = prompt, response = "", error = error))
+            }
+        )
+        try {
+            agent.run(prompt)
+        }
+        catch(e: Exception) {
+            Log.e(TAG, "executePrompt:e: $e")
+            result.complete(AIAgentTransform.GoInit(prompt = prompt, response = "", error = e))
+        }
+        // In case the agent finished without calling any callback, don't wait forever
+        result.complete(AIAgentTransform.GoInit(prompt = prompt, response = ""))
+        emit(result.await())
     }
- }
+
+    companion object {
+        private const val TAG = "AIAgentVM"
+        private val MODEL = RunsAgent.Model.GEMINI//TODO: Gemini seems the only one working, delete the rest?
+    }
+}

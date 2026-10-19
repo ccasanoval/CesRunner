@@ -1,22 +1,24 @@
 package com.cesoft.cesrunner.tracking
 
 import android.content.Context
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
 import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.usecase.ReadLastTrackUC
 import com.cesoft.cesrunner.domain.usecase.ReadVo2MaxUC
 import com.cesoft.cesrunner.domain.usecase.SaveVo2MaxUC
-import com.cesoft.cesrunner.toTimeSpeech
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class StopTrackingVo2MaxWork(
     appContext: Context,
     workerParams: WorkerParameters
-): CoroutineWorker(appContext, workerParams) {
+): CoroutineWorker(appContext, workerParams), KoinComponent {
+
+    private val readLastTrackUC: ReadLastTrackUC by inject()
+    private val readVo2MaxUC: ReadVo2MaxUC by inject()
+    private val saveVo2MaxUC: SaveVo2MaxUC by inject()
 
     override suspend fun doWork(): Result {
         readLastTrackUC().getOrNull()?.let { track ->
@@ -29,19 +31,7 @@ class StopTrackingVo2MaxWork(
     }
 
     companion object {
-        private const val TAG = "StopTrackingVo2MaxWork"
-        lateinit var readLastTrackUC: ReadLastTrackUC
-        lateinit var readVo2MaxUC: ReadVo2MaxUC
-        lateinit var saveVo2MaxUC: SaveVo2MaxUC
-        fun create(
-            context: Context,
-            readLastTrack: ReadLastTrackUC,
-            readVo2Max: ReadVo2MaxUC,
-            saveVo2Max: SaveVo2MaxUC
-        ) {
-            readLastTrackUC = readLastTrack
-            readVo2MaxUC = readVo2Max
-            saveVo2MaxUC = saveVo2Max
+        fun create(context: Context) {
             val workReq = OneTimeWorkRequestBuilder<StopTrackingVo2MaxWork>()
             WorkManager.getInstance(context).enqueue(workReq.build())
         }

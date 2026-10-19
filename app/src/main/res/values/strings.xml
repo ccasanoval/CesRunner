@@ -63,7 +63,6 @@
     <string name="menu_maps">Mapa</string>
     <string name="menu_tracks">Carreras</string>
     <string name="menu_track_details">Info de carrera</string>
-    <string name="menu_gnss" translatable="false">GNSS</string>
 
     <!-- SETTINGS -->
     <string name="period">Período</string>
@@ -73,5 +72,8 @@
     <string name="error_run_not_found">No se encontró una carrera con tales características</string>
     <string name="error_not_found">No se encontraron datos</string>
     <string name="error_db">Error en los datos</string>
-
+    <string name="error_no_locations">No hay localización, sin datos GPS</string>
+    <string name="api_keys">API keys de los agentes IA</string>
+    <string name="api_keys_info">Se guardan solo en este dispositivo. Son necesarias para usar los agentes IA.</string>
+    <string name="error_missing_api_key">Falta la API key: introdúcela en Opciones</string>
 </resources>

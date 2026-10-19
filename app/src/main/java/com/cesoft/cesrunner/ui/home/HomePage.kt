@@ -1,7 +1,6 @@
 package com.cesoft.cesrunner.ui.home
 
 import android.content.Intent
-import android.location.Location
 import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -29,11 +28,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.adidas.mvi.compose.MviScreen
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.AppError
 import com.cesoft.cesrunner.domain.entity.TrackDto
+import com.cesoft.cesrunner.domain.entity.TrackPointDto
 import com.cesoft.cesrunner.toDateStr
 import com.cesoft.cesrunner.toDistanceStr
 import com.cesoft.cesrunner.toTimeStr
@@ -52,7 +51,6 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HomePage(
-    navController: NavController,
     onStart: () -> Unit,
     onTracks: () -> Unit,
     onMap: () -> Unit,
@@ -67,7 +65,6 @@ fun HomePage(
         onSideEffect = { sideEffect ->
             viewModel.consumeSideEffect(
                 sideEffect = sideEffect,
-                navController = navController,
                 context = context
             )
         },
@@ -130,13 +127,6 @@ private fun Content(
 
             /// Current location
             CurrentLocationCompo(state.locationFlow)
-
-            /// Current tracking
-//            if (isTracking) {
-//                CurrentTrackingCompo(track)
-//            } else {
-//                Spacer(modifier = Modifier.padding(SepMax))
-//            }
 
             /// Actions
             ActionsCompo(
@@ -228,12 +218,6 @@ private fun ActionsCompo(
         modifier = modifier,
         onClick = onSettings
     )
-//                HomeButton(
-//                    title = R.string.menu_gnss,
-//                    icon = R.mipmap.ic_sat,
-//                    modifier = modifier,
-//                    onClick = { reduce(HomeIntent.GoGnss) }
-//                )
 }
 
 @Composable
@@ -265,27 +249,19 @@ private fun BestVo2Max(vo2Max: Double) {
 }
 
 @Composable
-private fun CurrentLocationCompo(locationFlow: StateFlow<Location?>?) {
-    locationFlow?.let { flow ->
-        val location by flow.collectAsStateWithLifecycle()
-        location?.let {
-            val alt = "%.0f m".format(it.altitude)
-            val spe = "%.0f m/s".format(it.speed)
-            val acc = "%.1f m".format(it.accuracy)
-            val tim = it.time.toDateStr()
-            val lat = "%.5f m".format(it.latitude)
-            val lon = "%.5f m".format(it.longitude)
-            Text(stringResource(R.string.location_current) + " $tim")
-            val sAlt = stringResource(R.string.altitude)
-            val sAcc = stringResource(R.string.accuracy)
-            val sSpe = stringResource(R.string.speed)
-            //val sTim = stringResource(R.string.time)
-            Text("$lat / $lon")
-            Text("$sAlt: $alt")
-            Text("$sSpe: $spe")
-            Text("$sAcc: $acc")
-        }
-    } ?: run {
+private fun CurrentLocationCompo(locationFlow: StateFlow<TrackPointDto?>?) {
+    val location = locationFlow?.collectAsStateWithLifecycle()?.value
+    if(location != null) {
+        val sAlt = stringResource(R.string.altitude)
+        val sAcc = stringResource(R.string.accuracy)
+        val sSpe = stringResource(R.string.speed)
+        Text(stringResource(R.string.location_current) + " ${location.time.toDateStr()}")
+        Text("%.5f / %.5f".format(location.latitude, location.longitude))
+        Text("$sAlt: " + "%.0f m".format(location.altitude))
+        Text("$sSpe: " + "%.0f m/s".format(location.speed))
+        Text("$sAcc: " + "%.1f m".format(location.accuracy))
+    }
+    else {
         Text(
             text = stringResource(R.string.location_null),
             modifier = Modifier.padding(SepMax)
@@ -300,8 +276,6 @@ private fun CurrentLocationCompo(locationFlow: StateFlow<Location?>?) {
 private fun HomePage_Preview() {
     val state = HomeState.Init(
         vo2Max = 39.9,
-        //trackFlow = flowOf(TrackDto(id = 69, name = "Tracking A")),
-        //trackIdFlow = MutableStateFlow(0L),
         trackFlow = MutableStateFlow(TrackDto.Empty),
         error = AppError.NetworkError,
     )

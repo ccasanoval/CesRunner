@@ -14,7 +14,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.time.LocalDateTime
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -34,7 +34,7 @@ class GpxUtil {
                         latitude = it.lat,
                         longitude = it.lon,
                         altitude = it.ele ?: 0.0,
-                        time = it.time?.toEpochSecond() ?: 0,
+                        time = it.time?.toInstant()?.toEpochMilli() ?: 0,
                     )
                 }
                 val track = TrackDto(
@@ -73,7 +73,7 @@ class GpxUtil {
                             latitude = it.lat,
                             longitude = it.lon,
                             altitude = it.ele ?: 0.0,
-                            time = it.time?.toEpochSecond() ?: 0,
+                            time = it.time?.toInstant()?.toEpochMilli() ?: 0,
                         )
                     }
                     val track = TrackDto(
@@ -117,9 +117,7 @@ class GpxUtil {
                         lat = it.latitude,
                         lon = it.longitude,
                         ele = it.altitude,
-                        time = OffsetDateTime.of(
-                            LocalDateTime.ofEpochSecond(
-                                it.time, 0, ZoneOffset.UTC), ZoneOffset.UTC)
+                        time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(it.time), ZoneOffset.UTC)
                     )
                 }.toList()
             )

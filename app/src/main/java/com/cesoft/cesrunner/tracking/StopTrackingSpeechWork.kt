@@ -10,11 +10,15 @@ import androidx.work.WorkerParameters
 import com.cesoft.cesrunner.R
 import com.cesoft.cesrunner.domain.usecase.ReadLastTrackUC
 import com.cesoft.cesrunner.toTimeSpeech
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class StopTrackingSpeechWork(
     private val appContext: Context,
     workerParams: WorkerParameters
-): CoroutineWorker(appContext, workerParams) {
+): CoroutineWorker(appContext, workerParams), KoinComponent {
+
+    private val readLastTrack: ReadLastTrackUC by inject()
 
     private lateinit var textToSpeech: TextToSpeech
 //    private fun speak(text: String) =
@@ -50,10 +54,7 @@ class StopTrackingSpeechWork(
     }
 
     companion object {
-        private const val TAG = "TrackingWork"
-        lateinit var readLastTrack: ReadLastTrackUC
-        fun create(context: Context, track: ReadLastTrackUC) {
-            readLastTrack = track
+        fun create(context: Context) {
             val workReq = OneTimeWorkRequestBuilder<StopTrackingSpeechWork>()
             WorkManager.getInstance(context).enqueue(workReq.build())
         }

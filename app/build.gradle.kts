@@ -1,12 +1,8 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    //
-    alias(libs.plugins.ksp)
-    kotlin("plugin.serialization") version "2.0.21"
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -20,25 +16,6 @@ android {
         versionCode = 1
         versionName = "0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        android.buildFeatures.buildConfig = true
-        val keystoreFile = project.rootProject.file("local.properties")
-        val properties = Properties()
-        properties.load(keystoreFile.inputStream())
-        var key = properties.getProperty("GEMINI_KEY") ?: ""
-        buildConfigField(type = "String", name = "GEMINI_KEY", value = key)
-        key = properties.getProperty("OPENAI_KEY") ?: ""
-        buildConfigField(type = "String", name = "OPENAI_KEY", value = key)
-        key = properties.getProperty("OPENROUTER_KEY") ?: ""
-        buildConfigField(type = "String", name = "OPENROUTER_KEY", value = key)
-        key = properties.getProperty("DEEPSEEK_KEY") ?: ""
-        buildConfigField(type = "String", name = "DEEPSEEK_KEY", value = key)
-        key = properties.getProperty("OLLAMA_KEY") ?: ""
-        buildConfigField(type = "String", name = "OLLAMA_KEY", value = key)
-        key = properties.getProperty("GROQ_KEY") ?: ""
-        buildConfigField(type = "String", name = "GROOQ_KEY", value = key)
-        key = properties.getProperty("DEEPSEEK_KEY") ?: ""
-        buildConfigField(type = "String", name = "DEEPSEEK_KEY", value = key)
     }
 
     buildTypes {
@@ -50,22 +27,19 @@ android {
             )
         }
     }
+    testOptions {
+        // android.util.Log & co. return default values instead of throwing in local unit tests
+        unitTests.isReturnDefaultValues = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-//    kotlinOptions {
-//        //compileOptions { jvmTarget = JvmTarget.JVM_24.target }
-//        jvmTarget = "21"
-//    }
     buildFeatures {
         compose = true
-        buildConfig = true
     }
     packaging {
         resources {
-            //resources.excludes.add("META-INF/NOTICE.md")
-            //resources.excludes.add("META-INF/LICENSE.md")
             resources.excludes.add("META-INF/INDEX.LIST")
             resources.excludes.add("META-INF/DEPENDENCIES")
             resources.excludes.add("META-INF/io.netty.versions.properties")
@@ -99,6 +73,8 @@ dependencies {
 
     // Test
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -106,15 +82,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Navigation Compose
-    implementation(libs.androidx.navigation.compose)
-
     // DI - Koin
     implementation(libs.koinCore)
     implementation(libs.koinAndroid)
-    implementation(libs.koinAnnotations)
     implementation(libs.koinCompose)
-    ksp(libs.koinKspCompiler)
 
     // MIV - Adidas
     implementation(libs.mvi)
@@ -127,5 +98,4 @@ dependencies {
     implementation(libs.koog.agents)
     // JSON
     implementation(libs.converter.gson)
-    implementation(libs.kotlinx.serialization.json)
 }

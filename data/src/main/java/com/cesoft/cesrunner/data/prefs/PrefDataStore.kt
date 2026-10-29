@@ -11,11 +11,30 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
 private const val PREFERENCE_NAME = "CesRunnerDataStore"
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = PREFERENCE_NAME)
+
+/// Holds the user's LLM API keys. Excluded from backup and device transfer in app/src/main/res/xml/
+/// backup_rules.xml and data_extraction_rules.xml: renaming it requires updating both files
+const val SECRETS_DATASTORE_NAME = "CesRunnerSecrets"
+private val Context.secretsDataStore: DataStore<Preferences> by preferencesDataStore(name = SECRETS_DATASTORE_NAME)
+
+suspend fun Context.writeSecret(key: String, value: String) {
+    secretsDataStore.edit { pref -> pref[stringPreferencesKey(key)] = value }
+}
+suspend fun Context.readSecret(key: String, default: String = ""): String {
+    val prefKey = stringPreferencesKey(key)
+    secretsDataStore.data.first()[prefKey]?.let { return it }
+    // Keys saved before the secrets DataStore existed: move them out of the backed up DataStore
+    val legacy = dataStore.data.first()[prefKey] ?: return default
+    secretsDataStore.edit { pref -> pref[prefKey] = legacy }
+    dataStore.edit { pref -> pref.remove(prefKey) }
+    return legacy
+}
 
 suspend fun Context.writeString(key: String, value: String) {
     dataStore.edit { pref -> pref[stringPreferencesKey(key)] = value }

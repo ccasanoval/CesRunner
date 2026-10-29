@@ -26,14 +26,8 @@
     public static int d(...);
 }
 
-# Gson: models serialized by reflection
--keep class com.cesoft.cesrunner.domain.entity.RunDto { *; }
--keep class com.cesoft.cesrunner.domain.entity.AIAgentRes { *; }
--keep class com.cesoft.cesrunner.ui.aiagent.ai.RunEntity { *; }
--keep class com.cesoft.cesrunner.ui.aiagent.ai.RunEntity$* { *; }
--keep class io.github.vyfor.groqkt.api.** { *; }
+# Koog reads @Tool / @LLMDescription and generic signatures by reflection
 -keepattributes Signature, *Annotation*, InnerClasses, EnclosingMethod
--keep class * extends com.google.gson.reflect.TypeToken
 
 # Koog: ToolSet methods are discovered with kotlin-reflect via @Tool / @LLMDescription
 -keep class com.cesoft.cesrunner.ui.aiagent.ai.RunsToolSet { *; }

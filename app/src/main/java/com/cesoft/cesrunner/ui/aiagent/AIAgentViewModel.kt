@@ -18,13 +18,11 @@ import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentIntent
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentSideEffect
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentState
 import com.cesoft.cesrunner.ui.aiagent.mvi.AIAgentTransform
-import com.google.gson.GsonBuilder
-import com.google.gson.Strictness
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.Json
 
 //TODO: AGENTE DE ACCION (fuera de busquedas)
 //   En pagina principal: User dice: "Empieza una nueva carrera en 10 segundos"
@@ -67,23 +65,6 @@ class AIAgentViewModel(
         when(intent) {
              is AIAgentIntent.ExecPrompt -> executePrompt(intent.prompt)
          }
-
-    private fun jsonToRunEntity(json: String): List<RunEntity> {
-        val gson = GsonBuilder()
-            .setStrictness(Strictness.LENIENT)
-            .create()
-        try {
-            val typeOfT = object : TypeToken<List<RunEntity>>() {}.type
-            return gson.fromJson(json, typeOfT)
-        } catch (e: Exception) {
-            try {
-                return listOf(gson.fromJson(json, RunEntity::class.java))
-            } catch (e: Exception) {
-                Log.e(TAG, "jsonToRunEntity:e: $e")
-            }
-        }
-        return listOf()
-    }
 
     /// The LLM answers with text followed by a ```json block with the selected runs
     private fun parseResponse(prompt: String, response: String): AIAgentTransform.GoInit {
@@ -136,6 +117,24 @@ class AIAgentViewModel(
 
     companion object {
         private const val TAG = "AIAgentVM"
+        private val json = Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+        }
+
+        /// A run with missing fields is rejected instead of being built with nulls in non-null properties
+        internal fun jsonToRunEntity(text: String): List<RunEntity> {
+            try {
+                return json.decodeFromString<List<RunEntity>>(text)
+            } catch (e: Exception) {
+                try {
+                    return listOf(json.decodeFromString<RunEntity>(text))
+                } catch (e: Exception) {
+                    Log.e(TAG, "jsonToRunEntity:e: ${e::class.simpleName}")
+                }
+            }
+            return listOf()
+        }
         private val MODEL = RunsAgent.Model.GEMINI//TODO: Gemini seems the only one working, delete the rest?
     }
 }

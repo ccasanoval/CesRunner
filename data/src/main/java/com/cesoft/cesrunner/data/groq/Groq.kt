@@ -17,6 +17,8 @@ import io.github.vyfor.groqkt.GroqModel
 import io.github.vyfor.groqkt.api.GroqResponse
 import io.github.vyfor.groqkt.api.chat.ChatCompletion
 import io.github.vyfor.groqkt.api.chat.CompletionToolCall
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 
 //NOTE: https://github.com/vyfor/groq-kt
 class Groq(
@@ -149,7 +151,7 @@ class Groq(
             answer = when {
                 msg.isNotEmpty() -> Answer(Result.success(AIAgentRes(msg, parseRuns(msg))), toolCalls)
                 choice.finishReason == "tool_calls" && toolCalls.isNotEmpty() ->
-                    Answer(Result.success(AIAgentRes(Gson().toJson(toolCalls))), toolCalls)
+                    Answer(Result.success(AIAgentRes(Json.encodeToString(TOOL_CALLS_SERIALIZER, toolCalls))), toolCalls)
                 else -> Answer(Result.failure(AppError.NotFound), toolCalls)
             }
         }
@@ -159,6 +161,7 @@ class Groq(
     companion object {
         private const val TAG = "Groq"
         private const val CES_JSON_KEY = "\"cesjson\":"
+        private val TOOL_CALLS_SERIALIZER = ListSerializer(CompletionToolCall.serializer())
 
         /// Extracts the list of runs the LLM returns inside the "cesjson" object of its answer
         internal fun parseRuns(msg: String): List<RunDto> {

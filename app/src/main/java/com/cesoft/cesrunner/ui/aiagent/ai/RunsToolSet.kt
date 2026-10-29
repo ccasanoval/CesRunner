@@ -7,7 +7,7 @@ import com.cesoft.cesrunner.domain.entity.TrackDto
 import com.cesoft.cesrunner.domain.usecase.GetLocationUC
 import com.cesoft.cesrunner.domain.usecase.ai.FilterTracksUC
 import com.cesoft.cesrunner.domain.usecase.ai.GetNearTracksUC
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 
 @LLMDescription("Tools for finding runs")
 class RunsToolSet(
@@ -162,8 +162,8 @@ class RunsToolSet(
             val gson = Gson()
             return gson.toJson(track)
         }*/
-        fun RunEntity.toJson(): String = Gson().toJson(listOf(this))
-        fun List<RunEntity>.toJson(): String = Gson().toJson(this)
+        fun RunEntity.toJson(): String = Json.encodeToString(listOf(this))
+        fun List<RunEntity>.toJson(): String = Json.encodeToString(this)
         private fun tracksToString(tracks: List<RunEntity>) = tracks.toJson()
     }
 }

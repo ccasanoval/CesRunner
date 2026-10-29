@@ -97,6 +97,4 @@ dependencies {
 
     // AI Agents
     implementation(libs.koog.agents)
-    // JSON
-    implementation(libs.converter.gson)
 }

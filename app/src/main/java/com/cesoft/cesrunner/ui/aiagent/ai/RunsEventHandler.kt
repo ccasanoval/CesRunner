@@ -14,11 +14,12 @@ object RunsEventHandler {
             onAgentCompleted(res.result.toString())
         }
         onAgentExecutionFailed { fail ->
-            Log.e(TAG, "onAgentExecutionFailed: ${fail.throwable}")
+            // Only the error type: messages and tool args may carry LLM responses and run locations
+            Log.e(TAG, "onAgentExecutionFailed: ${fail.throwable::class.simpleName}")
             onAgentExecutionFailed(fail.throwable)
         }
         onToolCallCompleted { res -> Log.d(TAG, "onToolCallCompleted: $res") }
-        onToolCallFailed { res -> Log.e(TAG, "onToolCallFailed: $res") }
+        onToolCallFailed { res -> Log.e(TAG, "onToolCallFailed: ${res.toolName}") }
         onLLMCallCompleted { res ->
             for(r in res.responses) Log.d(TAG, "onLLMCallCompleted: ${r.role}: ${r.content}")
         }

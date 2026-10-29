@@ -29,22 +29,23 @@ class PrefDataSource(
     }
 
     //----------------------------------------------------------------------------------------------
-    // Stored in the app private DataStore: not readable by other apps and not shipped in the APK
+    // Stored in the app private secrets DataStore: not readable by other apps, not shipped in the APK
+    // and not backed up
     suspend fun readApiKeys(): Result<ApiKeysDto> = Result.success(
         ApiKeysDto(
-            groq = context.readString(PREFS_KEY_GROQ),
-            gemini = context.readString(PREFS_KEY_GEMINI),
-            openAi = context.readString(PREFS_KEY_OPENAI),
-            openRouter = context.readString(PREFS_KEY_OPENROUTER),
-            deepSeek = context.readString(PREFS_KEY_DEEPSEEK),
+            groq = context.readSecret(PREFS_KEY_GROQ),
+            gemini = context.readSecret(PREFS_KEY_GEMINI),
+            openAi = context.readSecret(PREFS_KEY_OPENAI),
+            openRouter = context.readSecret(PREFS_KEY_OPENROUTER),
+            deepSeek = context.readSecret(PREFS_KEY_DEEPSEEK),
         )
     )
     suspend fun saveApiKeys(data: ApiKeysDto): Result<Unit> {
-        context.writeString(PREFS_KEY_GROQ, data.groq.trim())
-        context.writeString(PREFS_KEY_GEMINI, data.gemini.trim())
-        context.writeString(PREFS_KEY_OPENAI, data.openAi.trim())
-        context.writeString(PREFS_KEY_OPENROUTER, data.openRouter.trim())
-        context.writeString(PREFS_KEY_DEEPSEEK, data.deepSeek.trim())
+        context.writeSecret(PREFS_KEY_GROQ, data.groq.trim())
+        context.writeSecret(PREFS_KEY_GEMINI, data.gemini.trim())
+        context.writeSecret(PREFS_KEY_OPENAI, data.openAi.trim())
+        context.writeSecret(PREFS_KEY_OPENROUTER, data.openRouter.trim())
+        context.writeSecret(PREFS_KEY_DEEPSEEK, data.deepSeek.trim())
         return Result.success(Unit)
     }
 

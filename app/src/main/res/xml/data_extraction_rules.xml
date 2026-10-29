@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?><!--
    Rules for Android 12+ (API 31+).
    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   The DataStore holds the user's LLM API keys: never back it up nor transfer it.
+   The secrets DataStore (SECRETS_DATASTORE_NAME in data/.../prefs/PrefDataStore.kt) holds the
+   user's LLM API keys: never back it up nor transfer it.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <exclude domain="file" path="datastore/CesRunnerDataStore.preferences_pb"/>
+        <exclude domain="file" path="datastore/CesRunnerSecrets.preferences_pb"/>
     </cloud-backup>
     <device-transfer>
-        <exclude domain="file" path="datastore/CesRunnerDataStore.preferences_pb"/>
+        <exclude domain="file" path="datastore/CesRunnerSecrets.preferences_pb"/>
     </device-transfer>
 </data-extraction-rules>
